@@ -353,6 +353,19 @@ Tracing:
 - CLI tool for querying build information
 - Useful for inspecting deep imports and dependency trees
 
+## Rust Migration Docs
+
+- Primary index: `docs/rust-migration/index.md` (links to PRD, epics, requirements).
+- PRD: `docs/rust-migration/prd.md` — goals, scope, rollout, risks, milestones.
+- Epics/Stories: `docs/rust-migration/epics.md` — ticket-ready breakdown of workstreams.
+- Requirements: `docs/rust-migration/requirements.md` — functional/non-functional requirements and success criteria.
+- Key source references for migration:
+  - JS orchestrator/CLI: `packages/core/core/src/Atlaspack.ts`, `packages/core/cli/src/cli.ts`, `packages/core/core/src/RequestTracker.ts`, `packages/core/core/src/worker.ts`.
+  - Rust engine/bindings: `crates/atlaspack`, `crates/atlaspack_core`, `crates/node-bindings`, loader `packages/core/rust/index.js`.
+  - Pipelines/config: `packages/configs/default/index.json`.
+  - Cache/sourcemaps: `crates/lmdb-js-lite`, `crates/atlaspack_sourcemap`, `packages/core/source-map/`.
+  - Existing docs to consult: scope hoisting/symbol propagation (`docs/Scopehoisting*.md`, `docs/Symbol Propagation.md`), bundling (`docs/DefaultBundler.md`, `docs/ManualBundling.md`, `docs/Deferring.md`, `docs/BundlerExamples.md`), CLI (`docs/cli/README.md`, `docs/cli/build-commands.md`, `docs/cli/environment-variables.md`), testing/CI (`docs/debugging-tests.md`, `docs/Continuous Integration/Native Binary Builds.md`).
+
 ## Feature Flags
 
 Atlaspack uses runtime and compile-time feature flags for gradual rollouts:
