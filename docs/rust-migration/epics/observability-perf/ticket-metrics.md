@@ -8,7 +8,7 @@ Emit structured metrics for Rust engine and dual-run harness and surface them on
 
 - Add spans/counters for FFI latency, scheduler stages, cache hits/misses, watch latency, bundle counts.
 - Normalize labels (engine=js|rust, fixture, stage) for comparison.
-- Provide optional JSON/JSONL export alongside parity artifacts; integration can ingest to dashboards. No dashboard wiring in this repo.
+- Provide optional JSON/JSONL export alongside parity artifacts; integration can ingest to dashboards. No dashboard wiring in this repo; document file paths/commands.
 
 ## Acceptance Criteria
 

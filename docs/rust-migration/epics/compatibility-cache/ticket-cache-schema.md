@@ -14,4 +14,4 @@ Document and enforce cache schema versioning with safe migration or invalidation
 
 - Schema version documented and emitted in cache metadata.
 - On mismatch, build either migrates safely or invalidates; no silent corruption.
-- CI guardrails fail on unintended schema changes.
+- Guardrails/tests fail on unintended schema changes; document commands/paths for integration CI to run.

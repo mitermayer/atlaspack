@@ -10,7 +10,7 @@ Define and maintain fixtures plus diff tolerances to exercise critical behaviors
 - Add minimal new fixtures only if gaps exist; document each fixture’s intent and owner.
 - Define diff tolerances: source-map path/VLQ normalization, log ordering tolerance, acceptable timestamp/path differences, optional hash ignore lists for non-deterministic assets.
 - Publish fixture catalog and tolerance rules consumed by the harness (machine-readable) so integration CI can reuse directly.
-- Identify smoke vs full subsets with runtime budgets for downstream scheduling; no CI wiring here.
+- Identify smoke vs full subsets with runtime budgets for downstream scheduling; document commands/paths for integration CI (no wiring here).
 
 ## Acceptance Criteria
 

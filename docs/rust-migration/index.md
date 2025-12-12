@@ -7,9 +7,11 @@ This directory tracks the product requirements, epics, stories, and references f
 - [PRD](./prd.md) — background, goals, scope, milestones, risks.
 - [Epics and Stories](./epics.md) — execution breakdown per workstream.
 - [Requirements](./requirements.md) — functional and non-functional requirements plus success metrics.
+- [Testing Plan](./testing-plan.md) — JS-baseline TDD strategy, artifacts, and integration hand-off.
 
 ## Epics and Tickets
 
+- Epic 0: JS Baseline Tests: `./epics/epic-0-baseline-tests/`
 - Parity Baseline & Dual-Run: `./epics/parity-dual-run/`
 - Rust Core Orchestrator: `./epics/rust-core-orchestrator/`
 - Pipeline Scheduler & Plugin Host: `./epics/pipeline-scheduler-plugin-host/`

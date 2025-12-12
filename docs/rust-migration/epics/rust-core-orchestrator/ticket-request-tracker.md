@@ -10,6 +10,7 @@ Implement RequestTracker and task scheduler in Rust with deterministic ordering 
 - Preserve deterministic ordering; add property tests comparing JS vs Rust schedules on fixtures.
 - Expose opaque handles/APIs to JS shim for backwards compatibility.
 - Add tracing to surface ordering/invalidation decisions for debugging.
+- Provide commands/paths for record/replay tests so integration CI can run them.
 
 ## Acceptance Criteria
 

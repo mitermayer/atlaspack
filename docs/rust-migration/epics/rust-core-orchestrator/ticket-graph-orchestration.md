@@ -10,9 +10,10 @@ Host AssetGraph and BundleGraph orchestration in Rust, preserving shapes, IDs, a
 - Add canonical serialization for graphs to JSON for parity diffing.
 - Golden snapshots for core fixtures; enforce parity in CI (via dual-run harness outputs).
 - Provide JS shim bindings to query graph shape where needed.
+- Document commands/paths for graph parity tests so integration CI can run them.
 
 ## Acceptance Criteria
 
 - Graph diffs clean across fixtures (node/edge counts, IDs, labels).
-- Serialization stable and consumed by dual-run harness; CI fails on drift.
+- Serialization stable and consumed by dual-run harness; tests fail on drift (integration CI can enforce).
 - Shim API covers existing JS consumers without widening surface area.

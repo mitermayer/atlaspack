@@ -8,7 +8,7 @@ Ensure the dual-run harness emits deterministic artifacts and telemetry that int
 
 - Define artifact layout: `.parcel-cache/parity/<engine>/<fixture>/` containing bundles, graphs, diagnostics, source maps, and a `summary.json` with status, hashes, diffs, timings, memory (if available).
 - Document schema for `summary.json` (fields, types, units) and any tolerance rules applied during diffing.
-- Provide optional JSONL stream for per-fixture events/metrics; ensure stable field names for downstream ingestion.
+- Provide optional JSONL stream for per-fixture events/metrics; ensure stable field names for downstream ingestion by integration CI.
 - Document how to invoke dual-run locally with flags/env and where artifacts are written.
 
 ## Acceptance Criteria

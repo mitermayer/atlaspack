@@ -14,5 +14,5 @@ Define and enforce a versioned ABI/IDL for plugin RPC between Rust scheduler and
 ## Acceptance Criteria
 
 - ABI/IDL published in repo; version check enforced at runtime.
-- Conformance tests pass in CI; fuzz/roundtrip tests for encoders.
+- Conformance tests pass locally and can be run by integration CI; fuzz/roundtrip tests for encoders.
 - Bridge and plugins fail fast with clear errors on version mismatch.

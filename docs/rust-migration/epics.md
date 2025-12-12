@@ -1,6 +1,10 @@
 # Epics and Stories
 
-Details: see per-epic folders under `docs/rust-migration/epics/<epic>/` (indexed in `docs/rust-migration/index.md`). CI/dual-run wiring and alerting are handled by integration; this project provides flags, artifacts, schemas, and docs for them to consume.
+Details: see per-epic folders under `docs/rust-migration/epics/<epic>/` (indexed in `docs/rust-migration/index.md`). CI/dual-run wiring and alerting are handled by integration; this project provides flags, artifacts, schemas, and docs for them to consume. Start with Epic 0 (baseline tests) below.
+
+## Epic 0: JS Baseline Test Scaffolding
+
+- Story: Create shared normalization/utils and first smoke tests (dual-run, request/invalidation) on JS engine with stable artifacts. See `docs/rust-migration/epics/epic-0-baseline-tests/`.
 
 ## Epic: Parity Baseline and Dual-Run Harness
 

@@ -10,6 +10,7 @@ Match JS diagnostics (codes, messages, hints, file/loc) when running under the R
 - Add fixture-based comparisons for common error cases (syntax errors, missing deps, config errors, transformer errors).
 - Ensure stack/source locations and code frames are consistent; handle path normalization.
 - Provide guardrails for log ordering tolerance while preserving message content.
+- Document commands/paths for diagnostic parity tests so integration CI can run them.
 
 ## Acceptance Criteria
 

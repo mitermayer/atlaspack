@@ -14,4 +14,4 @@ Implement Rust-side watcher adapter that mirrors JS debounce and event sequencin
 
 - Trace comparisons pass on Linux/macOS (and Windows if supported) for add/change/delete edits.
 - No duplicate or dropped events relative to JS baseline on fixtures.
-- Debounce settings documented; regression test provided for integration CI to run.
+- Debounce settings documented; regression test provided with command/path for integration CI to run.

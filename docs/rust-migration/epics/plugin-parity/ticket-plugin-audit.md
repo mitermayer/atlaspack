@@ -12,6 +12,6 @@ Inventory JS-only plugins, assess risk, and prioritize porting or shimming for R
 
 ## Acceptance Criteria
 
-- Published plugin list with status/owner/ETA and risk notes.
+- Published plugin list with status/owner/ETA and risk notes, including whether integration CI coverage is needed.
 - Decisions documented for each plugin (port/shim/deprecate) and linked to tickets.
-- Review completed with stakeholders; list consumed by CI contract planning.
+- Review completed with stakeholders; list consumed by contract planning and integration CI targeting.
