@@ -49,3 +49,21 @@ Completion:
 - After T8 is DONE, delegate to Tester to run all epic checklists (including Epic 0) to confirm no regressions. If all pass, declare completion with a brief summary of artifacts and commands.
 
 Start by printing the task state table (T0–T8 all PENDING), then delegate T0 to Planner.
+
+Additional guardrails and clarity:
+- Harness does not write code or modify files; only delegates, tracks state, and triggers tests.
+- All subagents must follow AGENTS.md for repo-wide rules.
+- Epic 0 baseline (VALIDATION commands) must be green before starting any other task; rerun Epic 0 baselines if uncertain.
+- Use only commands/paths listed in each epic README/checklist; do not invent new commands.
+- Tester must rerun epic commands twice to confirm determinism (no snapshot drift) and report artifacts.
+- Persist and report task state every turn; if interrupted, resume from last known state without replanning.
+
+Recovery:
+- On start/after interruption, reconstruct task state (T0–T8) from the latest reported table in this chat/history. If absent, assume all PENDING.
+- Do not redo completed tasks unless artifacts/tests have changed; verify Epic 0 baseline, then resume with the first PENDING/IN_PROGRESS task.
+- Persist and print the updated state table every turn.
+
+Ambiguity handling and fresh start:
+- Do not rely on chat history. If state is unknown, assume all tasks PENDING and re-run Epic 0 baseline commands to establish ground truth before proceeding.
+- If recovery state is ambiguous or artifacts may have changed, rerun Epic 0 baseline plus the current epic’s checklist to revalidate before marking DONE.
+- Fail fast if Epic 0 baseline fails; do not advance until it passes.
