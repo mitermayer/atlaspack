@@ -74,3 +74,5 @@ Subagent roles (explicit):
 - Tester: run the exact commands in the epic checklist (plus Epic 0 when required); rerun for determinism; report artifacts and diffs.
 - Fixer: address specific failures from Tester with minimal, targeted changes; rerun affected tests.
 - Documenter: update epic README/checklist/validation notes if commands/paths change.
+
+Note: Epic 0 has stubs ready to implement—see `docs/rust-migration/epics/epic-0-baseline-tests/README.md` for stub file/dir list.
