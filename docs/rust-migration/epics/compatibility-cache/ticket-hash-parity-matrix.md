@@ -7,11 +7,11 @@ Validate bundle/asset/source-map hash parity across OS/arch/Node matrix for JS v
 ## Tasks
 
 - Define matrix (OS/arch/Node versions) and fixture subset for hashing.
-- Automate runs and hash capture; normalize paths/line endings where appropriate.
-- Report tolerated differences; fail on unexpected hash drift.
+- Automate runs and hash capture; normalize paths/line endings where appropriate; outputs consumable by integration CI.
+- Report tolerated differences; fail on unexpected hash drift when tests are run.
 
 ## Acceptance Criteria
 
-- Matrix job produces hash reports per platform; unexpected drift fails CI.
+- Matrix run produces hash reports per platform; unexpected drift fails the test run (integration CI can enforce).
 - Normalization rules documented; tolerated differences reviewed/approved.
-- Reports accessible from CI artifacts; developers can reproduce locally.
+- Reports are written to predictable locations; developers can reproduce locally.

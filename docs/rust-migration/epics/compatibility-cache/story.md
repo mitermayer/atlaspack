@@ -13,8 +13,8 @@ Maintain cache integrity, compatibility across platforms, and provide WASM fallb
 ## Acceptance Criteria
 
 - Schema/versioning documented; mismatches handled safely with clear messaging.
-- Matrix tests cover hash parity and report tolerated differences.
-- WASM path tested with functional/perf expectations documented.
+- Hash parity matrix and tolerated differences documented; outputs consumable by integration CI (no wiring here).
+- WASM path tested with functional/perf expectations documented; guidance for integration on when to run it.
 
 ## Links
 

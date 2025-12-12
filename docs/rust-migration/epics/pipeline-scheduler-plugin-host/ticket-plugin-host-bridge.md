@@ -14,5 +14,5 @@ Provide a stable bridge to run existing JS plugins from the Rust pipeline with l
 ## Acceptance Criteria
 
 - JS plugins execute via bridge with no code changes on fixture set.
-- Backpressure/timeout handling verified in tests; no hangs under load.
+- Backpressure/timeout handling verified in tests; no hangs under load (tests runnable by integration CI).
 - Errors are structured, typed, and mapped to diagnostics; logs captured with ordering tolerance.

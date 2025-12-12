@@ -1,19 +1,18 @@
-# Ticket: Wire CI and Telemetry for Dual-Run Parity
+# Ticket: Parity Artifacts and Telemetry Contract (Integration CI Owned)
 
 ## Objective
 
-Add CI jobs and telemetry to run the dual engine harness, publish results, and alert on regressions.
+Ensure the dual-run harness emits deterministic artifacts and telemetry that integration-owned CI can consume. CI wiring and alerting are out of scope for this project.
 
 ## Tasks
 
-- Add CI jobs: `parity-smoke` (PR) and `parity-full` (nightly) invoking dual-run with appropriate fixture subsets; shard if needed.
-- Upload diff reports/artifacts; make them easy to inspect (e.g., CI artifacts with index HTML/JSON summary).
-- Record metrics per fixture: pass/fail reason, bundle/hash/graph/diag status, cold/warm timings, memory if available.
-- Add alerting thresholds for repeated parity failures or harness breakages; document how to rerun locally.
+- Define artifact layout: `.parcel-cache/parity/<engine>/<fixture>/` containing bundles, graphs, diagnostics, source maps, and a `summary.json` with status, hashes, diffs, timings, memory (if available).
+- Document schema for `summary.json` (fields, types, units) and any tolerance rules applied during diffing.
+- Provide optional JSONL stream for per-fixture events/metrics; ensure stable field names for downstream ingestion.
+- Document how to invoke dual-run locally with flags/env and where artifacts are written.
 
 ## Acceptance Criteria
 
-- CI surfaces pass/fail with links to parity artifacts; failures block per policy.
-- Smoke job runtime within budget; full job scheduled, not blocking PRs.
-- Telemetry JSON lines emitted for each fixture and consumable by dashboards.
-- Docs updated in `docs/rust-migration/index.md` or harness README with instructions to run/reproduce.
+- Dual-run writes artifacts and `summary.json` per fixture with a stable schema; exits non-zero on diffs.
+- Tolerance rules and normalization steps are documented alongside the schema.
+- Instructions for running locally and interpreting artifacts are published; no CI job changes required in this repo.

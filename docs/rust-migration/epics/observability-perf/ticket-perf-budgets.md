@@ -7,11 +7,11 @@ Enforce cold/warm timing and memory budgets for Rust vs JS in CI without excessi
 ## Tasks
 
 - Define benchmark fixture set and measurement protocol (iterations, warmups, environment normalization).
-- Add CI job that measures JS and Rust engines; compute deltas vs baseline; set tolerances.
-- Provide smoke (fast) and full (slow) modes; shard if needed.
+- Implement measurement hooks and outputs (JSON/JSONL) for timings/memory; no CI job wiring in this repo.
+- Provide smoke (fast) and full (slow) fixture sets and expected runtime budgets for integration to schedule.
 
 ## Acceptance Criteria
 
-- CI job reports timings/memory with pass/fail per budget; clear messaging on regressions.
-- Flake mitigation in place (retries or statistical thresholds); job time within budget.
-- Baselines documented; updates require review.
+- Measurement outputs written with stable schema and budgets documented; integration can consume and enforce.
+- Flake mitigation guidance documented (iterations/warmups) though enforcement is external.
+- Baselines and update rules documented; no CI job changes here.

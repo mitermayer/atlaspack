@@ -14,4 +14,4 @@ Ensure dirty-set computation and incremental rebuild behavior match the JS engin
 
 - Dual-run shows identical dirty sets and rebuilt assets/bundles on fixture sequences.
 - No unexpected cache invalidations or missed updates; logs support debugging.
-- CI test for incremental parity passes on curated edit scripts.
+- Regression test for incremental parity provided for integration CI to run on curated edit scripts.

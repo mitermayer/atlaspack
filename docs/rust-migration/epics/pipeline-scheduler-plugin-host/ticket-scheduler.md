@@ -14,5 +14,5 @@ Implement pipeline scheduling in Rust covering resolver → transformers → bun
 ## Acceptance Criteria
 
 - Deterministic stage order and outputs on fixture suite; dual-run shows no stage-level drift.
-- Timing metrics emitted per stage; optional perf logging without affecting determinism.
+- Timing metrics emitted per stage; optional perf logging without affecting determinism; outputs consumable by integration CI.
 - Scheduler configurable for smoke vs full runs (parallelism, timeouts).

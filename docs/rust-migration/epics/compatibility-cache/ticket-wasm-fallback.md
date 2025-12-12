@@ -12,6 +12,6 @@ Validate and document WASM fallback for environments without native builds.
 
 ## Acceptance Criteria
 
-- WASM CI lane green on targeted environments; failures actionable.
+- WASM path verified on targeted environments (integration CI can run the lane); failures actionable.
 - Functional parity on smoke fixtures; perf expectations documented (may be slower).
 - Loader messages clear when selecting WASM; guidance included in docs.

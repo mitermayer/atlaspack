@@ -7,8 +7,8 @@ Inventory JS-only plugins, assess risk, and prioritize porting or shimming for R
 ## Tasks
 
 - Enumerate JS-only plugins and their usage (internal/external); capture owners and criticality.
-- Determine whether to port to Rust, shim via host bridge, or deprecate.
-- Produce ranked plan with ETA and risks; align with rollout phases.
+- Determine whether to port to Rust, shim via host bridge, or deprecate; note whether integration CI coverage is needed for each.
+- Produce ranked plan with ETA and risks; align with rollout phases and integration validation plans.
 
 ## Acceptance Criteria
 

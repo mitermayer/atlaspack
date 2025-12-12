@@ -12,6 +12,6 @@ Wire feature flags for Rust engine selection and validate combinations across CL
 
 ## Acceptance Criteria
 
-- Flag matrix tests green in CI; invalid combos error cleanly.
-- Flags controllable via CLI/env; precedence rules documented.
-- Default remains JS until governance gate changes it.
+- Flags controllable via CLI/env; precedence rules documented; defaults remain JS until governance changes it.
+- Invalid combos error cleanly with actionable messages.
+- Matrix testing guidance documented for integration CI; no CI jobs added here.

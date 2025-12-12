@@ -15,4 +15,4 @@ Wire Rust orchestrator to LMDB cache with versioned keys, detection, and safe in
 
 - On version mismatch, build either migrates or invalidates cleanly with user-visible notice.
 - Hash parity confirmed on fixtures where formats match; exceptions documented.
-- CI guardrails prevent silent schema drift; schema version documented in repo.
+- Guardrails prevent silent schema drift (tests/checks in-repo); integration CI can run them, but no CI wiring here.

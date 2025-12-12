@@ -14,4 +14,4 @@ Match HMR message ordering and runtime injections (React refresh, SW) between JS
 
 - HMR transcript diffs clean on scripted sessions; ordering/content matches baseline.
 - Runtime injections occur at equivalent points; no duplicate or missing messages.
-- Regression tests added for typical HMR flows and error recovery.
+- Regression tests provided for typical HMR flows and error recovery; integration CI can run them.

@@ -7,13 +7,13 @@ Instrument the Rust engine and dual-run harness with metrics and enforce perform
 ## Scope
 
 - Metrics spans around FFI, scheduler stages, cache hits/misses, watch latency.
-- Perf budgets and checks in CI for cold/warm timings and memory.
+- Perf measurements and budgets emitted as JSON/JSONL for integration CI to enforce; no dashboard/CI wiring in this repo.
 - Panic/timeout watchdog with JS fallback and user-visible notice.
 
 ## Acceptance Criteria
 
-- Metrics emitted and viewable on dashboards; sampling documented.
-- CI perf checks with clear thresholds and failure messages; opt-in smoke vs full.
+- Metrics export available with stable schema; sampling documented; integration can ingest to dashboards.
+- Perf measurements (cold/warm/memory) emitted with budgets documented; smoke/full sets identified for downstream scheduling.
 - Watchdog exercised in tests; fallback path works and logs appropriately.
 
 ## Links

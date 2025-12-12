@@ -6,10 +6,10 @@ Add `dual` engine execution that runs JS and Rust back-to-back on a fixture and 
 
 ## Tasks
 
-- Add CLI/env flag plumbing: `--engine=js|rust|dual`, `ATLASPACK_ENGINE`, `ATLASPACK_PARITY_SMOKE`.
-- Implement runner that invokes JS engine then Rust (order configurable), capturing artifacts to `.parcel-cache/parity/<engine>/<fixture>/`.
-- Normalize outputs (paths, line endings) before diffing; serialize bundle/graph/diag summaries to JSON.
-- Emit summary report with per-fixture status and exit non-zero on diff failures.
+- Add CLI/env flag plumbing: `--engine=js|rust|dual`, `ATLASPACK_ENGINE`, `ATLASPACK_PARITY_SMOKE` (or similar), keeping defaults unchanged.
+- Implement runner that invokes JS engine then Rust (order configurable), capturing artifacts to `.parcel-cache/parity/<engine>/<fixture>/` and writing `summary.json`.
+- Normalize outputs (paths, line endings) before diffing; serialize bundle/graph/diag summaries to JSON using the documented schema.
+- Emit summary report with per-fixture status and exit non-zero on diff failures; no CI wiring in this repo.
 
 ## Acceptance Criteria
 
