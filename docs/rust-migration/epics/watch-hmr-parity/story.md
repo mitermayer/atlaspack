@@ -6,7 +6,7 @@ Match JS watch/incremental rebuild and HMR behavior when running the Rust orches
 
 ## Scope
 
-- File watcher adapter with debounce parity per platform (tests runnable locally; integration CI consumes them).
+- File watcher adapter with debounce parity per platform (tests runnable locally; integration CI consumes documented commands/paths).
 - Incremental rebuild dirty-set computation and invalidation parity.
 - HMR message ordering and runtime injections (React refresh, SW) aligned with JS.
 

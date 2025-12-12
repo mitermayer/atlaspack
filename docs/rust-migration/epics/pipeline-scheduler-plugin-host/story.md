@@ -9,13 +9,13 @@ Run the full resolver→transformer→bundler→namer→packager→optimizer→c
 - Rust scheduler orchestrating pipeline stages and workers.
 - JS plugin host bridge (RPC/embed) with lifecycle hooks, streaming, cancellation/backpressure.
 - Contract/IDL for plugin calls with versioning and compatibility checks.
-- Per-plugin-category contract tests against golden outputs.
+- Per-plugin-category contract tests against golden outputs (commands/paths documented for integration CI).
 
 ## Acceptance Criteria
 
 - Rust-driven pipeline produces parity outputs on fixtures; JS plugins run via bridge unchanged.
 - ABI/IDL documented and versioned; compatibility checks enforced at load time.
-- Contract tests per plugin category passing in CI; failures actionable with diffs.
+- Contract tests per plugin category passing; commands/paths documented for integration CI; failures actionable with diffs.
 
 ## Links
 

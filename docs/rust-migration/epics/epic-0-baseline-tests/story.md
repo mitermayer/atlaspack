@@ -6,7 +6,7 @@ Create the initial JS-engine baseline test scaffolding and fixtures that other e
 
 ## Scope
 
-- Establish common fixtures, normalization utilities, and snapshot storage for parity tests.
+- Establish common fixtures, normalization utilities, and snapshot storage for parity tests (create files/dirs listed in README).
 - Add initial high-value baseline tests in two areas: (1) dual-run harness smoke, (2) core request/invalidation parity.
 - Document commands/paths for integration CI to consume; no CI wiring in this repo.
 

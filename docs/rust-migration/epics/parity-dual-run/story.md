@@ -6,7 +6,7 @@ Provide a dual-run mode that executes Atlaspack with JS and Rust engines on the 
 
 ## Scope
 
-- CLI/env flags to select `js|rust|dual` engines.
+- CLI/env flags to select `js|rust|dual` engines (see README for commands).
 - Harness that runs both engines, captures artifacts, and diffs with tolerance rules.
 - Fixture set covering core behaviors (scope hoist, HMR/watch, dynamic import, code splitting, assets, tokens, inline requires, SVG/HTML packaging).
 - Reports stored under `.parcel-cache/parity/<engine>/<fixture>/` with merged diff summary per run; CI wiring handled by integration, not this project.

@@ -355,9 +355,10 @@ Tracing:
 
 ## Rust Migration Docs
 
-- Primary index: `docs/rust-migration/index.md` (links to PRD, epics, requirements).
-- PRD: `docs/rust-migration/prd.md` — goals, scope, rollout, risks, milestones.
-- Epics/Stories: `docs/rust-migration/epics.md` — ticket-ready breakdown of workstreams.
+- Primary index: `docs/rust-migration/index.md` (links to PRD, epics, requirements, testing plan).
+- Epic 0 (start here for tests): `docs/rust-migration/epics/epic-0-baseline-tests/` and validation: `.../VALIDATION.md`.
+- Epics/Stories: `docs/rust-migration/epics.md` — ticket-ready breakdown per epic with per-epic READMEs (commands, paths, checklists).
+- Testing plan: `docs/rust-migration/testing-plan.md` — JS-baseline strategy and commands.
 - Requirements: `docs/rust-migration/requirements.md` — functional/non-functional requirements and success criteria.
 - Key source references for migration:
   - JS orchestrator/CLI: `packages/core/core/src/Atlaspack.ts`, `packages/core/cli/src/cli.ts`, `packages/core/core/src/RequestTracker.ts`, `packages/core/core/src/worker.ts`.

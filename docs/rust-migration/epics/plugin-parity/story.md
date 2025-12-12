@@ -7,13 +7,13 @@ Ensure all supported plugins work under the Rust orchestrator, prioritizing JS-o
 ## Scope
 
 - Audit JS-only plugins and prioritize porting or shimming.
-- Golden tests per plugin (diagnostics, asset metadata, outputs).
+- Golden tests per plugin (diagnostics, asset metadata, outputs) with commands/paths documented for integration CI.
 - Deprecation plan for unsupported JS internals with communicated timelines.
 
 ## Acceptance Criteria
 
 - Tracked list of JS-only plugins with owners/ETA; risk notes captured.
-- Golden tests in CI for each plugin; diffs actionable and reviewed on change.
+- Golden tests for each plugin pass on JS engine; integration CI can run documented commands/paths; diffs actionable and reviewed on change.
 - Deprecation guidance published; timelines and alternatives communicated.
 
 ## Links
