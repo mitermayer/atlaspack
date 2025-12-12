@@ -17,6 +17,7 @@ Contract/golden tests per plugin, JS baseline first. Integration CI consumes com
 - Commands and paths documented; goldens normalized (hashes/paths/timestamps).
 
 ## Before merge (checklist)
+
 - [ ] Run Epic 0 baseline commands
 - [ ] Run plugin parity suite: `yarn test:js:unit --grep "plugin parity"`
 - [ ] Verify goldens in `packages/core/core/test/__fixtures__/plugin-parity/<plugin>/`

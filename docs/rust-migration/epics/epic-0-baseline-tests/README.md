@@ -28,6 +28,7 @@ Purpose: seed shared normalization/utils and first JS-baseline smoke tests so al
 - Commands above documented and exit non-zero on failure.
 
 ## Before merge (checklist)
+
 - [ ] Run baseline utils: `yarn test:js:unit --grep "baseline utils"`
 - [ ] Run dual-smoke: `yarn workspace @atlaspack/examples test --grep "dual-smoke"`
 - [ ] Run request-smoke: `yarn test:js:unit --grep "request smoke"`
@@ -35,6 +36,7 @@ Purpose: seed shared normalization/utils and first JS-baseline smoke tests so al
 - [ ] Confirm determinism (rerun, no snapshot changes)
 
 ## Stubs provided (implement these, do not recreate)
+
 - Utils: `packages/core/core/test/utils/normalize.ts` (suggested API: normalizePaths, stripTimestamps, stableSortKeys)
 - Utils: `packages/core/core/test/utils/artifacts.ts` (suggested API: writeSummary, writeEvents; use normalize helpers)
 - Fixtures: `packages/examples/kitchen-sink/__fixtures__/dual-smoke/` (add tiny JS+CSS with one dynamic import)

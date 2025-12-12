@@ -567,6 +567,7 @@ dependencies = [
  "memory-stats",
  "napi",
  "napi-derive",
+ "parking_lot",
  "serde",
 ]
 

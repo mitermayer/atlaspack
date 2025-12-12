@@ -18,6 +18,7 @@ Use Epic 0 utils; focus on stage ordering, plugin lifecycle, and contracts. Inte
 - Commands documented for integration CI; stage timing outputs (JSON/JSONL) optional but stable.
 
 ## Before merge (checklist)
+
 - [ ] Run Epic 0 baseline commands
 - [ ] Run pipeline hook/order tests: `yarn test:js:unit --grep "plugin pipeline"`
 - [ ] Verify artifacts/logs in `packages/core/core/test/__fixtures__/plugin-pipeline/`

@@ -19,6 +19,7 @@ Focus on flag precedence, CLI/env overrides, and fallback messaging. Integration
 - Commands documented for integration CI.
 
 ## Before merge (checklist)
+
 - [ ] Run Epic 0 baseline commands
 - [ ] Run flag/rollout tests: `yarn test:js:unit --grep "feature flag"` and `--grep "rollout fallback"`
 - [ ] Verify flag fixture outputs `packages/configs/default/test/__fixtures__/flags/`

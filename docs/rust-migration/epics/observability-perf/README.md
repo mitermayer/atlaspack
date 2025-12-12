@@ -19,6 +19,7 @@ Emit metrics/perf data as JSON/JSONL; integration CI ingests.
 - Outputs written to predictable paths; commands provided for integration CI.
 
 ## Before merge (checklist)
+
 - [ ] Run Epic 0 baseline commands
 - [ ] Run telemetry/perf tests: `yarn test:js:unit --grep "telemetry"` and `--grep "perf"`
 - [ ] Verify outputs in `packages/core/core/test/__fixtures__/telemetry/trace.json` and `.../perf/counters.json`

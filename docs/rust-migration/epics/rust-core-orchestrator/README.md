@@ -20,6 +20,7 @@ Focus: request tracker, invalidation, graph orchestration. Build on Epic 0 utils
 - Commands documented for integration CI; artifacts normalized.
 
 ## Before merge (checklist)
+
 - [ ] Run Epic 0 baseline commands
 - [ ] Run request/graph tests: `yarn test:js:unit --grep "request"` and `--grep "graph parity"`
 - [ ] Verify snapshots in `packages/core/core/test/__fixtures__/graph/` and `.../request-smoke/`

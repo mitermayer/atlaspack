@@ -1,0 +1,47 @@
+import assert from 'assert';
+import path from 'path';
+import Atlaspack, {createWorkerFarm} from '../src/Atlaspack';
+import {FILE_CONFIG_NO_REPORTERS} from '@atlaspack/test-utils';
+import fs from 'fs';
+
+const FIXTURE_PATH = path.join(__dirname, '__fixtures__/graph/basic');
+const SNAPSHOT_PATH = path.join(__dirname, '__fixtures__/perf/counters.json');
+
+describe('Performance Counters', function () {
+  this.timeout(75000);
+  let workerFarm;
+
+  beforeEach(() => {
+    workerFarm = createWorkerFarm();
+  });
+
+  afterEach(() => {
+    workerFarm.end();
+  });
+
+  it('should return performance metrics in build result', async () => {
+    let atlaspack = new Atlaspack({
+      entries: [path.join(FIXTURE_PATH, 'index.js')],
+      workerFarm,
+      shouldDisableCache: true,
+      mode: 'production',
+      logLevel: 'warn',
+      defaultConfig: FILE_CONFIG_NO_REPORTERS,
+    });
+
+    let result = await atlaspack.run();
+
+    assert.equal(result.type, 'buildSuccess');
+    if (result.type === 'buildSuccess') {
+      assert(typeof result.buildTime === 'number');
+      assert(result.unstable_requestStats);
+
+      const snapshot = {
+        hasBuildTime: true,
+        requestStatsKeys: Object.keys(result.unstable_requestStats).sort(),
+      };
+
+      fs.writeFileSync(SNAPSHOT_PATH, JSON.stringify(snapshot, null, 2));
+    }
+  });
+});

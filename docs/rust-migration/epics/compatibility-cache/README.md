@@ -19,6 +19,7 @@ Focus on cache schema/versioning, invalidate/reuse behavior, and hash parity out
 - Hash-parity outputs generated with normalization; commands provided for integration CI.
 
 ## Before merge (checklist)
+
 - [ ] Run Epic 0 baseline commands
 - [ ] Run cache tests: `yarn test:js:unit --grep "cache"` and `--grep "cache invalidation"`
 - [ ] Verify fixtures in `packages/core/core/test/__fixtures__/cache/`

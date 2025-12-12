@@ -19,6 +19,7 @@ Reuse Epic 0 utils; aim for deterministic traces.
 - Commands documented for integration CI.
 
 ## Before merge (checklist)
+
 - [ ] Run Epic 0 baseline commands
 - [ ] Run watch/HMR tests: `yarn workspace @atlaspack/examples test --grep "watch hmr"`
 - [ ] Verify HMR trace fixtures `packages/examples/kitchen-sink/__fixtures__/hmr/events.json`
