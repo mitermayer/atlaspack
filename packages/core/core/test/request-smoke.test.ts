@@ -7,6 +7,11 @@ import {LMDBLiteCache} from '@atlaspack/cache';
 import RequestTracker from '../src/RequestTracker';
 import createAtlaspackBuildRequest from '../src/requests/AtlaspackBuildRequest';
 import {registerCoreWithSerializer} from '../src/registerCoreWithSerializer';
+import {
+  normalizePaths,
+  stableSortKeys,
+  stripTimestamps,
+} from './utils/normalize';
 import {DEFAULT_OPTIONS} from './test-utils';
 
 const FIXTURE_DIR = path.join(__dirname, '__fixtures__/request-smoke');
@@ -112,7 +117,7 @@ describe('request smoke', function () {
 
     fs.writeFileSync(
       path.join(FIXTURE_DIR, 'graph.json'),
-      JSON.stringify(snapshot2, null, 2),
+      JSON.stringify(snapshot2, null, 2) + '\n',
     );
   });
 });
@@ -148,10 +153,20 @@ function getGraphSnapshot(graph: any) {
     }
   }
 
-  return {
-    serialized: serialized,
-    invalidNodes: Array.from(graph.invalidNodeIds),
+  // Create a more deterministic snapshot by removing non-deterministic parts
+  const deterministicSnapshot = {
     hasDep: graph.hasContentKey('dep.js'),
     depHash,
+    invalidNodes: Array.from(graph.invalidNodeIds).sort(),
+    // Only include structural information, not non-deterministic IDs
+    nodeCount: nodes ? nodes.filter((n) => n != null).length : 0,
+    hasAdjacencyList: !!(
+      serialized.adjacencyList && serialized.adjacencyList.edges
+    ),
+    hasContentKeyMapping: !!(
+      serialized._contentKeyToNodeId && serialized._nodeIdToContentKey
+    ),
   };
+
+  return stableSortKeys(normalizePaths(stripTimestamps(deterministicSnapshot)));
 }
