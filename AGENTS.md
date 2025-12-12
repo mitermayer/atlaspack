@@ -367,6 +367,10 @@ Tracing:
   - Cache/sourcemaps: `crates/lmdb-js-lite`, `crates/atlaspack_sourcemap`, `packages/core/source-map/`.
   - Existing docs to consult: scope hoisting/symbol propagation (`docs/Scopehoisting*.md`, `docs/Symbol Propagation.md`), bundling (`docs/DefaultBundler.md`, `docs/ManualBundling.md`, `docs/Deferring.md`, `docs/BundlerExamples.md`), CLI (`docs/cli/README.md`, `docs/cli/build-commands.md`, `docs/cli/environment-variables.md`), testing/CI (`docs/debugging-tests.md`, `docs/Continuous Integration/Native Binary Builds.md`).
 
+### Harness Trigger
+
+- To kick off the migration orchestration harness, load and follow `docs/rust-migration/prompt_harness.txt`. A simple trigger command for agents: `start-workflow`.
+
 ## Feature Flags
 
 Atlaspack uses runtime and compile-time feature flags for gradual rollouts:

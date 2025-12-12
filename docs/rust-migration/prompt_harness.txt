@@ -67,3 +67,10 @@ Ambiguity handling and fresh start:
 - Do not rely on chat history. If state is unknown, assume all tasks PENDING and re-run Epic 0 baseline commands to establish ground truth before proceeding.
 - If recovery state is ambiguous or artifacts may have changed, rerun Epic 0 baseline plus the current epic’s checklist to revalidate before marking DONE.
 - Fail fast if Epic 0 baseline fails; do not advance until it passes.
+
+Subagent roles (explicit):
+- Planner: break down the current task; list files/fixtures/commands per epic README/checklist; align with Epic 0 baseline if needed.
+- Coder: implement tests/fixtures/utils per plan; no unrelated refactors; reuse normalization utils; keep JS baseline passing.
+- Tester: run the exact commands in the epic checklist (plus Epic 0 when required); rerun for determinism; report artifacts and diffs.
+- Fixer: address specific failures from Tester with minimal, targeted changes; rerun affected tests.
+- Documenter: update epic README/checklist/validation notes if commands/paths change.
