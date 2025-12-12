@@ -2,6 +2,8 @@ import assert from 'assert';
 import path from 'path';
 import fs from 'fs';
 import Atlaspack, {createWorkerFarm} from '../src/Atlaspack';
+import {writeSummary, writeEvents} from './utils/artifacts';
+import tempy from 'tempy';
 
 const FIXTURE_PATH = path.join(__dirname, '__fixtures__/plugin-pipeline');
 
@@ -23,6 +25,9 @@ describe('plugin pipeline', function () {
       fs.unlinkSync(logFile);
     }
 
+    const artifactDir = tempy.directory();
+    const events: any[] = [];
+
     let atlaspack = new Atlaspack({
       entries: [path.join(FIXTURE_PATH, 'index.js')],
       projectRoot: FIXTURE_PATH,
@@ -31,9 +36,20 @@ describe('plugin pipeline', function () {
       shouldDisableCache: true,
       shouldPatchConsole: true,
       logLevel: 'info',
+      reporters: [
+        {
+          report({event}) {
+            events.push(event);
+          },
+        },
+      ],
     });
 
-    await atlaspack.run();
+    const result = await atlaspack.run();
+
+    // Write artifacts for analysis
+    writeSummary(result, path.join(artifactDir, 'summary.json'));
+    writeEvents(events, path.join(artifactDir, 'events.json'));
 
     const logs = fs.readFileSync(logFile, 'utf8').trim().split('\n');
 
@@ -82,5 +98,18 @@ describe('plugin pipeline', function () {
       optimizingIndex < successIndex,
       'Optimizing should happen before success',
     );
+
+    // Verify artifacts were created
+    assert(
+      fs.existsSync(path.join(artifactDir, 'summary.json')),
+      'Summary artifact should exist',
+    );
+    assert(
+      fs.existsSync(path.join(artifactDir, 'events.json')),
+      'Events artifact should exist',
+    );
+
+    // Clean up
+    fs.rmSync(artifactDir, {recursive: true, force: true});
   });
 });

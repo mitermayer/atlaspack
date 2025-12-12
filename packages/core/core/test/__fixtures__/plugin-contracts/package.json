@@ -1,0 +1,8 @@
+{
+  "name": "plugin-contracts",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "devDependencies": {
+    "@atlaspack/core": "*"
+  }
+}

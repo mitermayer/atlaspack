@@ -1,20 +1,53 @@
 import path from 'path';
 import Atlaspack from '../../src/Atlaspack';
 import {writeSummary} from './artifacts';
+import {compareBuilds} from './diff';
+import {generateParityReport} from './parity-reporter';
 
 const PROJECT_ROOT = path.resolve(__dirname, '../../../../../');
 
+export interface ParityOptions {
+  entry?: string;
+  mode?: 'development' | 'production';
+  compareOutputs?: boolean;
+}
+
+export interface BuildResult {
+  engine: string;
+  fixtureName: string;
+  bundleGraph: any;
+  buildTime: number;
+  bundles: Array<{
+    filePath: string;
+    type: string;
+    id: string;
+  }>;
+  outputDir: string;
+}
+
 export async function runParityBuild(
   fixturePath: string,
-  options: {entry?: string} = {},
-) {
+  options: ParityOptions = {},
+): Promise<{
+  jsResult?: BuildResult;
+  rustResult?: BuildResult;
+  comparison?: any;
+}> {
   const engineEnv = process.env.ATLASPACK_ENGINE || 'js';
   const engines = engineEnv === 'dual' ? ['js', 'rust'] : [engineEnv];
   const fixtureName = path.basename(fixturePath);
 
+  const results: Record<string, BuildResult> = {};
+
   for (const engine of engines) {
     try {
-      await runSingleBuild(engine, fixturePath, fixtureName, options);
+      const result = await runSingleBuild(
+        engine,
+        fixturePath,
+        fixtureName,
+        options,
+      );
+      results[engine] = result;
     } catch (err) {
       if (engine === 'rust') {
         // eslint-disable-next-line no-console
@@ -27,14 +60,35 @@ export async function runParityBuild(
       }
     }
   }
+
+  // If running in dual mode and both engines succeeded, compare results
+  if (
+    engineEnv === 'dual' &&
+    results.js &&
+    results.rust &&
+    options.compareOutputs !== false
+  ) {
+    const comparison = compareBuilds(results.js, results.rust);
+    generateParityReport(fixtureName, results.js, results.rust, comparison);
+    return {
+      jsResult: results.js,
+      rustResult: results.rust,
+      comparison,
+    };
+  }
+
+  return {
+    jsResult: results.js,
+    rustResult: results.rust,
+  };
 }
 
 async function runSingleBuild(
   engine: string,
   fixturePath: string,
   fixtureName: string,
-  options: {entry?: string},
-) {
+  options: ParityOptions,
+): Promise<BuildResult> {
   const entry = options.entry || 'index.js';
   const entryPath = path.join(fixturePath, entry);
   const outputDir = path.join(
@@ -46,7 +100,7 @@ async function runSingleBuild(
 
   const atlaspack = new Atlaspack({
     entries: entryPath,
-    mode: 'production',
+    mode: options.mode || 'production',
     shouldDisableCache: true,
     defaultConfig: '@atlaspack/config-default',
     defaultTargetOptions: {
@@ -79,4 +133,13 @@ async function runSingleBuild(
     },
     summaryPath,
   );
+
+  return {
+    engine,
+    fixtureName,
+    bundleGraph,
+    buildTime,
+    bundles,
+    outputDir,
+  };
 }

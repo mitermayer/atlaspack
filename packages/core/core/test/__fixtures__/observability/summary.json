@@ -1,0 +1,20 @@
+{
+  "buildTime": 0,
+  "hasBuildTime": true,
+  "hasRequestStats": true,
+  "requestStatsKeys": [
+    "asset_graph_request",
+    "asset_request",
+    "atlaspack_build_request",
+    "atlaspack_config_request",
+    "bundle_graph_request",
+    "config_request",
+    "dev_dep_request",
+    "entry_request",
+    "package_request",
+    "path_request",
+    "target_request",
+    "write_bundle_request",
+    "write_bundles_request"
+  ]
+}

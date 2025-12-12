@@ -1,212 +1,182 @@
 [
   {
-    "type": "trace",
-    "name": "./plugins/reporter-log.js",
-    "categories": ["reporter"]
+    "categories": ["reporter"],
+    "name": "@atlaspack/reporter-dev-server",
+    "type": "trace"
   },
   {
-    "type": "trace",
-    "name": "./plugins/reporter-log.js",
-    "categories": ["reporter"]
+    "categories": ["reporter"],
+    "name": "@atlaspack/reporter-dev-server",
+    "type": "trace"
   },
   {
-    "type": "trace",
-    "name": "@atlaspack/bundler-default",
+    "args": {
+      "name": "<ROOT>/packages/core/core/test/__fixtures__/graph/basic/index.js"
+    },
+    "categories": ["resolve"],
+    "name": "@atlaspack/resolver-default",
+    "type": "trace"
+  },
+  {
+    "categories": ["reporter"],
+    "name": "@atlaspack/reporter-dev-server",
+    "type": "trace"
+  },
+  {
+    "categories": ["reporter"],
+    "name": "@atlaspack/reporter-dev-server",
+    "type": "trace"
+  },
+  {
+    "args": {
+      "name": "./dep"
+    },
+    "categories": ["resolve"],
+    "name": "@atlaspack/resolver-default",
+    "type": "trace"
+  },
+  {
+    "categories": ["reporter"],
+    "name": "@atlaspack/reporter-dev-server",
+    "type": "trace"
+  },
+  {
+    "categories": ["reporter"],
+    "name": "@atlaspack/reporter-dev-server",
+    "type": "trace"
+  },
+  {
+    "categories": ["Core"],
+    "name": "building",
+    "type": "trace"
+  },
+  {
+    "categories": ["reporter"],
+    "name": "@atlaspack/reporter-dev-server",
+    "type": "trace"
+  },
+  {
+    "args": {
+      "name": "packages/core/core/test/__fixtures__/graph/basic/index.js"
+    },
     "categories": ["bundle:@atlaspack/bundler-default:bundling:bundle"],
-    "args": {
-      "name": "packages/core/core/test/__fixtures__/graph/basic/index.js"
-    }
-  },
-  {
-    "type": "trace",
     "name": "@atlaspack/bundler-default",
-    "categories": ["bundle:@atlaspack/bundler-default:bundling:optimize"],
+    "type": "trace"
+  },
+  {
     "args": {
       "name": "packages/core/core/test/__fixtures__/graph/basic/index.js"
-    }
+    },
+    "categories": ["bundle:@atlaspack/bundler-default:bundling:optimize"],
+    "name": "@atlaspack/bundler-default",
+    "type": "trace"
   },
   {
-    "type": "trace",
-    "name": "@atlaspack/compressor-raw",
-    "categories": ["compress"],
-    "args": {
-      "name": "dist/index.js"
-    }
-  },
-  {
-    "type": "trace",
-    "name": "@atlaspack/compressor-raw",
-    "categories": ["compress"],
-    "args": {
-      "name": "dist/index.js.map"
-    }
-  },
-  {
-    "type": "trace",
-    "name": "@atlaspack/namer-default",
-    "categories": ["namer"],
     "args": {
       "name": "02889cdfa77b0ee0"
-    }
+    },
+    "categories": ["namer"],
+    "name": "@atlaspack/namer-default",
+    "type": "trace"
   },
   {
-    "type": "trace",
-    "name": "@atlaspack/optimizer-swc",
-    "categories": ["optimize"],
     "args": {
       "name": "index.js"
-    }
+    },
+    "categories": ["applyRuntime"],
+    "name": "@atlaspack/runtime-js",
+    "type": "trace"
   },
   {
-    "type": "trace",
-    "name": "@atlaspack/packager-js",
-    "categories": ["packaging"],
+    "args": {
+      "name": "index.js"
+    },
+    "categories": ["applyRuntime"],
+    "name": "@atlaspack/runtime-browser-hmr",
+    "type": "trace"
+  },
+  {
+    "args": {
+      "name": "index.js"
+    },
+    "categories": ["applyRuntime"],
+    "name": "@atlaspack/runtime-react-refresh",
+    "type": "trace"
+  },
+  {
+    "args": {
+      "name": "index.js"
+    },
+    "categories": ["applyRuntime"],
+    "name": "@atlaspack/runtime-service-worker",
+    "type": "trace"
+  },
+  {
+    "categories": ["reporter"],
+    "name": "@atlaspack/reporter-dev-server",
+    "type": "trace"
+  },
+  {
+    "categories": ["Core"],
+    "name": "bundling",
+    "type": "trace"
+  },
+  {
+    "categories": ["reporter"],
+    "name": "@atlaspack/reporter-dev-server",
+    "type": "trace"
+  },
+  {
+    "categories": ["reporter"],
+    "name": "@atlaspack/reporter-dev-server",
+    "type": "trace"
+  },
+  {
     "args": {
       "name": "index.js",
       "type": "js"
-    }
+    },
+    "categories": ["packaging"],
+    "name": "@atlaspack/packager-js",
+    "type": "trace"
   },
   {
-    "type": "trace",
+    "categories": ["reporter"],
     "name": "@atlaspack/reporter-dev-server",
-    "categories": ["reporter"]
+    "type": "trace"
   },
   {
-    "type": "trace",
-    "name": "@atlaspack/reporter-dev-server",
-    "categories": ["reporter"]
-  },
-  {
-    "type": "trace",
-    "name": "@atlaspack/reporter-dev-server",
-    "categories": ["reporter"]
-  },
-  {
-    "type": "trace",
-    "name": "@atlaspack/reporter-dev-server",
-    "categories": ["reporter"]
-  },
-  {
-    "type": "trace",
-    "name": "@atlaspack/reporter-dev-server",
-    "categories": ["reporter"]
-  },
-  {
-    "type": "trace",
-    "name": "@atlaspack/reporter-dev-server",
-    "categories": ["reporter"]
-  },
-  {
-    "type": "trace",
-    "name": "@atlaspack/reporter-dev-server",
-    "categories": ["reporter"]
-  },
-  {
-    "type": "trace",
-    "name": "@atlaspack/reporter-dev-server",
-    "categories": ["reporter"]
-  },
-  {
-    "type": "trace",
-    "name": "@atlaspack/reporter-dev-server",
-    "categories": ["reporter"]
-  },
-  {
-    "type": "trace",
-    "name": "@atlaspack/reporter-dev-server",
-    "categories": ["reporter"]
-  },
-  {
-    "type": "trace",
-    "name": "@atlaspack/reporter-dev-server",
-    "categories": ["reporter"]
-  },
-  {
-    "type": "trace",
-    "name": "@atlaspack/reporter-dev-server",
-    "categories": ["reporter"]
-  },
-  {
-    "type": "trace",
-    "name": "@atlaspack/reporter-dev-server",
-    "categories": ["reporter"]
-  },
-  {
-    "type": "trace",
-    "name": "@atlaspack/reporter-dev-server",
-    "categories": ["reporter"]
-  },
-  {
-    "type": "trace",
-    "name": "@atlaspack/reporter-dev-server",
-    "categories": ["reporter"]
-  },
-  {
-    "type": "trace",
-    "name": "@atlaspack/reporter-dev-server",
-    "categories": ["reporter"]
-  },
-  {
-    "type": "trace",
-    "name": "@atlaspack/resolver-default",
-    "categories": ["resolve"],
-    "args": {
-      "name": "<ROOT>/packages/core/core/test/__fixtures__/graph/basic/index.js"
-    }
-  },
-  {
-    "type": "trace",
-    "name": "@atlaspack/resolver-default",
-    "categories": ["resolve"],
-    "args": {
-      "name": "./dep"
-    }
-  },
-  {
-    "type": "trace",
-    "name": "@atlaspack/runtime-browser-hmr",
-    "categories": ["applyRuntime"],
     "args": {
       "name": "index.js"
-    }
+    },
+    "categories": ["optimize"],
+    "name": "@atlaspack/optimizer-swc",
+    "type": "trace"
   },
   {
-    "type": "trace",
-    "name": "@atlaspack/runtime-js",
-    "categories": ["applyRuntime"],
     "args": {
-      "name": "index.js"
-    }
+      "name": "dist/index.js"
+    },
+    "categories": ["compress"],
+    "name": "@atlaspack/compressor-raw",
+    "type": "trace"
   },
   {
-    "type": "trace",
-    "name": "@atlaspack/runtime-react-refresh",
-    "categories": ["applyRuntime"],
     "args": {
-      "name": "index.js"
-    }
+      "name": "dist/index.js.map"
+    },
+    "categories": ["compress"],
+    "name": "@atlaspack/compressor-raw",
+    "type": "trace"
   },
   {
-    "type": "trace",
-    "name": "@atlaspack/runtime-service-worker",
-    "categories": ["applyRuntime"],
-    "args": {
-      "name": "index.js"
-    }
-  },
-  {
-    "type": "trace",
-    "name": "building",
-    "categories": ["Core"]
-  },
-  {
-    "type": "trace",
-    "name": "bundling",
-    "categories": ["Core"]
-  },
-  {
-    "type": "trace",
+    "categories": ["Core"],
     "name": "packaging",
-    "categories": ["Core"]
+    "type": "trace"
+  },
+  {
+    "categories": ["reporter"],
+    "name": "@atlaspack/reporter-dev-server",
+    "type": "trace"
   }
 ]

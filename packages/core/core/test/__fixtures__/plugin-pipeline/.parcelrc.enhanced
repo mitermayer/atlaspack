@@ -1,0 +1,14 @@
+{
+  "extends": "@atlaspack/config-default",
+  "resolvers": ["./plugins/enhanced-resolver.js", "..."],
+  "transformers": {
+    "*.js": ["./plugins/enhanced-transformer.js", "..."]
+  },
+  "packagers": {
+    "*.js": ["./plugins/packager-log.js", "..."]
+  },
+  "optimizers": {
+    "*.js": ["./plugins/optimizer-log.js", "..."]
+  },
+  "reporters": ["./plugins/enhanced-reporter.js"]
+}

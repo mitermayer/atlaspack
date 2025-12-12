@@ -1,6 +1,16 @@
 Phase: resolving
 [resolver-log] Resolving /Users/miter/repo/mitermayer/atlaspack/packages/core/core/test/__fixtures__/plugin-pipeline/index.js
+[resolver-log] Resolving /Users/miter/repo/mitermayer/atlaspack/packages/core/core/test/__fixtures__/plugin-pipeline/index.js
+[resolver-log] Resolving /Users/miter/repo/mitermayer/atlaspack/packages/core/core/test/__fixtures__/plugin-pipeline/index.js
+[resolver-log] Resolving /Users/miter/repo/mitermayer/atlaspack/packages/core/core/test/__fixtures__/plugin-pipeline/index.js
+[resolver-log] Resolving /Users/miter/repo/mitermayer/atlaspack/packages/core/core/test/__fixtures__/plugin-pipeline/index.js
+[resolver-log] Resolving /Users/miter/repo/mitermayer/atlaspack/packages/core/core/test/__fixtures__/plugin-pipeline/index.js
 Phase: transforming
+[transformer-log] Transforming /Users/miter/repo/mitermayer/atlaspack/packages/core/core/test/__fixtures__/plugin-pipeline/index.js
+[transformer-log] Transforming /Users/miter/repo/mitermayer/atlaspack/packages/core/core/test/__fixtures__/plugin-pipeline/index.js
+[transformer-log] Transforming /Users/miter/repo/mitermayer/atlaspack/packages/core/core/test/__fixtures__/plugin-pipeline/index.js
+[transformer-log] Transforming /Users/miter/repo/mitermayer/atlaspack/packages/core/core/test/__fixtures__/plugin-pipeline/index.js
+[transformer-log] Transforming /Users/miter/repo/mitermayer/atlaspack/packages/core/core/test/__fixtures__/plugin-pipeline/index.js
 [transformer-log] Transforming /Users/miter/repo/mitermayer/atlaspack/packages/core/core/test/__fixtures__/plugin-pipeline/index.js
 Phase: bundling
 Phase: bundled

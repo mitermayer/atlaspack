@@ -178,7 +178,7 @@
             "astGenerator": null,
             "dependencies": {},
             "isSource": true,
-            "outputHash": "ebf34b783319d8aa",
+            "outputHash": "f89fd295d9874fa4",
             "env": {
               "id": "7d1514bcbfb79106",
               "context": "browser",
@@ -206,7 +206,7 @@
             },
             "stats": {
               "time": 0,
-              "size": 115
+              "size": 154
             },
             "symbols": {},
             "sideEffects": true,

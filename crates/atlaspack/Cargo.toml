@@ -55,3 +55,4 @@ tokio = { workspace = true, features = ["full"] }
 [dev-dependencies]
 mockall = { workspace = true }
 pretty_assertions = { workspace = true }
+futures = "0.3"

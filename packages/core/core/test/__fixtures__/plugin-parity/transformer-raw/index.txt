@@ -1,0 +1,15 @@
+This is a test text file for the raw transformer.
+
+It contains multiple lines of text that should be passed through
+without any transformation or processing.
+
+The raw transformer should handle this as a binary/text asset
+and include it in the bundle as-is.
+
+Special characters: !@#$%^&*()_+-=[]{}|;':",./<>?
+
+Numbers: 1234567890
+
+Unicode: 🚀 🎉 ✨
+
+End of file.

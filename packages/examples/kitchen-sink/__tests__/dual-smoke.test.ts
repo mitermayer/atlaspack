@@ -22,6 +22,14 @@ describe('dual-smoke', function () {
     const engine = process.env.ATLASPACK_ENGINE || 'js';
     if (engine === 'js' || engine === 'dual') {
       assert(fs.existsSync(summaryPath), 'summary.json should exist');
+
+      const summaryContent = fs.readFileSync(summaryPath, 'utf8');
+      const summary = JSON.parse(summaryContent);
+
+      assert.strictEqual(summary.engine, 'js');
+      assert.strictEqual(summary.fixture, 'dual-smoke');
+      assert(Array.isArray(summary.bundles), 'bundles should be an array');
+      assert(summary.bundles.length > 0, 'should have at least one bundle');
     }
   });
 });

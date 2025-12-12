@@ -2,14 +2,22 @@ import assert from 'assert';
 import path from 'path';
 import Atlaspack, {createWorkerFarm} from '../src/Atlaspack';
 import {FILE_CONFIG_NO_REPORTERS} from '@atlaspack/test-utils';
-import fs from 'fs';
+import {writeSummary} from './utils/artifacts';
+import {registerCoreWithSerializer} from '../src/registerCoreWithSerializer';
 
 const FIXTURE_PATH = path.join(__dirname, '__fixtures__/graph/basic');
-const SNAPSHOT_PATH = path.join(__dirname, '__fixtures__/perf/counters.json');
+const COUNTERS_SNAPSHOT_PATH = path.join(
+  __dirname,
+  '__fixtures__/perf/counters.json',
+);
 
 describe('Performance Counters', function () {
   this.timeout(75000);
   let workerFarm;
+
+  before(() => {
+    registerCoreWithSerializer();
+  });
 
   beforeEach(() => {
     workerFarm = createWorkerFarm();
@@ -36,12 +44,21 @@ describe('Performance Counters', function () {
       assert(typeof result.buildTime === 'number');
       assert(result.unstable_requestStats);
 
-      const snapshot = {
+      const summary = {
         hasBuildTime: true,
         requestStatsKeys: Object.keys(result.unstable_requestStats).sort(),
       };
 
-      fs.writeFileSync(SNAPSHOT_PATH, JSON.stringify(snapshot, null, 2));
+      // Write summary using artifact utilities with normalization
+      writeSummary(summary, COUNTERS_SNAPSHOT_PATH);
+
+      // Assert against existing fixture
+      const fixtureContent = require('./__fixtures__/perf/counters.json');
+      assert.deepEqual(
+        summary,
+        fixtureContent,
+        'Performance counters should match fixture',
+      );
     }
   });
 });

@@ -1,0 +1,7 @@
+{
+  "extends": "@atlaspack/config-default",
+  "featureFlags": {
+    "rustEngineEnabled": false,
+    "rustEngineDualRun": false
+  }
+}
