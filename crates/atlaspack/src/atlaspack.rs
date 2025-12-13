@@ -17,7 +17,7 @@ use tokio::sync::RwLock;
 use crate::WatchEvents;
 use crate::plugins::{PluginsRef, config_plugins::ConfigPlugins};
 use crate::project_root::infer_project_root;
-use crate::request_tracker::{RequestNode, RequestTracker};
+use crate::request_tracker::{RequestNode, RequestState, RequestTracker};
 use crate::requests::{AssetGraphRequest, RequestResult};
 
 pub struct AtlaspackInitOptions {
@@ -182,7 +182,7 @@ impl Atlaspack {
         .try_fold(
           Vec::new(),
           |mut invalid_nodes, invalid_node| match invalid_node {
-            RequestNode::Invalid(Some(result)) => match result.as_ref() {
+            RequestNode::Request(RequestState::Invalid(Some(result))) => match result.as_ref() {
               RequestResult::Asset(_) => {
                 invalid_nodes.push(result.clone());
                 Ok(invalid_nodes)

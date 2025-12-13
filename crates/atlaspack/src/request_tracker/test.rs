@@ -1003,7 +1003,6 @@ async fn test_deep_dependency_chain() {
   // Create a simpler chain for testing
   let leaf = TestRequest::new("leaf", &[]);
   let middle = TestRequest::new("middle", &[TestRequestType::Simple(leaf.clone())]);
-  let root = TestRequest::new("root", &[TestRequestType::Simple(middle.clone())]);
 
   // Run root request
   let root = TestRequest::new("root", &[TestRequestType::Simple(middle.clone())]);
@@ -1030,4 +1029,124 @@ async fn test_deep_dependency_chain() {
   // Graph should have some activity
   let snapshot = graph_snapshot::get_graph_snapshot(&rt);
   assert!(!snapshot["hasInvalidations"].as_bool().unwrap());
+}
+
+#[derive(Clone, Debug)]
+
+struct TestRequestWithCustomInvalidation {
+  runs: Arc<AtomicUsize>,
+  name: String,
+  invalidations: Vec<Invalidation>,
+}
+
+impl TestRequestWithCustomInvalidation {
+  fn new(name: &str, invalidations: Vec<Invalidation>) -> Self {
+    Self {
+      runs: Default::default(),
+      name: name.to_string(),
+      invalidations,
+    }
+  }
+
+  fn run_count(&self) -> usize {
+    self.runs.load(Ordering::Relaxed)
+  }
+}
+
+impl std::hash::Hash for TestRequestWithCustomInvalidation {
+  fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+    self.name.hash(state);
+  }
+}
+
+#[async_trait]
+impl Request for TestRequestWithCustomInvalidation {
+  async fn run(
+    &self,
+    _request_context: RunRequestContext,
+  ) -> Result<ResultAndInvalidations, RunRequestError> {
+    self.runs.fetch_add(1, Ordering::Relaxed);
+
+    Ok(ResultAndInvalidations {
+      result: RequestResult::TestSub(self.name.clone()),
+      invalidations: self.invalidations.clone(),
+    })
+  }
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_glob_invalidation() {
+  let mut rt = request_tracker(Default::default());
+
+  let invalidation =
+    Invalidation::FileCreate(atlaspack_core::types::InternalFileCreateInvalidation {
+      glob: Some("*.txt".to_string()),
+      file_name: None,
+      above_file_path: None,
+      file_path: None,
+    });
+
+  let request = TestRequestWithCustomInvalidation::new("glob_req", vec![invalidation]);
+
+  // Initial run
+  rt.run_request(request.clone()).await.unwrap();
+  assert_eq!(request.run_count(), 1);
+
+  // Simulate creation of a matching file
+  let events = vec![WatchEvent::Create(PathBuf::from("foo.txt"))];
+  let should_rebuild = rt.respond_to_fs_events(events);
+  assert!(
+    should_rebuild,
+    "Should rebuild when matching file is created"
+  );
+
+  // Run again
+  rt.run_request(request.clone()).await.unwrap();
+  assert_eq!(request.run_count(), 2);
+
+  // Simulate creation of a non-matching file
+  let events = vec![WatchEvent::Create(PathBuf::from("foo.js"))];
+  let should_rebuild = rt.respond_to_fs_events(events);
+  assert!(
+    !should_rebuild,
+    "Should NOT rebuild when non-matching file is created"
+  );
+
+  // Run again (should use cache)
+  rt.run_request(request.clone()).await.unwrap();
+  assert_eq!(request.run_count(), 2);
+}
+
+#[tokio::test(flavor = "multi_thread")]
+async fn test_create_above_invalidation() {
+  let mut rt = request_tracker(Default::default());
+
+  // Invalidate when a file is created inside node_modules/foo
+  let invalidation =
+    Invalidation::FileCreate(atlaspack_core::types::InternalFileCreateInvalidation {
+      glob: None,
+      file_name: Some("package.json".to_string()),
+      above_file_path: Some(PathBuf::from("/node_modules/foo")),
+      file_path: None,
+    });
+
+  let request = TestRequestWithCustomInvalidation::new("create_above_req", vec![invalidation]);
+
+  // Initial run
+  rt.run_request(request.clone()).await.unwrap();
+  assert_eq!(request.run_count(), 1);
+
+  // Simulate creation of the file
+  let events = vec![WatchEvent::Create(PathBuf::from(
+    "/node_modules/foo/package.json",
+  ))];
+  let should_rebuild = rt.respond_to_fs_events(events);
+  assert!(
+    should_rebuild,
+    "Should rebuild when file is created in above path"
+  );
+
+  // Run again
+  rt.run_request(request.clone()).await.unwrap();
+  assert_eq!(request.run_count(), 2);
 }

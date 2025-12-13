@@ -29,11 +29,11 @@ Purpose: seed shared normalization/utils and first JS-baseline smoke tests so al
 
 ## Before merge (checklist)
 
-- [ ] Run baseline utils: `yarn test:js:unit --grep "baseline utils"`
-- [ ] Run dual-smoke: `yarn workspace @atlaspack/examples test --grep "dual-smoke"`
-- [ ] Run request-smoke: `yarn test:js:unit --grep "request smoke"`
-- [ ] Verify artifacts: `.parcel-cache/parity/js/dual-smoke/summary.json`, `packages/core/core/test/__fixtures__/request-smoke/graph.json`
-- [ ] Confirm determinism (rerun, no snapshot changes)
+- [x] Run baseline utils: `yarn test:js:unit --grep "baseline utils"`
+- [x] Run dual-smoke: `yarn workspace @atlaspack/examples test --grep "dual-smoke"`
+- [x] Run request-smoke: `yarn test:js:unit --grep "request smoke"`
+- [x] Verify artifacts: `.parcel-cache/parity/js/dual-smoke/summary.json`, `packages/core/core/test/__fixtures__/request-smoke/graph.json`
+- [x] Confirm determinism (rerun, no snapshot changes)
 
 ## Stubs provided (implement these, do not recreate)
 

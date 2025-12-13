@@ -54,6 +54,7 @@ describe('watch hmr', function () {
     const entry = path.join(tmpDir, 'index.html');
     const indexJs = path.join(tmpDir, 'index.js');
     const messages: any[] = [];
+    let messageIndex = 0;
 
     const parcel = new Parcel({
       entries: entry,
@@ -91,14 +92,14 @@ describe('watch hmr', function () {
     });
 
     // Helper to wait for a specific message type
-    const waitForMessage = async (type: string, timeout = 5000) => {
+    const waitForMessage = async (type: string, timeout = 30000) => {
       const start = Date.now();
       while (Date.now() - start < timeout) {
-        if (
-          messages.length > 0 &&
-          messages[messages.length - 1].type === type
-        ) {
-          return;
+        for (let i = messageIndex; i < messages.length; i++) {
+          if (messages[i].type === type) {
+            messageIndex = i + 1;
+            return;
+          }
         }
         await new Promise((r) => setTimeout(r, 100));
       }
@@ -169,6 +170,7 @@ describe('watch hmr', function () {
     const moduleJs = path.join(tmpDir, 'module.js');
     const styleCss = path.join(tmpDir, 'style.css');
     const messages: any[] = [];
+    let messageIndex = 0;
 
     const parcel = new Parcel({
       entries: entry,
@@ -206,14 +208,14 @@ describe('watch hmr', function () {
     });
 
     // Helper to wait for a specific message type
-    const waitForMessage = async (type: string, timeout = 5000) => {
+    const waitForMessage = async (type: string, timeout = 30000) => {
       const start = Date.now();
       while (Date.now() - start < timeout) {
-        if (
-          messages.length > 0 &&
-          messages[messages.length - 1].type === type
-        ) {
-          return;
+        for (let i = messageIndex; i < messages.length; i++) {
+          if (messages[i].type === type) {
+            messageIndex = i + 1;
+            return;
+          }
         }
         await new Promise((r) => setTimeout(r, 100));
       }

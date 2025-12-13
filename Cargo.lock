@@ -285,6 +285,7 @@ dependencies = [
  "atlaspack_sourcemap",
  "dyn-hash",
  "futures",
+ "glob-match",
  "indexmap",
  "lmdb-js-lite",
  "mockall",

@@ -32,6 +32,7 @@ atlaspack_sourcemap = { path = "../atlaspack_sourcemap" }
 atlaspack-resolver = { path = "../../packages/utils/node-resolver-rs" }
 lmdb-js-lite = { path = "../lmdb-js-lite" }
 
+glob-match = { workspace = true }
 anyhow = { workspace = true }
 async-trait = { workspace = true }
 dyn-hash = { workspace = true }

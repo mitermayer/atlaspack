@@ -2,6 +2,13 @@
 
 Focus: request tracker, invalidation, graph orchestration. Build on Epic 0 utils.
 
+## Status
+
+- **Request Tracker**: Implemented and verified (Unit tests in `crates/atlaspack/src/request_tracker/test.rs`).
+- **Asset Graph**: Implemented (Unit tests in `crates/atlaspack/src/requests/asset_graph_request.rs`).
+- **Bundle Graph**: Scaffolded (Structs defined, Request wired, logic pending).
+- **Cache Integration**: Pending serialization logic.
+
 ## Key paths
 
 - Tests: `packages/core/core/test/requestTracker.test.ts`, `.../invalidation.test.ts`, `.../graph-parity.test.ts`.

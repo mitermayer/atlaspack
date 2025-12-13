@@ -20,7 +20,7 @@ Use Epic 0 utils/fixtures. CI wiring is integration-owned; you provide artifacts
 
 ## Before merge (checklist)
 
-- [ ] Run Epic 0 baseline commands (see Epic 0 README)
-- [ ] Run dual-run smoke/full as applicable: `yarn workspace @atlaspack/examples test --grep "dual"`
-- [ ] Verify artifacts under `.parcel-cache/parity/<engine>/<fixture>/summary.json` and normalization
-- [ ] Confirm determinism (rerun, no unexpected diffs)
+- [x] Run Epic 0 baseline commands (see Epic 0 README)
+- [x] Run dual-run smoke/full as applicable: `yarn workspace @atlaspack/examples test --grep "dual"`
+- [x] Verify artifacts under `.parcel-cache/parity/<engine>/<fixture>/summary.json` and normalization
+- [x] Confirm determinism (rerun, no unexpected diffs)

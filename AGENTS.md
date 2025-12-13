@@ -355,6 +355,23 @@ Tracing:
 
 ## Rust Migration Docs
 
+**⚠️ CURRENT STATUS (Dec 2025): Phase 2 Implementation In Progress**
+
+- **Phase 1 (Infrastructure)**: ✅ COMPLETE.
+  - Baseline tests, parity harness, and golden fixtures are established.
+  - Dual-run capability (`ATLASPACK_ENGINE=dual`) is active.
+- **Phase 2 (Implementation)**: 🚧 IN PROGRESS.
+  - **Request Tracker**: ✅ Ported to Rust and verified.
+  - **Asset Graph**: ⏳ Pending.
+  - **Pipeline**: ⏳ Pending.
+
+For the detailed roadmap and task tracking, **ALWAYS** refer to:
+
+- **`docs/rust-migration/index.md`**: The root of the migration documentation.
+- **`docs/rust-migration/epics.md`**: The master checklist of Epics and Stories. Update this file as you complete work.
+
+### Migration Resources
+
 - Primary index: `docs/rust-migration/index.md` (links to PRD, epics, requirements, testing plan).
 - Epic 0 (start here for tests): `docs/rust-migration/epics/epic-0-baseline-tests/` and validation: `.../VALIDATION.md`.
 - Epics/Stories: `docs/rust-migration/epics.md` — ticket-ready breakdown per epic with per-epic READMEs (commands, paths, checklists).
@@ -366,6 +383,19 @@ Tracing:
   - Pipelines/config: `packages/configs/default/index.json`.
   - Cache/sourcemaps: `crates/lmdb-js-lite`, `crates/atlaspack_sourcemap`, `packages/core/source-map/`.
   - Existing docs to consult: scope hoisting/symbol propagation (`docs/Scopehoisting*.md`, `docs/Symbol Propagation.md`), bundling (`docs/DefaultBundler.md`, `docs/ManualBundling.md`, `docs/Deferring.md`, `docs/BundlerExamples.md`), CLI (`docs/cli/README.md`, `docs/cli/build-commands.md`, `docs/cli/environment-variables.md`), testing/CI (`docs/debugging-tests.md`, `docs/Continuous Integration/Native Binary Builds.md`).
+
+### Protocol for Agent Handoff
+
+At the end of every epic or major task, the active agent MUST:
+
+1.  **Verify State**: Ensure all created code compiles and passes relevant tests.
+2.  **Update Documentation**:
+    - Mark completed stories/tasks with `[x]` in `docs/rust-migration/epics.md` and the epic's `README.md`.
+    - Update the "Current Status" section in `AGENTS.md` if a major phase transition occurred.
+3.  **Update Agent Context**:
+    - Use the `todowrite` tool to clear old tasks and set the specific next actions for the incoming agent.
+    - Provide a clear text summary of what was just done and what files were modified.
+4.  **Define Next Steps**: Explicitly name the next Epic or Task ID (e.g., "Next: IMPL-2 Asset Graph") to guide the next session.
 
 ### Harness Trigger
 
