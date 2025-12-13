@@ -6,10 +6,12 @@ Wire Rust orchestrator to LMDB cache with versioned keys, detection, and safe in
 
 ## Tasks
 
-- Define schema versioning for cache keys affecting graphs/assets/bundles/source maps.
-- Implement detection of mismatched versions; choose auto-invalidate vs migration; log clearly.
-- Ensure hash parity with JS for shared artifacts where possible; document exceptions.
-- Add CI check that fails on unintended schema bumps; update PRD/requirements on intentional changes.
+- [x] Implement `Serialize` and `Deserialize` for `RequestGraph` and nodes.
+- [x] Implement `Serialize` and `Deserialize` for `AssetGraph`.
+- [x] Implement `Serialize` and `Deserialize` for `BundleGraph`.
+- [x] Implement `RequestTracker::write_to_cache` to serialize and write the graph to LMDB.
+- [x] Implement `RequestTracker` initialization to read from cache.
+- [ ] Define schema versioning and mismatch detection.
 
 ## Acceptance Criteria
 

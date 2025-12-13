@@ -7,6 +7,7 @@ use std::sync::mpsc::Sender;
 use atlaspack_core::types::InternalFileCreateInvalidation;
 use atlaspack_core::types::Invalidation;
 use glob_match::glob_match;
+use lmdb_js_lite::DatabaseHandle;
 use petgraph::graph::NodeIndex;
 use petgraph::stable_graph::StableDiGraph;
 
@@ -69,6 +70,7 @@ pub struct RequestTracker {
   option_nodes: HashMap<String, NodeIndex>,
   file_name_nodes: HashMap<String, NodeIndex>,
   config_key_nodes: HashMap<PathBuf, HashSet<NodeIndex>>,
+  db: Arc<DatabaseHandle>,
 }
 
 impl RequestTracker {
@@ -78,6 +80,7 @@ impl RequestTracker {
     options: Arc<AtlaspackOptions>,
     plugins: PluginsRef,
     project_root: PathBuf,
+    db: Arc<DatabaseHandle>,
   ) -> Self {
     let mut graph = StableDiGraph::<RequestNode, RequestEdgeType>::new();
 
@@ -98,6 +101,7 @@ impl RequestTracker {
       option_nodes: HashMap::new(),
       file_name_nodes: HashMap::new(),
       config_key_nodes: HashMap::new(),
+      db,
     }
   }
 
@@ -863,6 +867,97 @@ impl RequestTracker {
     );
 
     !self.invalid_nodes.is_empty()
+  }
+
+  pub fn write_to_cache(&self) -> anyhow::Result<()> {
+    let request_graph_key = "rust_request_graph";
+    let serialized = serde_json::to_vec(&(&self.graph, &self.request_index))?;
+
+    let mut txn = self.db.database().write_txn()?;
+    self
+      .db
+      .database()
+      .put(&mut txn, request_graph_key, &serialized)?;
+    txn.commit()?;
+    Ok(())
+  }
+
+  pub fn load_from_cache(
+    config_loader: ConfigLoaderRef,
+    file_system: FileSystemRef,
+    options: Arc<AtlaspackOptions>,
+    plugins: PluginsRef,
+    project_root: PathBuf,
+    db: Arc<DatabaseHandle>,
+  ) -> anyhow::Result<Self> {
+    let request_graph_key = "rust_request_graph";
+
+    let (graph, request_index) = {
+      let txn = db.database().read_txn()?;
+      if let Some(cached) = db.database().get(&txn, request_graph_key)? {
+        let (graph, request_index): (RequestGraph, HashMap<u64, NodeIndex>) =
+          serde_json::from_slice(&cached)?;
+        (graph, request_index)
+      } else {
+        let mut graph = StableDiGraph::<RequestNode, RequestEdgeType>::new();
+        graph.add_node(RequestNode::Root);
+        (graph, HashMap::new())
+      }
+    };
+
+    let mut invalidations = HashMap::new();
+
+    let mut glob_nodes = HashMap::new();
+    let mut env_nodes = HashMap::new();
+    let mut option_nodes = HashMap::new();
+    let mut file_name_nodes = HashMap::new();
+    let mut config_key_nodes: HashMap<PathBuf, HashSet<NodeIndex>> = HashMap::new();
+
+    // Rebuild indices
+    for node_index in graph.node_indices() {
+      match &graph[node_index] {
+        RequestNode::File(node) => {
+          invalidations.insert(node.path.clone(), node_index);
+        }
+        RequestNode::Glob(node) => {
+          glob_nodes.insert(node.glob.clone(), node_index);
+        }
+        RequestNode::Env(node) => {
+          env_nodes.insert(node.key.clone(), node_index);
+        }
+        RequestNode::Option(node) => {
+          option_nodes.insert(node.key.clone(), node_index);
+        }
+        RequestNode::FileName(node) => {
+          file_name_nodes.insert(node.file_name.clone(), node_index);
+        }
+        RequestNode::ConfigKey(node) => {
+          config_key_nodes
+            .entry(node.path.clone())
+            .or_default()
+            .insert(node_index);
+        }
+        _ => {}
+      }
+    }
+
+    Ok(RequestTracker {
+      config_loader,
+      file_system,
+      graph,
+      plugins,
+      project_root,
+      request_index,
+      invalidations,
+      invalid_nodes: HashSet::new(),
+      options,
+      glob_nodes,
+      env_nodes,
+      option_nodes,
+      file_name_nodes,
+      config_key_nodes,
+      db,
+    })
   }
 }
 

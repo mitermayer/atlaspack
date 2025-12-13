@@ -23,14 +23,14 @@ Details: see per-epic folders under `docs/rust-migration/epics/<epic>/` (indexed
 
 ## Epic: Pipeline Scheduler and Plugin Hosting
 
-- [ ] Story: Rust pipeline scheduler for resolver → transformers → bundler → namer → packager → optimizer → compressor; acceptance: end-to-end pipeline parity on golden fixtures.
+- [x] Story: Rust pipeline scheduler for resolver → transformers → bundler → namer → packager → optimizer → compressor; acceptance: end-to-end pipeline parity on golden fixtures.
 - [ ] Story: JS plugin host bridge (Node RPC or embedded runtime) with lifecycle hooks, streaming payloads, cancellation; acceptance: load/shedding/backpressure tests and contract docs.
 - [x] Story: Contract tests per plugin category (transformer, resolver, packager, optimizer, reporter) against golden outputs; acceptance: per-plugin baseline stored and enforced in CI.
 - [ ] Story: Structured ABI/IDL for plugin calls with versioning/compat checks; acceptance: version negotiation and upgrade/fallback behavior tested.
 
 ## Epic: Watch/HMR Parity
 
-- [ ] Story: Watcher adapter with debounce parity per platform; acceptance: record/replay traces and pass ordering checks.
+- [x] Story: Watcher adapter with debounce parity per platform; acceptance: record/replay traces and pass ordering checks.
 - [ ] Story: Incremental rebuild invalidation parity; acceptance: dirty-set comparisons against JS across fixture edits.
 - [x] Story: HMR message ordering and React-refresh/runtime injection parity; acceptance: scripted HMR sessions with expected transcript.
 

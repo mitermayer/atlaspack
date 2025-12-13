@@ -12,6 +12,7 @@ use atlaspack_core::plugin::ResolvedResolution;
 use atlaspack_core::plugin::ResolvingEvent;
 use atlaspack_core::types::Dependency;
 use atlaspack_resolver::parse_scheme;
+use serde::{Deserialize, Serialize};
 
 use crate::request_tracker::Request;
 use crate::request_tracker::ResultAndInvalidations;
@@ -20,12 +21,12 @@ use crate::request_tracker::RunRequestError;
 
 use super::RequestResult;
 
-#[derive(Hash, Debug)]
+#[derive(Hash, Debug, Serialize, Deserialize)]
 pub struct PathRequest {
   pub dependency: Arc<Dependency>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum PathRequestOutput {
   Excluded,
   Resolved {

@@ -10,6 +10,14 @@ pub struct NodejsWorker {
   pub load_plugin_fn: JsCallable,
   pub run_resolver_resolve_fn: JsCallable,
   pub transformer_register_fn: JsCallable,
+  pub bundler_bundle_fn: JsCallable,
+  pub bundler_optimize_fn: JsCallable,
+  pub namer_name_fn: JsCallable,
+  pub packager_package_fn: JsCallable,
+  pub optimizer_optimize_fn: JsCallable,
+  pub compressor_compress_fn: JsCallable,
+  pub reporter_report_fn: JsCallable,
+  pub runtime_apply_fn: JsCallable,
 }
 
 impl NodejsWorker {
@@ -20,6 +28,14 @@ impl NodejsWorker {
       load_plugin_fn: bind("loadPlugin")?,
       run_resolver_resolve_fn: bind("runResolverResolve")?,
       transformer_register_fn: bind("runTransformerTransform")?,
+      bundler_bundle_fn: bind("runBundlerBundle")?,
+      bundler_optimize_fn: bind("runBundlerOptimize")?,
+      namer_name_fn: bind("runNamerName")?,
+      packager_package_fn: bind("runPackagerPackage")?,
+      optimizer_optimize_fn: bind("runOptimizerOptimize")?,
+      compressor_compress_fn: bind("runCompressorCompress")?,
+      reporter_report_fn: bind("runReporterReport")?,
+      runtime_apply_fn: bind("runRuntimeApply")?,
     })
   }
 

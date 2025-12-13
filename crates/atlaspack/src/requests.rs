@@ -3,6 +3,7 @@ use asset_request::AssetRequestOutput;
 pub use bundle_graph_request::*;
 use entry_request::EntryRequestOutput;
 use path_request::PathRequestOutput;
+use serde::{Deserialize, Serialize};
 use target_request::TargetRequestOutput;
 
 mod asset_graph_request;
@@ -13,7 +14,7 @@ mod path_request;
 mod target_request;
 
 /// Union of all request outputs
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Serialize, Deserialize)]
 #[allow(clippy::large_enum_variant)]
 pub enum RequestResult {
   AssetGraph(AssetGraphRequestOutput),

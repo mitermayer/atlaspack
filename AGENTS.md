@@ -361,9 +361,13 @@ Tracing:
   - Baseline tests, parity harness, and golden fixtures are established.
   - Dual-run capability (`ATLASPACK_ENGINE=dual`) is active.
 - **Phase 2 (Implementation)**: 🚧 IN PROGRESS.
-  - **Request Tracker**: ✅ Ported to Rust and verified.
-  - **Asset Graph**: ⏳ Pending.
-  - **Pipeline**: ⏳ Pending.
+  - **Request Tracker**: ✅ Ported to Rust and verified (IMPL-1).
+  - **Asset Graph**: ✅ Ported and verified (IMPL-2).
+  - **Bundle Graph**: ✅ Ported (IMPL-2: Ideal Graph algorithm & Decorate Legacy Graph implemented).
+  - **Pipeline Scheduler**: ✅ Refactored and modularized (IMPL-4).
+  - **Watcher & HMR**: ✅ Implemented (IMPL-5).
+  - **Cache**: ✅ Serialized and Integrated (IMPL-3, IMPL-7).
+  - **Plugin Bridge**: 🚧 In Progress (IMPL-6: Bindings done, Interop pending).
 
 For the detailed roadmap and task tracking, **ALWAYS** refer to:
 

@@ -67,7 +67,11 @@ impl RpcWorker for NodejsWorkerFarm {
     ctx: &PluginContext,
     plugin: &PluginNode,
   ) -> anyhow::Result<Box<dyn BundlerPlugin>> {
-    Ok(Box::new(NodejsRpcBundlerPlugin::new(ctx, plugin)?))
+    Ok(Box::new(NodejsRpcBundlerPlugin::new(
+      self.workers.clone(),
+      ctx,
+      plugin,
+    )?))
   }
 
   fn create_compressor(

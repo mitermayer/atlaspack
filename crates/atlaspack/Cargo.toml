@@ -32,18 +32,21 @@ atlaspack_sourcemap = { path = "../atlaspack_sourcemap" }
 atlaspack-resolver = { path = "../../packages/utils/node-resolver-rs" }
 lmdb-js-lite = { path = "../lmdb-js-lite" }
 
+fixedbitset = { workspace = true }
+futures = { workspace = true }
 glob-match = { workspace = true }
 anyhow = { workspace = true }
 async-trait = { workspace = true }
 dyn-hash = { workspace = true }
 indexmap = { workspace = true }
 num_cpus = { workspace = true }
+notify = { workspace = true }
 pathdiff = { workspace = true }
-petgraph = { workspace = true }
+petgraph = { workspace = true, features = ["serde-1"] }
 rand = { workspace = true }
 rayon = { workspace = true }
 regex = { workspace = true }
-serde = { workspace = true, features = ["derive"] }
+serde = { workspace = true, features = ["derive", "rc"] }
 serde-bool = { workspace = true }
 serde_json = { workspace = true }
 tracing = { workspace = true }
@@ -52,8 +55,10 @@ xxhash-rust = { workspace = true, features = ["xxh3"] }
 once_cell = { workspace = true }
 parking_lot = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
+tokio-tungstenite = { workspace = true }
 
 [dev-dependencies]
 mockall = { workspace = true }
 pretty_assertions = { workspace = true }
 futures = "0.3"
+fixedbitset = { workspace = true }

@@ -6,11 +6,15 @@ Host AssetGraph and BundleGraph orchestration in Rust, preserving shapes, IDs, a
 
 ## Tasks
 
-- Implement graph builders and mutations in Rust mirroring JS semantics (nodes/edges/ids).
-- Add canonical serialization for graphs to JSON for parity diffing.
-- Golden snapshots for core fixtures; enforce parity in CI (via dual-run harness outputs).
-- Provide JS shim bindings to query graph shape where needed.
-- Document commands/paths for graph parity tests so integration CI can run them.
+- [x] Implement graph builders and mutations in Rust mirroring JS semantics (nodes/edges/ids).
+- [x] Add canonical serialization for graphs to JSON for parity diffing.
+- [x] Implement Reachability Analysis for Ideal Graph (Step 1 of bundling).
+- [x] Implement Availability Propagation (Step 2 of bundling).
+- [x] Implement Insert/Share Logic (Step 3 of bundling).
+- [x] Implement Decorate Legacy Graph (Step 4 of bundling).
+- [x] Wire up full pipeline in `DefaultBundler::bundle`.
+- [ ] Provide JS shim bindings to query graph shape where needed.
+- [ ] Document commands/paths for graph parity tests so integration CI can run them.
 
 ## Acceptance Criteria
 

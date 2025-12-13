@@ -135,13 +135,14 @@ impl Atlaspack {
       },
     )?);
 
-    let request_tracker = RequestTracker::new(
+    let request_tracker = RequestTracker::load_from_cache(
       config_loader.clone(),
       fs.clone(),
       Arc::new(resolved_options.clone()),
       plugins.clone(),
       project_root.clone(),
-    );
+      db.clone(),
+    )?;
 
     Ok(Self {
       db,
@@ -252,6 +253,10 @@ impl Atlaspack {
     }
 
     txn.commit()?;
+
+    self
+      .runtime
+      .block_on(async { self.request_tracker.read().await.write_to_cache() })?;
 
     Ok(())
   }

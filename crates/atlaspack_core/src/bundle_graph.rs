@@ -1,16 +1,17 @@
 use std::sync::Arc;
 
 use petgraph::stable_graph::StableDiGraph;
+use serde::{Deserialize, Serialize};
 
 use crate::types::{Asset, Bundle, Dependency, Target};
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct BundleGroup {
   pub target: Target,
   pub entry_asset_id: String,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum BundleGraphNode {
   Asset(Arc<Asset>),
   Dependency(Arc<Dependency>),
@@ -19,7 +20,7 @@ pub enum BundleGraphNode {
   Root,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub enum BundleGraphEdgeType {
   Null,
   Contains,
@@ -29,7 +30,7 @@ pub enum BundleGraphEdgeType {
   Conditional,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct BundleGraph {
   pub graph: StableDiGraph<BundleGraphNode, BundleGraphEdgeType>,
 }

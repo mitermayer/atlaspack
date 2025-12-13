@@ -4,10 +4,10 @@ Focus: request tracker, invalidation, graph orchestration. Build on Epic 0 utils
 
 ## Status
 
-- **Request Tracker**: Implemented and verified (Unit tests in `crates/atlaspack/src/request_tracker/test.rs`).
-- **Asset Graph**: Implemented (Unit tests in `crates/atlaspack/src/requests/asset_graph_request.rs`).
-- **Bundle Graph**: Scaffolded (Structs defined, Request wired, logic pending).
-- **Cache Integration**: Pending serialization logic.
+- **Request Tracker**: Implemented and verified.
+- **Asset Graph**: Implemented.
+- **Bundle Graph**: Implemented (Full Ideal Graph algorithm + Decorate Legacy Graph).
+- **Cache Integration**: Implemented.
 
 ## Key paths
 
