@@ -28,6 +28,7 @@ use super::file_system_napi::FileSystemNapi;
 use super::napi_result::NapiAtlaspackResult;
 use super::package_manager_napi::PackageManagerNapi;
 use super::serialize_asset_graph::serialize_asset_graph;
+use super::serialize_bundle_graph::serialize_bundle_graph;
 
 #[napi(object)]
 pub struct AtlaspackNapiOptions {
@@ -164,6 +165,38 @@ pub fn atlaspack_napi_build_asset_graph(
   });
 
   Ok(js_result)
+}
+
+#[tracing::instrument(level = "info", skip_all)]
+#[napi]
+pub fn atlaspack_napi_build_bundle_graph(
+  env: Env,
+  atlaspack_napi: AtlaspackNapi,
+) -> napi::Result<JsObject> {
+  let (deferred, promise) = env.create_deferred()?;
+
+  thread::spawn({
+    let atlaspack_ref = atlaspack_napi.clone();
+    move || {
+      let result = {
+        let atlaspack = atlaspack_ref.lock();
+        atlaspack.build_bundle_graph()
+      };
+
+      deferred.resolve(move |env| match result {
+        Ok(bundle_graph) => {
+          let serialize_result = serialize_bundle_graph(&env, &bundle_graph)?;
+          NapiAtlaspackResult::ok(&env, serialize_result)
+        }
+        Err(error) => {
+          let js_object = env.to_js_value(&AtlaspackError::from(&error))?;
+          NapiAtlaspackResult::error(&env, js_object)
+        }
+      })
+    }
+  });
+
+  Ok(promise)
 }
 
 #[tracing::instrument(level = "debug", skip_all)]

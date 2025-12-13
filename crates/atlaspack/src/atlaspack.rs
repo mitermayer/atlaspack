@@ -4,6 +4,7 @@ use std::sync::Arc;
 
 use atlaspack_config::atlaspack_rc_config_loader::{AtlaspackRcConfigLoader, LoadConfigOptions};
 use atlaspack_core::asset_graph::{AssetGraph, AssetGraphNode};
+use atlaspack_core::bundle_graph::BundleGraph;
 use atlaspack_core::config_loader::ConfigLoader;
 use atlaspack_core::plugin::{PluginContext, PluginLogger, PluginOptions};
 use atlaspack_core::types::{AtlaspackOptions, SourceField, Targets};
@@ -18,7 +19,7 @@ use crate::WatchEvents;
 use crate::plugins::{PluginsRef, config_plugins::ConfigPlugins};
 use crate::project_root::infer_project_root;
 use crate::request_tracker::{RequestNode, RequestState, RequestTracker};
-use crate::requests::{AssetGraphRequest, RequestResult};
+use crate::requests::{AssetGraphRequest, BundleGraphRequest, RequestResult};
 
 pub struct AtlaspackInitOptions {
   pub db: Arc<DatabaseHandle>,
@@ -212,6 +213,21 @@ impl Atlaspack {
       let asset_graph = asset_graph_request_output.graph.clone();
 
       Ok((asset_graph, had_previous_graph))
+    })
+  }
+
+  pub fn build_bundle_graph(&self) -> anyhow::Result<Arc<BundleGraph>> {
+    self.runtime.block_on(async move {
+      let mut request_tracker = self.request_tracker.write().await;
+      let request_result = request_tracker
+        .run_request(BundleGraphRequest::default())
+        .await?;
+
+      let RequestResult::BundleGraph(bundle_graph_request_output) = request_result.as_ref() else {
+        panic!("Something went wrong with the request tracker")
+      };
+
+      Ok(bundle_graph_request_output.bundle_graph.clone())
     })
   }
 
