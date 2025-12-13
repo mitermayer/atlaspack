@@ -379,8 +379,10 @@ For the detailed roadmap and task tracking, **ALWAYS** refer to:
 - Primary index: `docs/rust-migration/index.md` (links to PRD, epics, requirements, testing plan).
 - Epic 0 (start here for tests): `docs/rust-migration/epics/epic-0-baseline-tests/` and validation: `.../VALIDATION.md`.
 - Epics/Stories: `docs/rust-migration/epics.md` — ticket-ready breakdown per epic with per-epic READMEs (commands, paths, checklists).
+- Rust engine validation playbook: `docs/rust-migration/rust-engine-validation-playbook.md` — guide for enabling the Rust engine in existing Atlaspack projects.
+- Plugin inventory: `docs/rust-migration/plugin-inventory.md` — status of all plugins (JS vs Rust) and mapping to migration epics.
 - Testing plan: `docs/rust-migration/testing-plan.md` — JS-baseline strategy and commands.
-- Requirements: `docs/rust-migration/requirements.md` — functional/non-functional requirements and success criteria.
+- Requirements: `docs/rust-migration/requirements.md` — functional/non-functional requirements and success metrics.
 - Key source references for migration:
   - JS orchestrator/CLI: `packages/core/core/src/Atlaspack.ts`, `packages/core/cli/src/cli.ts`, `packages/core/core/src/RequestTracker.ts`, `packages/core/core/src/worker.ts`.
   - Rust engine/bindings: `crates/atlaspack`, `crates/atlaspack_core`, `crates/node-bindings`, loader `packages/core/rust/index.js`.

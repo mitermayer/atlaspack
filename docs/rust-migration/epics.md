@@ -57,3 +57,21 @@ Details: see per-epic folders under `docs/rust-migration/epics/<epic>/` (indexed
 - [ ] Story: Audit JS-only plugins; prioritize porting/shimming; acceptance: tracked list with owners/ETA and risk notes.
 - [x] Story: Golden tests per plugin with diagnostics/asset metadata comparisons; acceptance: enforced in CI with allowed deltas documented.
 - [ ] Story: Deprecation path for unsupported JS internals; acceptance: published contract doc and communicated timelines.
+
+## Epic: Plugin Migration – Core Engine Plugins
+
+- [ ] Story: Rust-backed core transformers and default resolver; acceptance: all core transformers and the default resolver invoke Rust plugins under the Rust engine, with plugin parity tests green.
+- [ ] Story: Rust bundlers, packagers, and namer for Rust engine; acceptance: default/library bundlers, core packagers, and the default namer have Rust plugin implementations with bundle/naming goldens matching JS.
+- [ ] Story: Extended plugin parity fixtures for core plugins; acceptance: additional fixtures for JS/CSS/HTML/image/raw/svg/json/yaml covering scope hoisting, code splitting, HMR, and sourcemaps, enforced in CI.
+
+## Epic: Plugin Migration – Optimizers & Compressors
+
+- [ ] Story: Rust-native optimizers for CSS, JS, image, and inline requires; acceptance: css/js/image/inline-requires optimizers are backed by Rust plugins, with outputs and sourcemaps matching JS goldens.
+- [ ] Story: JS-only optimizers wrapped behind stable RPC contracts; acceptance: cssnano/htmlnano/terser/svgo/data-url/blob-url are documented and invoked via plugin RPC with parity tests and a deprecation or replacement strategy where appropriate.
+- [ ] Story: Optimizer plugin parity golden suite; acceptance: per-optimizer fixtures and goldens enforced in CI, with allowed deltas documented.
+
+## Epic: Plugin Migration – Runtimes, Reporters & Ecosystem Adapters
+
+- [ ] Story: Rust engine metadata contract for runtimes; acceptance: runtimes (JS/HMR/React-refresh/service-worker/webextension) consume a stable metadata interface from the Rust engine, tested via HMR/watch and plugin parity suites.
+- [ ] Story: Reporter compatibility with Rust engine; acceptance: reporters (CLI/dev-server/tracer/LSP/etc.) receive equivalent events/diagnostics from JS and Rust engines with integration tests and docs.
+- [ ] Story: Ecosystem adapter strategy for Babel/PostCSS/MDX/etc.; acceptance: documented status per adapter (Rust-native, JS adapter, deprecated) with migration guidance and tests for maintained adapters.
