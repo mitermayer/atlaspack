@@ -1,19 +1,22 @@
 import assert from 'assert';
-import Atlaspack from '../../src/Atlaspack';
+import Atlaspack, {createWorkerFarm} from '../../src/Atlaspack';
 import {FILE_CONFIG_NO_REPORTERS} from '@atlaspack/test-utils';
 import path from 'path';
 
 describe('Rollout & Fallback Integration', function () {
   const originalEnv = process.env;
   const fixtureEntry = path.join(__dirname, '../fixtures/atlaspack/index.js');
+  let workerFarm;
 
   beforeEach(() => {
     process.env = {...originalEnv};
     delete process.env.ATLASPACK_ENGINE;
+    workerFarm = createWorkerFarm();
   });
 
   afterEach(() => {
     process.env = originalEnv;
+    workerFarm.end();
   });
 
   it('defaults to JS engine (rustEngineEnabled: false)', async () => {
@@ -21,6 +24,7 @@ describe('Rollout & Fallback Integration', function () {
         entries: fixtureEntry,
         defaultConfig: FILE_CONFIG_NO_REPORTERS,
         shouldDisableCache: true,
+        workerFarm,
     });
     // @ts-ignore
     await atlaspack._init();
@@ -36,6 +40,7 @@ describe('Rollout & Fallback Integration', function () {
         entries: fixtureEntry,
         defaultConfig: FILE_CONFIG_NO_REPORTERS,
         shouldDisableCache: true,
+        workerFarm,
     });
     // @ts-ignore
     await atlaspack._init();
@@ -51,6 +56,7 @@ describe('Rollout & Fallback Integration', function () {
         entries: fixtureEntry,
         defaultConfig: FILE_CONFIG_NO_REPORTERS,
         shouldDisableCache: true,
+        workerFarm,
     });
     // @ts-ignore
     await atlaspack._init();
@@ -66,6 +72,7 @@ describe('Rollout & Fallback Integration', function () {
         entries: fixtureEntry,
         defaultConfig: FILE_CONFIG_NO_REPORTERS,
         shouldDisableCache: true,
+        workerFarm,
     });
     // @ts-ignore
     await atlaspack._init();
@@ -83,7 +90,8 @@ describe('Rollout & Fallback Integration', function () {
         shouldDisableCache: true,
         featureFlags: {
             rustEngineEnabled: false
-        }
+        },
+        workerFarm,
     });
     // @ts-ignore
     await atlaspack._init();
@@ -100,7 +108,8 @@ describe('Rollout & Fallback Integration', function () {
         shouldDisableCache: true,
         featureFlags: {
             rustEngineDualRun: false
-        }
+        },
+        workerFarm,
     });
     // @ts-ignore
     await atlaspack._init();
@@ -119,6 +128,7 @@ describe('Rollout & Fallback Integration', function () {
         entries: fixtureEntry,
         defaultConfig: FILE_CONFIG_NO_REPORTERS,
         shouldDisableCache: true,
+        workerFarm,
     });
     // @ts-ignore
     await atlaspack._init();
@@ -136,6 +146,7 @@ describe('Rollout & Fallback Integration', function () {
         entries: fixtureEntry,
         defaultConfig: FILE_CONFIG_NO_REPORTERS,
         shouldDisableCache: true,
+        workerFarm,
     });
     // @ts-ignore
     await atlaspack._init();
@@ -143,5 +154,66 @@ describe('Rollout & Fallback Integration', function () {
     const options = atlaspack._getResolvedAtlaspackOptions();
     assert.strictEqual(options.featureFlags.rustEngineEnabled, true);
     assert.strictEqual(options.featureFlags.rustEngineDualRun, false);
+  });
+
+  it('force disables Rust engine via ATLASPACK_ENGINE_FORCE_JS_FALLBACK=true', async () => {
+    process.env.ATLASPACK_ENGINE = 'rust';
+    process.env.ATLASPACK_ENGINE_FORCE_JS_FALLBACK = 'true';
+    const atlaspack = new Atlaspack({
+        entries: fixtureEntry,
+        defaultConfig: FILE_CONFIG_NO_REPORTERS,
+        shouldDisableCache: true,
+        workerFarm,
+    });
+    // @ts-ignore
+    await atlaspack._init();
+    // @ts-ignore
+    const options = atlaspack._getResolvedAtlaspackOptions();
+    
+    // Should be disabled despite ATLASPACK_ENGINE=rust
+    assert.strictEqual(options.featureFlags.rustEngineEnabled, false);
+    assert.strictEqual(options.featureFlags.rustEngineDualRun, false);
+    assert.strictEqual(options.featureFlags.atlaspackV3, false);
+    
+    delete process.env.ATLASPACK_ENGINE_FORCE_JS_FALLBACK;
+  });
+
+  it('force disables Rust engine via rustEngineForceJsFallback feature flag', async () => {
+    process.env.ATLASPACK_ENGINE = 'rust';
+    const atlaspack = new Atlaspack({
+        entries: fixtureEntry,
+        defaultConfig: FILE_CONFIG_NO_REPORTERS,
+        shouldDisableCache: true,
+        workerFarm,
+        featureFlags: {
+            rustEngineForceJsFallback: true
+        }
+    });
+    // @ts-ignore
+    await atlaspack._init();
+    // @ts-ignore
+    const options = atlaspack._getResolvedAtlaspackOptions();
+    
+    // Should be disabled despite ATLASPACK_ENGINE=rust
+    assert.strictEqual(options.featureFlags.rustEngineEnabled, false);
+    assert.strictEqual(options.featureFlags.rustEngineDualRun, false);
+    assert.strictEqual(options.featureFlags.atlaspackV3, false);
+  });
+
+  it('bridges rustEngineEnabled to atlaspackV3', async () => {
+    process.env.ATLASPACK_ENGINE = 'rust';
+    const atlaspack = new Atlaspack({
+        entries: fixtureEntry,
+        defaultConfig: FILE_CONFIG_NO_REPORTERS,
+        shouldDisableCache: true,
+        workerFarm,
+    });
+    // @ts-ignore
+    await atlaspack._init();
+    // @ts-ignore
+    const options = atlaspack._getResolvedAtlaspackOptions();
+    
+    assert.strictEqual(options.featureFlags.rustEngineEnabled, true);
+    assert.strictEqual(options.featureFlags.atlaspackV3, true);
   });
 });

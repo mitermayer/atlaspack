@@ -183,6 +183,43 @@ export default class Atlaspack {
       }
     }
 
+    // Process Force JS Fallback
+    // Precedence: Env var > Feature Flag
+    let forceJsFallback =
+      process.env.ATLASPACK_ENGINE_FORCE_JS_FALLBACK === 'true';
+
+    if (!forceJsFallback && featureFlags.rustEngineForceJsFallback) {
+      forceJsFallback = true;
+    }
+
+    if (forceJsFallback) {
+      featureFlags = {
+        ...featureFlags,
+        rustEngineEnabled: false,
+        rustEngineDualRun: false,
+        atlaspackV3: false,
+      } as const;
+
+      if (
+        process.env.ATLASPACK_ENGINE &&
+        process.env.ATLASPACK_ENGINE !== 'js'
+      ) {
+        logger.warn({
+          origin: '@atlaspack/core',
+          message: `Rust engine disabled by fallback mechanism (ATLASPACK_ENGINE_FORCE_JS_FALLBACK or rustEngineForceJsFallback flag).`,
+        });
+      }
+    } else {
+      // Bridge rustEngineEnabled to atlaspackV3
+      // If rustEngineEnabled is true, enable atlaspackV3
+      if (featureFlags.rustEngineEnabled) {
+        featureFlags = {
+          ...featureFlags,
+          atlaspackV3: true,
+        } as const;
+      }
+    }
+
     setFeatureFlags(featureFlags);
 
     loadRustWorkerThreadDylibHack();

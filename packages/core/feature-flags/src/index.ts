@@ -371,6 +371,14 @@ export const DEFAULT_FEATURE_FLAGS = {
    * @since 2025-12-13
    */
   rustEngineDualRun: false,
+
+  /**
+   * Force fallback to JS engine even if Rust engine is enabled
+   *
+   * @author Matt Jones <mjones4@atlassian.com>
+   * @since 2025-12-13
+   */
+  rustEngineForceJsFallback: false,
 };
 
 export type FeatureFlags = typeof DEFAULT_FEATURE_FLAGS;

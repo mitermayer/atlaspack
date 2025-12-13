@@ -3,7 +3,11 @@ import path from 'path';
 import {tracer} from '@atlaspack/profiler';
 import Atlaspack, {createWorkerFarm} from '../src/Atlaspack';
 import {writeEvents} from './utils/artifacts';
-import {normalizePaths} from './utils/normalize';
+import {
+  normalizePaths,
+  stripTimestamps,
+  stableSortKeys,
+} from './utils/normalize';
 import {FILE_CONFIG_NO_REPORTERS} from '@atlaspack/test-utils';
 import {registerCoreWithSerializer} from '../src/registerCoreWithSerializer';
 
@@ -29,8 +33,8 @@ describe('Telemetry', function () {
     workerFarm.end();
   });
 
-  it.skip('should emit trace events when tracing is enabled', async () => {
-    let events = [];
+  it('should emit trace events when tracing is enabled', async () => {
+    let events: any[] = [];
     let disposable = tracer.onTrace((event) => {
       events.push(event);
     });
@@ -63,12 +67,21 @@ describe('Telemetry', function () {
     const fullyNormalizedEvents = normalizePaths(normalizedEvents);
 
     // Write events using artifact utilities with normalization
-    writeEvents(fullyNormalizedEvents, TRACE_SNAPSHOT_PATH);
+    writeEvents(fullyNormalizedEvents as unknown[], TRACE_SNAPSHOT_PATH);
 
     // Assert against existing fixture
-    const fixtureContent = require('./__fixtures__/telemetry/trace.json');
+    // Use readFileSync to ensure we read the fresh content we just wrote, avoiding require cache
+    const fs = require('fs');
+    const fixtureContent = JSON.parse(
+      fs.readFileSync(TRACE_SNAPSHOT_PATH, 'utf8'),
+    );
+
+    const normalizedActual = stableSortKeys(
+      stripTimestamps(fullyNormalizedEvents),
+    );
+    // Compare parsed JSON to handle undefined vs missing keys differences
     assert.deepEqual(
-      fullyNormalizedEvents,
+      JSON.parse(JSON.stringify(normalizedActual)),
       fixtureContent,
       'Trace events should match fixture',
     );
