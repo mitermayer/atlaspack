@@ -37,7 +37,7 @@ Details: see per-epic folders under `docs/rust-migration/epics/<epic>/` (indexed
 
 - [ ] Story: Metrics spans around FFI, scheduler stages, cache hits/misses, watch latency (dashboards & sampling docs). (Failed verification: telemetry tests need update)
 - [ ] Story: Perf budgets in CI (cold/warm timings, memory) with thresholds.
-- [ ] Story: Panic/timeout watchdog with JS fallback and chaos tests.
+- [x] Story: Panic/timeout watchdog with JS fallback and chaos tests.
 
 ## Epic: Rollout and Fallback (T6)
 

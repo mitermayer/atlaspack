@@ -96,12 +96,9 @@ impl RunRequestContext {
 
   /// Report an event
   pub async fn report(&self, event: ReporterEvent) {
-    self
-      .plugins()
-      .reporter()
-      .report(&event)
-      .await
-      .expect("TODO this should be handled?")
+    if let Err(e) = self.plugins().reporter().report(&event).await {
+      tracing::error!("Failed to report event: {:?}", e);
+    }
   }
 
   /// Run a child request to the current request
