@@ -1,0 +1,8 @@
+{
+  "extends": "@atlaspack/config-default",
+  "resolvers": ["./plugins/resolver-log.js", "..."],
+  "transformers": {
+    "*.js": ["./plugins/transformer-log.js", "..."]
+  },
+  "reporters": ["./plugins/reporter-log.js"]
+}

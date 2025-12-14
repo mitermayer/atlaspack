@@ -1,3 +1,4 @@
+use std::env::temp_dir;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
@@ -10,6 +11,7 @@ use atlaspack_core::{
 use atlaspack_filesystem::{FileSystemRef, in_memory_file_system::InMemoryFileSystem};
 use atlaspack_plugin_rpc::RpcFactory;
 use atlaspack_plugin_rpc::testing::TestingRpcFactory;
+use lmdb_js_lite::{LMDBOptions, get_database};
 
 use crate::{
   plugins::{PluginsRef, config_plugins::ConfigPlugins},
@@ -93,11 +95,38 @@ pub(crate) fn request_tracker(options: RequestTrackerTestOptions) -> RequestTrac
     })
   });
 
+  let path = temp_dir()
+    .join("atlaspack-tests")
+    .join(format!("request-tracker-{}", rand::random::<u64>()));
+  let _ = std::fs::remove_dir_all(&path);
+  std::fs::create_dir_all(&path).unwrap();
+
+  let db = get_database(LMDBOptions {
+    path: path.to_string_lossy().to_string(),
+    async_writes: false,
+    map_size: None,
+  })
+  .unwrap();
+
+  let path = temp_dir()
+    .join("atlaspack-tests")
+    .join(format!("request-tracker-{}", rand::random::<u64>()));
+  let _ = std::fs::remove_dir_all(&path);
+  std::fs::create_dir_all(&path).unwrap();
+
+  let db = get_database(LMDBOptions {
+    path: path.to_string_lossy().to_string(),
+    async_writes: false,
+    map_size: None,
+  })
+  .unwrap();
+
   RequestTracker::new(
     Arc::clone(&config_loader),
     fs,
     Arc::new(atlaspack_options),
     plugins,
     project_root,
+    db,
   )
 }

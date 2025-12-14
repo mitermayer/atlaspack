@@ -1,9 +1,7 @@
 use memory_stats::memory_stats;
 use napi_derive::napi;
-use std::sync::{
-  Mutex,
-  atomic::{AtomicU64, Ordering},
-};
+use parking_lot::Mutex;
+use std::sync::atomic::{AtomicU64, Ordering};
 
 static BASELINE_PHYSICAL: AtomicU64 = AtomicU64::new(0);
 static BASELINE_VIRTUAL: AtomicU64 = AtomicU64::new(0);
@@ -89,34 +87,30 @@ pub fn sample_native_memory() {
       virtual_mem: usage.virtual_mem as u64,
     };
 
-    if let Ok(mut samples) = MEMORY_SAMPLES.lock() {
-      samples.push(sample);
-      // Keep only recent samples to prevent unbounded growth
-      if samples.len() > 10000 {
-        samples.drain(0..5000);
-      }
+    let mut samples = MEMORY_SAMPLES.lock();
+    samples.push(sample);
+    // Keep only recent samples to prevent unbounded growth
+    if samples.len() > 10000 {
+      samples.drain(0..5000);
     }
   }
 }
 
 #[napi]
 pub fn get_native_memory_stats() -> Option<NativeMemoryStats> {
-  if let Ok(samples) = MEMORY_SAMPLES.lock() {
-    if samples.is_empty() {
-      return None;
-    }
-
-    let physical_values: Vec<u64> = samples.iter().map(|s| s.physical_mem).collect();
-    let virtual_values: Vec<u64> = samples.iter().map(|s| s.virtual_mem).collect();
-
-    Some(NativeMemoryStats {
-      physical_mem: calculate_detailed_stats(&physical_values),
-      virtual_mem: calculate_detailed_stats(&virtual_values),
-      sample_count: samples.len() as f64,
-    })
-  } else {
-    None
+  let samples = MEMORY_SAMPLES.lock();
+  if samples.is_empty() {
+    return None;
   }
+
+  let physical_values: Vec<u64> = samples.iter().map(|s| s.physical_mem).collect();
+  let virtual_values: Vec<u64> = samples.iter().map(|s| s.virtual_mem).collect();
+
+  Some(NativeMemoryStats {
+    physical_mem: calculate_detailed_stats(&physical_values),
+    virtual_mem: calculate_detailed_stats(&virtual_values),
+    sample_count: samples.len() as f64,
+  })
 }
 
 #[napi]
@@ -126,8 +120,7 @@ pub fn reset_memory_tracking() {
     BASELINE_VIRTUAL.store(usage.virtual_mem as u64, Ordering::Relaxed);
     SAMPLE_COUNT.store(0, Ordering::Relaxed);
 
-    if let Ok(mut samples) = MEMORY_SAMPLES.lock() {
-      samples.clear();
-    }
+    let mut samples = MEMORY_SAMPLES.lock();
+    samples.clear();
   }
 }

@@ -5,13 +5,16 @@ use crate::bundle_graph::BundleGraph;
 use crate::types::Bundle;
 use crate::types::Dependency;
 use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Serialize, Deserialize)]
 pub enum RuntimeAssetPriority {
   Sync,
   Parallel,
 }
 
 /// A "synthetic" asset that will be inserted into the bundle graph
+#[derive(Debug, Serialize, Deserialize)]
 pub struct RuntimeAsset {
   pub code: String,
   pub dependency: Option<Dependency>,

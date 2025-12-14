@@ -1,0 +1,7 @@
+{
+  "extends": "@atlaspack/config-default",
+  "transformers": {
+    "*.yaml": ["@atlaspack/transformer-yaml"],
+    "*.yml": ["@atlaspack/transformer-yaml"]
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "code": "module.exports = {\n    \"name\": \"test-config\",\n    \"version\": \"1.0.0\",\n    \"description\": \"Test YAML configuration\",\n    \"dependencies\": {\n        \"react\": \"^18.0.0\",\n        \"react-dom\": \"^18.0.0\",\n        \"typescript\": \"^4.9.0\"\n    },\n    \"scripts\": {\n        \"start\": \"node index.js\",\n        \"build\": \"webpack --mode production\",\n        \"test\": \"jest\"\n    },\n    \"config\": {\n        \"apiUrl\": \"https://api.example.com\",\n        \"timeout\": 5000,\n        \"features\": {\n            \"featureA\": true,\n            \"featureB\": false\n        },\n        \"database\": {\n            \"host\": \"localhost\",\n            \"port\": 5432,\n            \"name\": \"testdb\"\n        }\n    },\n    \"tags\": [\n        \"web\",\n        \"frontend\",\n        \"javascript\",\n        \"typescript\"\n    ]\n};\n",
+  "dependencies": [],
+  "metadata": {
+    "id": "27f51ab9f4aa00d3"
+  }
+}

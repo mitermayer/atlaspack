@@ -1,0 +1,7 @@
+{
+  "code": "module.exports = JSON.parse(\"{\\\"name\\\":\\\"test-config\\\",\\\"version\\\":\\\"1.0.0\\\",\\\"description\\\":\\\"Test JSON configuration\\\",\\\"dependencies\\\":{\\\"react\\\":\\\"^18.0.0\\\",\\\"react-dom\\\":\\\"^18.0.0\\\"},\\\"scripts\\\":{\\\"start\\\":\\\"node index.js\\\",\\\"build\\\":\\\"webpack --mode production\\\"},\\\"config\\\":{\\\"apiUrl\\\":\\\"https://api.example.com\\\",\\\"timeout\\\":5000,\\\"features\\\":{\\\"featureA\\\":true,\\\"featureB\\\":false}}}\");\n",
+  "dependencies": [],
+  "metadata": {
+    "id": "eb57ef54cfa0273c"
+  }
+}

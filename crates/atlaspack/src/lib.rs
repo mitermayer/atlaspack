@@ -5,6 +5,7 @@ pub use error::*;
 pub use watch::*;
 
 pub mod atlaspack;
+pub mod hmr;
 pub(crate) mod request_tracker;
 
 mod error;
@@ -12,6 +13,9 @@ mod plugins;
 mod project_root;
 mod requests;
 mod watch;
+pub mod watcher;
 
+pub mod bundler;
+pub mod scheduler;
 #[cfg(test)]
 mod test_utils;

@@ -16,6 +16,10 @@ use atlaspack_core::plugin::RuntimePlugin;
 use atlaspack_core::plugin::TransformerPlugin;
 use atlaspack_core::plugin::ValidatorPlugin;
 use atlaspack_core::plugin::composite_reporter_plugin::CompositeReporterPlugin;
+use atlaspack_plugin_bundler_default::DefaultBundler;
+use atlaspack_plugin_namer_default::DefaultNamerPlugin;
+use atlaspack_plugin_optimizer_inline_requires::AtlaspackInlineRequiresOptimizerPlugin;
+use atlaspack_plugin_packager_js::AtlaspackJsPackagerPlugin;
 use atlaspack_plugin_resolver::AtlaspackResolver;
 use atlaspack_plugin_rpc::RpcWorkerRef;
 use atlaspack_plugin_transformer_css::AtlaspackCssTransformerPlugin;
@@ -89,6 +93,10 @@ impl ConfigPlugins {
 impl Plugins for ConfigPlugins {
   #[allow(unused)]
   fn bundler(&self) -> Result<Box<dyn BundlerPlugin>, anyhow::Error> {
+    if self.config.bundler.package_name == "@atlaspack/bundler-default" {
+      return Ok(Box::new(DefaultBundler));
+    }
+
     self
       .rpc_worker
       .create_bundler(&self.ctx, &self.config.bundler)
@@ -118,6 +126,10 @@ impl Plugins for ConfigPlugins {
     let mut namers: Vec<Box<dyn NamerPlugin>> = Vec::new();
 
     for namer in self.config.namers.iter() {
+      if namer.package_name == "@atlaspack/namer-default" {
+        namers.push(Box::new(DefaultNamerPlugin));
+        continue;
+      }
       namers.push(self.rpc_worker.create_namer(&self.ctx, namer)?);
     }
 
@@ -137,6 +149,10 @@ impl Plugins for ConfigPlugins {
     });
 
     for optimizer in self.config.optimizers.get(path, named_pattern).iter() {
+      if optimizer.package_name == "@atlaspack/optimizer-inline-requires" {
+        optimizers.push(Box::new(AtlaspackInlineRequiresOptimizerPlugin));
+        continue;
+      }
       optimizers.push(self.rpc_worker.create_optimizer(&self.ctx, optimizer)?);
     }
 
@@ -150,6 +166,10 @@ impl Plugins for ConfigPlugins {
     let Some(packager) = packager else {
       return Err(self.missing_plugin(path, "packager"));
     };
+
+    if packager.package_name == "@atlaspack/packager-js" {
+      return Ok(Box::new(AtlaspackJsPackagerPlugin::new()));
+    }
 
     self.rpc_worker.create_packager(&self.ctx, packager)
   }
@@ -200,16 +220,6 @@ impl Plugins for ConfigPlugins {
 
     for transformer in self.config.transformers.get(path, named_pattern).iter() {
       let transformer_name = transformer.package_name.as_str();
-
-      match transformer_name {
-        // Currently JS plugins don't work and it's easier to just skip these.
-        // We also will probably remove babel from the defaults and support react refresh in Rust
-        // before releasing native asset graph
-        "@atlaspack/transformer-react-refresh-wrap" => continue,
-        "@atlaspack/transformer-posthtml" => continue,
-        "@atlaspack/transformer-postcss" => continue,
-        _ => {}
-      }
 
       let transformer = self
         .plugin_cache
@@ -277,7 +287,7 @@ mod tests {
       .bundler()
       .expect("Not to panic");
 
-    assert_eq!(format!("{:?}", bundler), "RpcBundlerPlugin")
+    assert_eq!(format!("{:?}", bundler), "DefaultBundler")
   }
 
   #[test]
@@ -295,7 +305,7 @@ mod tests {
       .namers()
       .expect("Not to panic");
 
-    assert_eq!(format!("{:?}", namers), "[RpcNamerPlugin]")
+    assert_eq!(format!("{:?}", namers), "[DefaultNamerPlugin]")
   }
 
   #[test]
@@ -313,7 +323,7 @@ mod tests {
       .packager(Path::new("a.js"))
       .expect("Not to panic");
 
-    assert_eq!(format!("{:?}", packager), "RpcPackagerPlugin")
+    assert_eq!(format!("{:?}", packager), "AtlaspackJsPackagerPlugin")
   }
 
   #[test]

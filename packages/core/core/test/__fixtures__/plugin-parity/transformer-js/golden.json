@@ -1,0 +1,10 @@
+{
+  "code": "var parcelHelpers = require(\"@atlaspack/transformer-js/src/esmodule-helpers.js\");\nparcelHelpers.defineInteropFlag(exports);\nclass MyClass {\n    static prop = 'value';\n    method() {\n        return this.prop?.length;\n    }\n}\nexports.default = new MyClass();\n",
+  "dependencies": [
+    {
+      "specifier": "@atlaspack/transformer-js/src/esmodule-helpers.js",
+      "priority": "sync",
+      "isOptional": false
+    }
+  ]
+}

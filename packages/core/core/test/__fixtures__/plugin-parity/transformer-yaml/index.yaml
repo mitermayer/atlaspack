@@ -1,0 +1,35 @@
+# Test YAML configuration
+name: test-config
+version: 1.0.0
+description: Test YAML configuration
+
+# Dependencies section
+dependencies:
+  react: ^18.0.0
+  react-dom: ^18.0.0
+  typescript: ^4.9.0
+
+# Scripts
+scripts:
+  start: node index.js
+  build: webpack --mode production
+  test: jest
+
+# Configuration
+config:
+  apiUrl: https://api.example.com
+  timeout: 5000
+  features:
+    featureA: true
+    featureB: false
+  database:
+    host: localhost
+    port: 5432
+    name: testdb
+
+# Array example
+tags:
+  - web
+  - frontend
+  - javascript
+  - typescript

@@ -5,11 +5,22 @@ use atlaspack_napi_helpers::js_callable::JsCallable;
 use napi::JsObject;
 use serde::{Deserialize, Serialize};
 
+use super::RPC_VERSION;
+
 /// NodejsWorker is the connection to a single JavaScript worker thread
 pub struct NodejsWorker {
+  pub handshake_fn: JsCallable,
   pub load_plugin_fn: JsCallable,
   pub run_resolver_resolve_fn: JsCallable,
   pub transformer_register_fn: JsCallable,
+  pub bundler_bundle_fn: JsCallable,
+  pub bundler_optimize_fn: JsCallable,
+  pub namer_name_fn: JsCallable,
+  pub packager_package_fn: JsCallable,
+  pub optimizer_optimize_fn: JsCallable,
+  pub compressor_compress_fn: JsCallable,
+  pub reporter_report_fn: JsCallable,
+  pub runtime_apply_fn: JsCallable,
 }
 
 impl NodejsWorker {
@@ -17,10 +28,36 @@ impl NodejsWorker {
     let bind = |method_name: &str| JsCallable::new_method_bound(method_name, &delegate);
 
     Ok(Self {
+      handshake_fn: bind("handshake")?,
       load_plugin_fn: bind("loadPlugin")?,
       run_resolver_resolve_fn: bind("runResolverResolve")?,
       transformer_register_fn: bind("runTransformerTransform")?,
+      bundler_bundle_fn: bind("runBundlerBundle")?,
+      bundler_optimize_fn: bind("runBundlerOptimize")?,
+      namer_name_fn: bind("runNamerName")?,
+      packager_package_fn: bind("runPackagerPackage")?,
+      optimizer_optimize_fn: bind("runOptimizerOptimize")?,
+      compressor_compress_fn: bind("runCompressorCompress")?,
+      reporter_report_fn: bind("runReporterReport")?,
+      runtime_apply_fn: bind("runRuntimeApply")?,
     })
+  }
+
+  pub async fn handshake(&self) -> anyhow::Result<()> {
+    let version: u32 = self
+      .handshake_fn
+      .call_serde(RPC_VERSION)
+      .await
+      .map_err(|e| anyhow::anyhow!("Plugin RPC handshake failed: {}", e))?;
+
+    if version != RPC_VERSION {
+      return Err(anyhow::anyhow!(
+        "Plugin RPC version mismatch: expected {}, got {}",
+        RPC_VERSION,
+        version
+      ));
+    }
+    Ok(())
   }
 
   pub async fn load_plugin(&self, opts: LoadPluginOptions) -> anyhow::Result<()> {

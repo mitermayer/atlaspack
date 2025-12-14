@@ -498,8 +498,7 @@ describe('AdjacencyList', () => {
       let work = new Promise((resolve: any) => worker.on('message', resolve));
       worker.postMessage(originalSerialized);
       let received = AdjacencyList.deserialize(await work);
-      // eslint-disable-next-line no-unused-vars
-      const _terminatePromise = worker.terminate();
+      await worker.terminate();
 
       assert.deepEqual(received.serialize().nodes, graph.serialize().nodes);
       assert.deepEqual(received.serialize().edges, graph.serialize().edges);

@@ -126,10 +126,100 @@ export default class Atlaspack {
       return;
     }
 
-    const featureFlags = {
+    // Process ATLASPACK_ENGINE environment variable with proper precedence
+    let featureFlags = {
       ...DEFAULT_FEATURE_FLAGS,
       ...this.#initialOptions.featureFlags,
     } as const;
+
+    // ATLASPACK_ENGINE environment variable processing
+    // Precedence: CLI options > environment > defaults
+    if (process.env.ATLASPACK_ENGINE) {
+      const engine = process.env.ATLASPACK_ENGINE.toLowerCase();
+      let envRustEngineEnabled: boolean | undefined;
+      let envRustEngineDualRun: boolean | undefined;
+
+      switch (engine) {
+        case 'rust':
+          envRustEngineEnabled = true;
+          envRustEngineDualRun = false;
+          break;
+        case 'dual':
+          envRustEngineEnabled = true;
+          envRustEngineDualRun = true;
+          break;
+        case 'js':
+          envRustEngineEnabled = false;
+          envRustEngineDualRun = false;
+          break;
+        default:
+          // Warn about invalid engine value but continue with defaults
+          logger.warn({
+            origin: '@atlaspack/core',
+            message: `Invalid ATLASPACK_ENGINE value: "${engine}". Valid values are: js, rust, dual. Using default configuration.`,
+          });
+          break;
+      }
+
+      // Apply environment values only if not overridden by CLI
+      if (
+        envRustEngineEnabled !== undefined &&
+        this.#initialOptions.featureFlags?.rustEngineEnabled === undefined
+      ) {
+        featureFlags = {
+          ...featureFlags,
+          rustEngineEnabled: envRustEngineEnabled,
+        } as const;
+      }
+
+      if (
+        envRustEngineDualRun !== undefined &&
+        this.#initialOptions.featureFlags?.rustEngineDualRun === undefined
+      ) {
+        featureFlags = {
+          ...featureFlags,
+          rustEngineDualRun: envRustEngineDualRun,
+        } as const;
+      }
+    }
+
+    // Process Force JS Fallback
+    // Precedence: Env var > Feature Flag
+    let forceJsFallback =
+      process.env.ATLASPACK_ENGINE_FORCE_JS_FALLBACK === 'true';
+
+    if (!forceJsFallback && featureFlags.rustEngineForceJsFallback) {
+      forceJsFallback = true;
+    }
+
+    if (forceJsFallback) {
+      featureFlags = {
+        ...featureFlags,
+        rustEngineEnabled: false,
+        rustEngineDualRun: false,
+        atlaspackV3: false,
+      } as const;
+
+      if (
+        process.env.ATLASPACK_ENGINE &&
+        process.env.ATLASPACK_ENGINE !== 'js'
+      ) {
+        logger.warn({
+          origin: '@atlaspack/core',
+          message: `Rust engine disabled by fallback mechanism (ATLASPACK_ENGINE_FORCE_JS_FALLBACK or rustEngineForceJsFallback flag).`,
+        });
+      }
+    } else {
+      // Bridge rustEngineEnabled to atlaspackV3
+      // If rustEngineEnabled is true, enable atlaspackV3
+      if (featureFlags.rustEngineEnabled) {
+        featureFlags = {
+          ...featureFlags,
+          atlaspackV3: true,
+        } as const;
+      }
+    }
+
     setFeatureFlags(featureFlags);
 
     loadRustWorkerThreadDylibHack();
