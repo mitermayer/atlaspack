@@ -4,3 +4,5 @@ pub(super) mod nodejs_rpc_worker_farm;
 
 pub use self::nodejs_rpc_factory::*;
 pub use self::nodejs_rpc_worker::*;
+
+pub const RPC_VERSION: u32 = 1;

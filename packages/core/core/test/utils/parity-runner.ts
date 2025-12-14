@@ -10,6 +10,7 @@ export interface ParityOptions {
   entry?: string;
   mode?: 'development' | 'production';
   compareOutputs?: boolean;
+  engine?: 'js' | 'rust' | 'dual';
 }
 
 export interface BuildResult {
@@ -23,6 +24,8 @@ export interface BuildResult {
     id: string;
   }>;
   outputDir: string;
+  diagnostics?: any[];
+  success: boolean;
 }
 
 export async function runParityBuild(
@@ -33,35 +36,24 @@ export async function runParityBuild(
   rustResult?: BuildResult;
   comparison?: any;
 }> {
-  const engineEnv = process.env.ATLASPACK_ENGINE || 'js';
+  const engineEnv = options.engine || process.env.ATLASPACK_ENGINE || 'js';
   const engines = engineEnv === 'dual' ? ['js', 'rust'] : [engineEnv];
   const fixtureName = path.basename(fixturePath);
 
   const results: Record<string, BuildResult> = {};
 
   for (const engine of engines) {
-    try {
-      const result = await runSingleBuild(
-        engine,
-        fixturePath,
-        fixtureName,
-        options,
-      );
-      results[engine] = result;
-    } catch (err) {
-      if (engine === 'rust') {
-        // eslint-disable-next-line no-console
-        console.warn(
-          `[Parity Runner] Rust build failed for ${fixtureName}:`,
-          err,
-        );
-      } else {
-        throw err;
-      }
-    }
+    // try-catch handled inside runSingleBuild now
+    const result = await runSingleBuild(
+      engine,
+      fixturePath,
+      fixtureName,
+      options,
+    );
+    results[engine] = result;
   }
 
-  // If running in dual mode and both engines succeeded, compare results
+  // If running in dual mode and both engines finished (success or fail), compare results
   if (
     engineEnv === 'dual' &&
     results.js &&
@@ -69,7 +61,10 @@ export async function runParityBuild(
     options.compareOutputs !== false
   ) {
     const comparison = compareBuilds(results.js, results.rust);
-    generateParityReport(fixtureName, results.js, results.rust, comparison);
+    // Only generate report if successful or if we want to debug
+    if (results.js.success && results.rust.success) {
+      generateParityReport(fixtureName, results.js, results.rust, comparison);
+    }
     return {
       jsResult: results.js,
       rustResult: results.rust,
@@ -114,32 +109,60 @@ async function runSingleBuild(
     },
   });
 
-  const {bundleGraph, buildTime} = await atlaspack.run();
+  try {
+    const {bundleGraph, buildTime} = await atlaspack.run();
 
-  const bundles = bundleGraph.getBundles().map((b: any) => ({
-    filePath: path.relative(PROJECT_ROOT, b.filePath),
-    type: b.type,
-    id: b.id,
-  }));
+    const bundles = bundleGraph.getBundles().map((b: any) => ({
+      filePath: path.relative(PROJECT_ROOT, b.filePath),
+      type: b.type,
+      id: b.id,
+    }));
 
-  const summaryPath = path.join(outputDir, 'summary.json');
+    const summaryPath = path.join(outputDir, 'summary.json');
 
-  writeSummary(
-    {
+    writeSummary(
+      {
+        engine,
+        fixture: fixtureName,
+        timings: {buildTime},
+        bundles,
+      },
+      summaryPath,
+    );
+
+    return {
       engine,
-      fixture: fixtureName,
-      timings: {buildTime},
+      fixtureName,
+      bundleGraph,
+      buildTime,
       bundles,
-    },
-    summaryPath,
-  );
+      outputDir,
+      success: true,
+    };
+  } catch (err: any) {
+    // Capture diagnostics
+    let diagnostics: any[] = [];
+    if (err.diagnostics) {
+      diagnostics = err.diagnostics;
+    } else {
+      diagnostics = [
+        {
+          message: err.message,
+          origin: '@atlaspack/core',
+          stack: err.stack,
+        },
+      ];
+    }
 
-  return {
-    engine,
-    fixtureName,
-    bundleGraph,
-    buildTime,
-    bundles,
-    outputDir,
-  };
+    return {
+      engine,
+      fixtureName,
+      bundleGraph: null,
+      buildTime: 0,
+      bundles: [],
+      outputDir,
+      success: false,
+      diagnostics,
+    };
+  }
 }

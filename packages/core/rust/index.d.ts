@@ -43,6 +43,7 @@ export interface AtlaspackNapiOptions {
 }
 export declare function atlaspackNapiCreate(napiOptions: AtlaspackNapiOptions, lmdb: LMDB): object
 export declare function atlaspackNapiBuildAssetGraph(atlaspackNapi: AtlaspackNapi): object
+export declare function atlaspackNapiBuildBundleGraph(atlaspackNapi: AtlaspackNapi): object
 export declare function atlaspackNapiRespondToFsEvents(atlaspackNapi: AtlaspackNapi, options: object): object
 export declare function createDependencyId(params: unknown): string
 export declare function createEnvironmentId(params: unknown): string
@@ -61,7 +62,7 @@ export declare function getNativeMemoryStats(): NativeMemoryStats | null
 export declare function resetMemoryTracking(): void
 export declare function sampleNativeMemory(): void
 /** Called on the worker thread to create a reference to the NodeJs worker */
-export declare function newNodejsWorker(worker: object): JsTransferable
+export declare function newNodejsWorker(worker: object): object
 export interface InlineRequiresOptimizerInput {
   code: string
   sourceMaps: boolean

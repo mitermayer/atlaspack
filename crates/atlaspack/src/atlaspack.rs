@@ -161,6 +161,7 @@ impl Atlaspack {
 }
 
 impl Atlaspack {
+  #[tracing::instrument(level = "info", skip_all)]
   pub fn build_asset_graph(&self) -> anyhow::Result<(Arc<AssetGraph>, bool)> {
     self.runtime.block_on(async move {
       // Notify all resolver plugins that a new build is starting
@@ -216,6 +217,7 @@ impl Atlaspack {
     })
   }
 
+  #[tracing::instrument(level = "info", skip_all)]
   pub fn build_bundle_graph(&self) -> anyhow::Result<Arc<BundleGraph>> {
     self.runtime.block_on(async move {
       let mut request_tracker = self.request_tracker.write().await;
@@ -231,6 +233,7 @@ impl Atlaspack {
     })
   }
 
+  #[tracing::instrument(level = "info", skip_all)]
   pub fn respond_to_fs_events(&self, events: WatchEvents) -> anyhow::Result<bool> {
     self.runtime.block_on(async move {
       Ok(

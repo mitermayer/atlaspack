@@ -32,6 +32,7 @@ pub struct AtlaspackOptions {
   pub serve_options: ServeOptions,
 
   pub entries: Vec<String>,
+  #[serde(default, deserialize_with = "deserialize_env")]
   pub env: Option<BTreeMap<String, String>>,
 
   #[serde(rename = "defaultConfig")]
@@ -105,6 +106,7 @@ pub struct TargetDescriptor {
   pub dist_dir: Option<PathBuf>,
   pub dist_entry: Option<PathBuf>,
   pub engines: Option<Engines>,
+  #[serde(default, deserialize_with = "deserialize_env")]
   pub env: Option<BTreeMap<String, String>>,
   pub include_node_modules: Option<IncludeNodeModules>,
   pub is_library: Option<bool>,
@@ -140,7 +142,8 @@ impl<'de> Deserialize<'de> for BuildMode {
   where
     D: Deserializer<'de>,
   {
-    let s = String::deserialize(deserializer)?;
+    let s =
+      Option::<String>::deserialize(deserializer)?.unwrap_or_else(|| "development".to_string());
 
     Ok(match s.as_str() {
       "development" => BuildMode::Development,
@@ -150,6 +153,26 @@ impl<'de> Deserialize<'de> for BuildMode {
   }
 }
 
+fn deserialize_env<'de, D>(deserializer: D) -> Result<Option<BTreeMap<String, String>>, D::Error>
+where
+  D: Deserializer<'de>,
+{
+  let v: Option<BTreeMap<String, Option<String>>> = Option::deserialize(deserializer)?;
+  Ok(v.map(|map| {
+    map
+      .into_iter()
+      .filter_map(|(k, v)| v.map(|v| (k, v)))
+      .collect()
+  }))
+}
+
+fn deserialize_public_url<'de, D>(deserializer: D) -> Result<String, D::Error>
+where
+  D: Deserializer<'de>,
+{
+  let s: Option<String> = Option::deserialize(deserializer)?;
+  Ok(s.unwrap_or_else(|| String::from("/")))
+}
 #[derive(Clone, Debug, Deserialize, Hash, Serialize)]
 #[serde(default, rename_all = "camelCase")]
 pub struct DefaultTargetOptions {
@@ -157,6 +180,7 @@ pub struct DefaultTargetOptions {
   pub engines: Engines,
   pub is_library: Option<bool>,
   pub output_format: Option<OutputFormat>,
+  #[serde(deserialize_with = "deserialize_public_url")]
   pub public_url: String,
   pub should_optimize: Option<bool>,
   pub should_scope_hoist: Option<bool>,

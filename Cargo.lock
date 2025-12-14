@@ -269,6 +269,10 @@ dependencies = [
  "atlaspack_core",
  "atlaspack_filesystem",
  "atlaspack_package_manager",
+ "atlaspack_plugin_bundler_default",
+ "atlaspack_plugin_namer_default",
+ "atlaspack_plugin_optimizer_inline_requires",
+ "atlaspack_plugin_packager_js",
  "atlaspack_plugin_resolver",
  "atlaspack_plugin_rpc",
  "atlaspack_plugin_transformer_css",
@@ -410,6 +414,7 @@ dependencies = [
  "once_cell",
  "oxipng",
  "parking_lot",
+ "petgraph",
  "rayon",
  "regex",
  "rkyv 0.7.45",
@@ -622,12 +627,50 @@ dependencies = [
 ]
 
 [[package]]
+name = "atlaspack_plugin_bundler_default"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "atlaspack_core",
+ "fixedbitset 0.4.2",
+ "petgraph",
+ "serde",
+]
+
+[[package]]
+name = "atlaspack_plugin_namer_default"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "atlaspack_core",
+ "pathdiff",
+ "serde",
+]
+
+[[package]]
 name = "atlaspack_plugin_optimizer_inline_requires"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
+ "async-trait",
+ "atlaspack_core",
  "atlaspack_swc_runner",
  "pretty_assertions",
  "swc_core",
+]
+
+[[package]]
+name = "atlaspack_plugin_packager_js"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "atlaspack_core",
+ "petgraph",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]

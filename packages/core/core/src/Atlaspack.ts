@@ -275,26 +275,30 @@ export default class Atlaspack {
         threads = 2;
       }
 
-      rustAtlaspack = await AtlaspackV3.create({
-        ...options,
-        // @ts-expect-error TS2353
-        corePath: path.join(__dirname, '..'),
-        threads,
-        entries: Array.isArray(entries)
-          ? entries
-          : entries == null
-            ? undefined
-            : [entries],
-        env: resolvedOptions.env,
-        fs: inputFS && new FileSystemV3(inputFS),
-        defaultTargetOptions: resolvedOptions.defaultTargetOptions,
-        serveOptions: resolvedOptions.serveOptions,
-        lmdb,
-        featureFlags: resolvedOptions.featureFlags,
-      });
-      this.#disposable.add(() => {
-        rustAtlaspack.end();
-      });
+      try {
+        rustAtlaspack = await AtlaspackV3.create({
+          ...options,
+          // @ts-expect-error TS2353
+          corePath: path.join(__dirname, '..'),
+          threads,
+          entries: Array.isArray(entries)
+            ? entries
+            : entries == null
+              ? undefined
+              : [entries],
+          env: resolvedOptions.env,
+          fs: inputFS && new FileSystemV3(inputFS),
+          defaultTargetOptions: resolvedOptions.defaultTargetOptions,
+          serveOptions: resolvedOptions.serveOptions,
+          lmdb,
+          featureFlags: resolvedOptions.featureFlags,
+        });
+        this.#disposable.add(() => {
+          rustAtlaspack.end();
+        });
+      } catch (e) {
+        throw e;
+      }
     }
     // @ts-expect-error TS2454
     this.rustAtlaspack = rustAtlaspack;

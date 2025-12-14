@@ -9,6 +9,7 @@ use crate::plugins::PluginsRef;
 pub struct PipelineScheduler;
 
 impl PipelineScheduler {
+  #[tracing::instrument(level = "info", skip_all, name = "PipelineScheduler::execute")]
   pub async fn execute(
     transform_context: TransformContext,
     input: Asset,

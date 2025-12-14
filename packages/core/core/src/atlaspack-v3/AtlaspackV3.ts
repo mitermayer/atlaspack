@@ -63,6 +63,23 @@ export class AtlaspackV3 {
       isDefaultNapiWorkerPool = true;
     }
 
+    // Ensure env values are strings and not null
+    // @ts-expect-error TS2339
+    if (options.env) {
+      // @ts-expect-error TS2339
+      for (const key in options.env) {
+        // @ts-expect-error TS2339
+        const val = options.env[key];
+        if (val == null) {
+          // @ts-expect-error TS2339
+          delete options.env[key];
+        } else if (typeof val !== 'string') {
+          // @ts-expect-error TS2339
+          options.env[key] = String(val);
+        }
+      }
+    }
+
     // @ts-expect-error TS2488
     const [internal, error] = await atlaspackNapiCreate(
       {
@@ -76,6 +93,9 @@ export class AtlaspackV3 {
     );
 
     if (error !== null) {
+      if (isDefaultNapiWorkerPool) {
+        napiWorkerPool.shutdown();
+      }
       throw new ThrowableDiagnostic({
         diagnostic: error,
       });

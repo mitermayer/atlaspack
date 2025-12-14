@@ -27,6 +27,12 @@ export interface ComparisonResult {
     filePath: string;
     differences: string[];
   }>;
+  diagnostics: {
+    match: boolean;
+    js: any[];
+    rust: any[];
+    diffs: string[];
+  };
 }
 
 export function compareBuilds(
@@ -57,6 +63,10 @@ export function compareBuilds(
 
   const fileDifferences = compareFileLists(jsResult, rustResult);
   const contentDifferences = compareFileContents(jsResult, rustResult);
+  const diagnostics = compareDiagnostics(
+    jsResult.diagnostics,
+    rustResult.diagnostics,
+  );
 
   return {
     bundleCount,
@@ -64,7 +74,67 @@ export function compareBuilds(
     buildTime,
     fileDifferences,
     contentDifferences,
+    diagnostics,
   };
+}
+
+function compareDiagnostics(
+  js: any[] | undefined,
+  rust: any[] | undefined,
+): {match: boolean; js: any[]; rust: any[]; diffs: string[]} {
+  const jsDiags = normalizeDiagnostics(js || []);
+  const rustDiags = normalizeDiagnostics(rust || []);
+
+  // Sort to handle potential nondeterminism in error reporting order
+  const sortFn = (a: any, b: any) =>
+    JSON.stringify(a).localeCompare(JSON.stringify(b));
+  jsDiags.sort(sortFn);
+  rustDiags.sort(sortFn);
+
+  const diffs: string[] = [];
+  const match = JSON.stringify(jsDiags) === JSON.stringify(rustDiags);
+
+  if (!match) {
+    if (jsDiags.length !== rustDiags.length) {
+      diffs.push(
+        `Diagnostic count mismatch: JS=${jsDiags.length}, Rust=${rustDiags.length}`,
+      );
+    }
+
+    // Simple diff for now
+    const maxlen = Math.max(jsDiags.length, rustDiags.length);
+    for (let i = 0; i < maxlen; i++) {
+      const j = jsDiags[i] ? JSON.stringify(jsDiags[i], null, 2) : 'undefined';
+      const r = rustDiags[i]
+        ? JSON.stringify(rustDiags[i], null, 2)
+        : 'undefined';
+      if (j !== r) {
+        diffs.push(
+          `Diagnostic mismatch at index ${i}:\nJS:\n${j}\nRust:\n${r}`,
+        );
+      }
+    }
+  }
+
+  return {match, js: jsDiags, rust: rustDiags, diffs};
+}
+
+function normalizeDiagnostics(diags: any[]): any[] {
+  return diags.map((d) => {
+    const clone = JSON.parse(JSON.stringify(d));
+    // Normalize stack traces and paths
+    delete clone.stack; // Stacks will differ between engines
+    if (clone.codeFrames) {
+      clone.codeFrames.forEach((frame: any) => {
+        if (frame.filePath) {
+          frame.filePath = frame.filePath.replace(process.cwd(), '<ROOT>');
+        }
+      });
+    }
+    // Normalize origin if needed (sometimes Rust reports slightly different origin strings)
+    // For now, keep strictly to see diffs
+    return clone;
+  });
 }
 
 function getBundleTypes(

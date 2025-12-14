@@ -1,4 +1,4 @@
-# Plugin Migration – Core Engine Plugins — Start Here
+# Plugin Migration – Core Engine Plugins
 
 Focus: migrate core transformers, resolver, bundlers, packagers, and namer to Rust-backed implementations for the Rust engine, while keeping JS plugins as the public interface and source of truth for behavior.
 
@@ -13,7 +13,10 @@ Focus: migrate core transformers, resolver, bundlers, packagers, and namer to Ru
 - Rust crates:
   - Core transformers: `crates/atlaspack_plugin_transformer_{css,html,js,json,raw,svg,image,inline,inline_string,tokens,yaml}/`.
   - Resolver: `crates/atlaspack_plugin_resolver/`.
-  - Bundler/packager/namer crates: new `crates/atlaspack_plugin_bundler_*`, `crates/atlaspack_plugin_packager_*`, and `crates/atlaspack_plugin_namer_*` to be created.
+  - Bundler/packager/namer crates:
+    - Namer: `crates/atlaspack_plugin_namer_default/`
+    - Bundlers: `crates/atlaspack_plugin_bundler_default/`, `crates/atlaspack_plugin_bundler_library/`
+    - Packagers: `crates/atlaspack_plugin_packager_*`
 - Parity tests and fixtures:
   - Plugin parity tests: `packages/core/core/test/plugin-parity/*.test.ts`.
   - Plugin pipeline tests: `packages/core/core/test/pluginPipeline.test.ts` and `.../integration/plugin-pipeline.test.ts`.
@@ -28,16 +31,26 @@ Focus: migrate core transformers, resolver, bundlers, packagers, and namer to Ru
 - Dual-run smoke (for overall engine parity):
   - `ATLASPACK_ENGINE=dual yarn test:js:unit packages/examples/kitchen-sink/__tests__/dual-smoke.test.ts`
 
-## Definition of done
+## Definition of Done
 
-- Core transformers and the default resolver have Rust-backed implementations:
-  - JS plugins delegate to Rust crates when the Rust engine is active.
-  - Plugin parity tests remain green under JS engine, and dual-run harness reports no differences for covered fixtures.
-- Bundlers, packagers, and the default namer have Rust plugin implementations:
-  - Bundle graph shape and output filenames for the Rust engine match JS goldens for the documented fixtures.
-- Extended plugin parity fixtures exist for core plugins:
-  - JS/CSS/HTML/image/raw/svg/json/yaml fixtures cover scope hoisting, code splitting, HMR/watch, and sourcemaps.
-  - CI enforces parity on these fixtures for JS engine; dual-run is used to monitor Rust.
+- Core transformers and the default resolver have Rust-backed implementations.
+- Bundlers, packagers, and the default namer have Rust plugin implementations.
+- Extended plugin parity fixtures exist for core plugins.
+
+## Breakdown
+
+### T12: Bundler/Packager/Namer Crates
+
+- **T12a: Namer**
+  - Implement `crates/atlaspack_plugin_namer_default`.
+  - Port logic from `packages/namers/default`.
+  - Validation: Unit tests matching JS behavior.
+- **T12b: Bundler**
+  - Implement `crates/atlaspack_plugin_bundler_default`.
+  - Port logic from `packages/bundlers/default`.
+  - Implement `crates/atlaspack_plugin_bundler_library`.
+- **T12c: Packagers**
+  - Implement core packagers (js, css, html, etc.).
 
 ## Before merge (checklist)
 

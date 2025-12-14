@@ -5,7 +5,7 @@ use atlaspack_core::bundle_graph::{
 };
 use atlaspack_core::types::{Asset, Bundle, Dependency};
 use napi::{Env, JsObject};
-use petgraph::visit::IntoEdgeReferences;
+use petgraph::visit::{EdgeRef, IntoEdgeReferences};
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use serde::Serialize;
 

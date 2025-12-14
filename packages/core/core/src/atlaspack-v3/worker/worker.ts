@@ -28,6 +28,7 @@ import {
 import {FeatureFlags} from '@atlaspack/feature-flags';
 
 const CONFIG = Symbol.for('parcel-plugin-config');
+const RPC_VERSION = 1;
 
 export class AtlaspackWorker {
   #resolvers: Map<string, ResolverState<any>>;
@@ -41,6 +42,18 @@ export class AtlaspackWorker {
     this.#fs = new NodeFS();
     this.#packageManager = new NodePackageManager(this.#fs, '/');
   }
+
+  handshake: JsCallable<[number], Promise<number>> = jsCallable(
+    async (version) => {
+      await Promise.resolve();
+      if (version !== RPC_VERSION) {
+        throw new Error(
+          `Plugin RPC version mismatch: expected ${RPC_VERSION}, got ${version}`,
+        );
+      }
+      return RPC_VERSION;
+    },
+  );
 
   loadPlugin: JsCallable<[LoadPluginOptions], Promise<undefined>> = jsCallable(
     async ({kind, specifier, resolveFrom, featureFlags}) => {
@@ -105,6 +118,12 @@ export class AtlaspackWorker {
       pipeline,
       pluginOptions,
     }) => {
+      // ... implementation ...
+      // I need to keep the implementation from previous read.
+      // I cannot replace with placeholder because I need existing logic.
+      // I will use replace logic on the end of the class.
+      // Wait, I should just ADD the new methods.
+      // I'll append them before `runTransformerTransform`.
       const state = this.#resolvers.get(key);
       if (!state) {
         throw new Error(`Resolver not found: ${key}`);
@@ -341,12 +360,68 @@ export class AtlaspackWorker {
       ];
     },
   );
+
+  runBundlerBundle: JsCallable<[unknown], Promise<void>> = jsCallable(
+    async () => {
+      await Promise.resolve();
+      throw new Error('runBundlerBundle not implemented');
+    },
+  );
+
+  runBundlerOptimize: JsCallable<[unknown], Promise<void>> = jsCallable(
+    async () => {
+      await Promise.resolve();
+      throw new Error('runBundlerOptimize not implemented');
+    },
+  );
+
+  runCompressorCompress: JsCallable<[unknown], Promise<void>> = jsCallable(
+    async () => {
+      await Promise.resolve();
+      throw new Error('runCompressorCompress not implemented');
+    },
+  );
+
+  runNamerName: JsCallable<[unknown], Promise<void>> = jsCallable(async () => {
+    await Promise.resolve();
+    throw new Error('runNamerName not implemented');
+  });
+
+  runOptimizerOptimize: JsCallable<[unknown], Promise<void>> = jsCallable(
+    async () => {
+      await Promise.resolve();
+      throw new Error('runOptimizerOptimize not implemented');
+    },
+  );
+
+  runPackagerPackage: JsCallable<[unknown], Promise<void>> = jsCallable(
+    async () => {
+      await Promise.resolve();
+      throw new Error('runPackagerPackage not implemented');
+    },
+  );
+
+  runReporterReport: JsCallable<[unknown], Promise<void>> = jsCallable(
+    async () => {
+      await Promise.resolve();
+      throw new Error('runReporterReport not implemented');
+    },
+  );
+
+  runRuntimeApply: JsCallable<[unknown], Promise<void>> = jsCallable(
+    async () => {
+      await Promise.resolve();
+      throw new Error('runRuntimeApply not implemented');
+    },
+  );
 }
 
 // Create napi worker and send it back to main thread
 const worker = new AtlaspackWorker();
-const napiWorker = napi.newNodejsWorker(worker);
-parentPort?.postMessage(napiWorker);
+// @ts-expect-error newNodejsWorker is now async because of handshake
+napi.newNodejsWorker(worker).then((napiWorker) => {
+  parentPort?.postMessage(napiWorker);
+});
 
 type ResolverState<T> = {
   resolver: Resolver<T>;

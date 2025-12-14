@@ -33,9 +33,15 @@ impl NodejsRpcBundlerPlugin {
   }
 }
 
+use atlaspack_core::asset_graph::AssetGraph;
+
 #[async_trait]
 impl BundlerPlugin for NodejsRpcBundlerPlugin {
-  async fn bundle(&self, _bundle_graph: &mut BundleGraph) -> Result<(), anyhow::Error> {
+  async fn bundle(
+    &self,
+    _bundle_graph: &mut BundleGraph,
+    _asset_graph: &AssetGraph,
+  ) -> Result<(), anyhow::Error> {
     let worker = self.workers.next_worker();
     // Placeholder args for now
     let opts = serde_json::json!({
@@ -45,7 +51,11 @@ impl BundlerPlugin for NodejsRpcBundlerPlugin {
     Ok(())
   }
 
-  async fn optimize(&self, _bundle_graph: &mut BundleGraph) -> Result<(), anyhow::Error> {
+  async fn optimize(
+    &self,
+    _bundle_graph: &mut BundleGraph,
+    _asset_graph: &AssetGraph,
+  ) -> Result<(), anyhow::Error> {
     todo!()
   }
 }

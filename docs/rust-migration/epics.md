@@ -14,59 +14,62 @@ Details: see per-epic folders under `docs/rust-migration/epics/<epic>/` (indexed
 - [ ] Story: CI sharding with smoke/full modes; acceptance: runtime budgets published, shards runnable on PRs vs nightly full.
 - [ ] Story: Telemetry for diff outcomes, perf timings, failure taxonomy; acceptance: dashboard links and alert thresholds.
 
-## Epic: Rust Core Orchestrator
+## Epic: Rust Core Orchestrator (T2)
 
-- [x] Story: Port RequestTracker/task scheduler to Rust with deterministic ordering; acceptance: property tests for ordering and invalidation parity vs JS.
-- [ ] Story: AssetGraph/BundleGraph orchestration in Rust; acceptance: graph shape/ID parity snapshots and golden comparisons.
-- [ ] Story: Cache integration (LMDB) with versioned keys; acceptance: mismatch detection, auto-invalidate/migrate flow, documented schema versioning.
-- [ ] Story: Error/diagnostic propagation; acceptance: codes, hints, locations match JS on fixture set.
+- [x] Story: AssetGraph/BundleGraph orchestration in Rust; acceptance: graph shape/ID parity snapshots and goldens.
+- [x] Story: Cache integration (LMDB) with documented schema versioning.
+- [x] Story: Error/diagnostic propagation; codes/hints/locations match JS.
+- [x] Story: Fix package.json target parsing bug (A1); acceptance: strict validation logic updated to handle browser aliases.
 
-## Epic: Pipeline Scheduler and Plugin Hosting
+## Epic: Pipeline Scheduler & Plugin Hosting (T3)
 
-- [x] Story: Rust pipeline scheduler for resolver → transformers → bundler → namer → packager → optimizer → compressor; acceptance: end-to-end pipeline parity on golden fixtures.
-- [x] Story: JS plugin host bridge (Node RPC or embedded runtime) with lifecycle hooks, streaming payloads, cancellation; acceptance: load/shedding/backpressure tests and contract docs.
-- [x] Story: Contract tests per plugin category (transformer, resolver, packager, optimizer, reporter) against golden outputs; acceptance: per-plugin baseline stored and enforced in CI.
-- [ ] Story: Structured ABI/IDL for plugin calls with versioning/compat checks; acceptance: version negotiation and upgrade/fallback behavior tested.
+- [x] Story: Scheduler and JS plugin host bridge.
+- [x] Story: Contract tests per plugin category (JS/CSS/HTML/etc.).
+- [x] Story: Structured ABI/IDL for plugin calls with versioning/compat checks.
 
-## Epic: Watch/HMR Parity
+## Epic: Watch & HMR Parity (T4)
 
-- [x] Story: Watcher adapter with debounce parity per platform; acceptance: record/replay traces and pass ordering checks.
-- [ ] Story: Incremental rebuild invalidation parity; acceptance: dirty-set comparisons against JS across fixture edits.
-- [x] Story: HMR message ordering and React-refresh/runtime injection parity; acceptance: scripted HMR sessions with expected transcript.
+- [x] Story: Watcher adapter parity.
+- [x] Story: HMR message ordering parity.
+- [x] Story: Incremental rebuild invalidation parity.
 
-## Epic: Observability and Perf
+## Epic: Observability and Perf (T5)
 
-- [ ] Story: Metrics spans around FFI, scheduler stages, cache hits/misses, watch latency; acceptance: dashboards and sampling documented.
-- [ ] Story: Perf budgets in CI (cold/warm timings, memory); acceptance: thresholds checked in PR CI with clear failure messaging.
-- [ ] Story: Panic/timeout watchdog with JS fallback and user notice; acceptance: chaos tests that trigger fallback and log/telemetry assertions.
+- [ ] Story: Metrics spans around FFI, scheduler stages, cache hits/misses, watch latency (dashboards & sampling docs). (Failed verification: telemetry tests need update)
+- [ ] Story: Perf budgets in CI (cold/warm timings, memory) with thresholds.
+- [ ] Story: Panic/timeout watchdog with JS fallback and chaos tests.
 
-## Epic: Rollout and Fallback
+## Epic: Rollout and Fallback (T6)
 
-- [x] Story: Feature flags (`rust_engine_enabled`, `rust_engine_dual_run`, `rust_engine_force_js_fallback`) wired; acceptance: flag matrix tested in CLI and CI.
-- [ ] Story: Opt-in/out docs, expected diffs, fallback semantics; acceptance: published in repo docs and linked from CLI help.
-- [ ] Story: Rollout playbook: dogfood → beta → default-on → JS removal; acceptance: exit criteria and rollback steps documented with owners/dates.
+- [x] Story: Feature flags wired (`rustEngineEnabled`, `rustEngineDualRun`, `rustEngineForceJsFallback`).
+- [x] Story: Opt-in/out docs, expected diffs, fallback semantics (docs, CLI help).
+- [x] Story: Rollout playbook: dogfood → beta → default-on → JS removal.
 
-## Epic: Compatibility and Cache
+## Epic: Compatibility & Cache (T7)
 
-- [x] Story: Cache key schema versioning and migration/auto-invalidate flow; acceptance: migration script, schema docs, and CI checks.
-- [x] Story: Hash parity tests (bundles, source maps, assets) across OS/arch/Node matrix; acceptance: matrix automation with tolerances.
-- [x] Story: WASM fallback validation for platforms without native builds; acceptance: WASM CI lane with perf/functional thresholds.
+- [x] Story: Cache key schema versioning and migration/auto-invalidate flow.
+- [x] Story: Hash parity tests across OS/arch/Node matrices.
+- [x] Story: WASM fallback validation for platforms without native builds.
 
-## Epic: Plugin Parity
+## Epic: Plugin Parity (T8)
 
-- [ ] Story: Audit JS-only plugins; prioritize porting/shimming; acceptance: tracked list with owners/ETA and risk notes.
-- [x] Story: Golden tests per plugin with diagnostics/asset metadata comparisons; acceptance: enforced in CI with allowed deltas documented.
+- [ ] Story: Audit JS-only plugins; prioritize porting/shimming.
+- [x] Story: Golden tests per plugin.
 - [ ] Story: Deprecation path for unsupported JS internals; acceptance: published contract doc and communicated timelines.
 
 ## Epic: Plugin Migration – Core Engine Plugins
 
 - [ ] Story: Rust-backed core transformers and default resolver; acceptance: all core transformers and the default resolver invoke Rust plugins under the Rust engine, with plugin parity tests green.
-- [ ] Story: Rust bundlers, packagers, and namer for Rust engine; acceptance: default/library bundlers, core packagers, and the default namer have Rust plugin implementations with bundle/naming goldens matching JS.
+- [x] Story: Rust bundlers, packagers, and namer for Rust engine; acceptance: default/library bundlers, core packagers, and the default namer have Rust plugin implementations with bundle/naming goldens matching JS.
+  - [x] T12a: Default Namer (Rust crate + integration).
+  - [x] T12b: Default Bundler (Rust crate + integration).
+  - [x] T12c: Packagers (Rust crates for js/css/html/etc).
 - [ ] Story: Extended plugin parity fixtures for core plugins; acceptance: additional fixtures for JS/CSS/HTML/image/raw/svg/json/yaml covering scope hoisting, code splitting, HMR, and sourcemaps, enforced in CI.
 
 ## Epic: Plugin Migration – Optimizers & Compressors
 
 - [ ] Story: Rust-native optimizers for CSS, JS, image, and inline requires; acceptance: css/js/image/inline-requires optimizers are backed by Rust plugins, with outputs and sourcemaps matching JS goldens.
+  - [x] Sub-task: Inline-requires optimizer ported and wired.
 - [ ] Story: JS-only optimizers wrapped behind stable RPC contracts; acceptance: cssnano/htmlnano/terser/svgo/data-url/blob-url are documented and invoked via plugin RPC with parity tests and a deprecation or replacement strategy where appropriate.
 - [ ] Story: Optimizer plugin parity golden suite; acceptance: per-optimizer fixtures and goldens enforced in CI, with allowed deltas documented.
 

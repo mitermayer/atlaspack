@@ -11,6 +11,7 @@ workspace = true
 crate-type = ["cdylib"]
 
 [dependencies]
+petgraph = { workspace = true }
 atlaspack = { path = "../atlaspack" }
 atlaspack_atlaskit_tokens = { path = "../atlaspack_atlaskit_tokens" }
 atlaspack_core = { path = "../atlaspack_core" }

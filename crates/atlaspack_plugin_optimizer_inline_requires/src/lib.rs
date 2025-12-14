@@ -422,6 +422,33 @@ impl VisitMut for InlineRequiresOptimizer {
   }
 }
 
+use anyhow::Result;
+use async_trait::async_trait;
+use atlaspack_core::plugin::{OptimizeContext, OptimizedBundle, OptimizerPlugin};
+use std::io::Read;
+
+#[derive(Debug)]
+pub struct AtlaspackInlineRequiresOptimizerPlugin;
+
+#[async_trait]
+impl OptimizerPlugin for AtlaspackInlineRequiresOptimizerPlugin {
+  async fn optimize<'a>(&self, ctx: OptimizeContext<'a>) -> Result<OptimizedBundle> {
+    let mut contents = String::new();
+    let mut f = ctx.contents;
+    f.read_to_string(&mut contents)?;
+
+    let result =
+      atlaspack_swc_runner::runner::run_visit(&contents, |context| InlineRequiresOptimizer {
+        unresolved_mark: context.unresolved_mark,
+        ..Default::default()
+      })?;
+
+    Ok(OptimizedBundle {
+      contents: result.output_code.into_bytes(),
+    })
+  }
+}
+
 #[cfg(test)]
 mod tests {
   use atlaspack_swc_runner::test_utils::{RunVisitResult, run_test_visit};
