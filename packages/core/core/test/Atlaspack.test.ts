@@ -86,42 +86,54 @@ describe('AtlaspackAPI', function () {
   describe('atlaspack.unstable_transform()', () => {
     it('should transform simple file', async () => {
       let atlaspack = createAtlaspack({workerFarm});
-      let res = await atlaspack.unstable_transform({
-        filePath: path.join(__dirname, 'fixtures/atlaspack/index.js'),
-      });
-      let code = await res[0].getCode();
-      assert(code.includes(`exports.default = 'test'`));
+      try {
+        let res = await atlaspack.unstable_transform({
+          filePath: path.join(__dirname, 'fixtures/atlaspack/index.js'),
+        });
+        let code = await res[0].getCode();
+        assert(code.includes(`exports.default = 'test'`));
+      } finally {
+        await atlaspack._end();
+      }
     });
 
     it('should transform with standalone mode', async () => {
       let atlaspack = createAtlaspack({workerFarm});
-      let res = await atlaspack.unstable_transform({
-        filePath: path.join(__dirname, 'fixtures/atlaspack/other.js'),
-        query: 'standalone=true',
-      });
-      let code = await res[0].getCode();
+      try {
+        let res = await atlaspack.unstable_transform({
+          filePath: path.join(__dirname, 'fixtures/atlaspack/other.js'),
+          query: 'standalone=true',
+        });
+        let code = await res[0].getCode();
 
-      assert(code.includes(`require("./index.js")`));
-      assert(code.includes(`new URL("index.js", "file:" + __filename);`));
-      assert(code.includes(`import('index.js')`));
+        assert(code.includes(`require("./index.js")`));
+        assert(code.includes(`new URL("index.js", "file:" + __filename);`));
+        assert(code.includes(`import('index.js')`));
+      } finally {
+        await atlaspack._end();
+      }
     });
   });
 
   describe('atlaspack.resolve()', () => {
     it('should resolve dependencies', async () => {
       let atlaspack = createAtlaspack({workerFarm});
-      let res = await atlaspack.unstable_resolve({
-        specifier: './other',
-        specifierType: 'esm',
-        resolveFrom: path.join(__dirname, 'fixtures/atlaspack/index.js'),
-      });
+      try {
+        let res = await atlaspack.unstable_resolve({
+          specifier: './other',
+          specifierType: 'esm',
+          resolveFrom: path.join(__dirname, 'fixtures/atlaspack/index.js'),
+        });
 
-      assert.deepEqual(res, {
-        filePath: path.join(__dirname, 'fixtures/atlaspack/other.js'),
-        code: undefined,
-        query: undefined,
-        sideEffects: true,
-      });
+        assert.deepEqual(res, {
+          filePath: path.join(__dirname, 'fixtures/atlaspack/other.js'),
+          code: undefined,
+          query: undefined,
+          sideEffects: true,
+        });
+      } finally {
+        await atlaspack._end();
+      }
     });
   });
 });

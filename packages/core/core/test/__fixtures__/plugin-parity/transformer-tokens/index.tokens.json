@@ -1,0 +1,66 @@
+{
+  "color": {
+    "primary": {
+      "value": "#007bff",
+      "type": "color"
+    },
+    "secondary": {
+      "value": "#6c757d",
+      "type": "color"
+    },
+    "success": {
+      "value": "#28a745",
+      "type": "color"
+    },
+    "danger": {
+      "value": "#dc3545",
+      "type": "color"
+    }
+  },
+  "spacing": {
+    "xs": {
+      "value": "4px",
+      "type": "dimension"
+    },
+    "sm": {
+      "value": "8px",
+      "type": "dimension"
+    },
+    "md": {
+      "value": "16px",
+      "type": "dimension"
+    },
+    "lg": {
+      "value": "24px",
+      "type": "dimension"
+    },
+    "xl": {
+      "value": "32px",
+      "type": "dimension"
+    }
+  },
+  "typography": {
+    "fontFamily": {
+      "value": ["Inter", "sans-serif"],
+      "type": "fontFamily"
+    },
+    "fontSize": {
+      "sm": {
+        "value": "14px",
+        "type": "fontSize"
+      },
+      "base": {
+        "value": "16px",
+        "type": "fontSize"
+      },
+      "lg": {
+        "value": "18px",
+        "type": "fontSize"
+      },
+      "xl": {
+        "value": "24px",
+        "type": "fontSize"
+      }
+    }
+  }
+}

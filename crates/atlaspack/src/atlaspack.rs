@@ -4,6 +4,7 @@ use std::sync::Arc;
 
 use atlaspack_config::atlaspack_rc_config_loader::{AtlaspackRcConfigLoader, LoadConfigOptions};
 use atlaspack_core::asset_graph::{AssetGraph, AssetGraphNode};
+use atlaspack_core::bundle_graph::BundleGraph;
 use atlaspack_core::config_loader::ConfigLoader;
 use atlaspack_core::plugin::{PluginContext, PluginLogger, PluginOptions};
 use atlaspack_core::types::{AtlaspackOptions, SourceField, Targets};
@@ -17,8 +18,8 @@ use tokio::sync::RwLock;
 use crate::WatchEvents;
 use crate::plugins::{PluginsRef, config_plugins::ConfigPlugins};
 use crate::project_root::infer_project_root;
-use crate::request_tracker::{RequestNode, RequestTracker};
-use crate::requests::{AssetGraphRequest, RequestResult};
+use crate::request_tracker::{RequestNode, RequestState, RequestTracker};
+use crate::requests::{AssetGraphRequest, BundleGraphRequest, RequestResult};
 
 pub struct AtlaspackInitOptions {
   pub db: Arc<DatabaseHandle>,
@@ -135,13 +136,14 @@ impl Atlaspack {
       },
     )?);
 
-    let request_tracker = RequestTracker::new(
+    let request_tracker = RequestTracker::load_from_cache(
       config_loader.clone(),
       fs.clone(),
       Arc::new(resolved_options.clone()),
       plugins.clone(),
       project_root.clone(),
-    );
+      db.clone(),
+    )?;
 
     Ok(Self {
       db,
@@ -159,6 +161,7 @@ impl Atlaspack {
 }
 
 impl Atlaspack {
+  #[tracing::instrument(level = "info", skip_all)]
   pub fn build_asset_graph(&self) -> anyhow::Result<(Arc<AssetGraph>, bool)> {
     self.runtime.block_on(async move {
       // Notify all resolver plugins that a new build is starting
@@ -182,7 +185,7 @@ impl Atlaspack {
         .try_fold(
           Vec::new(),
           |mut invalid_nodes, invalid_node| match invalid_node {
-            RequestNode::Invalid(Some(result)) => match result.as_ref() {
+            RequestNode::Request(RequestState::Invalid(Some(result))) => match result.as_ref() {
               RequestResult::Asset(_) => {
                 invalid_nodes.push(result.clone());
                 Ok(invalid_nodes)
@@ -214,6 +217,23 @@ impl Atlaspack {
     })
   }
 
+  #[tracing::instrument(level = "info", skip_all)]
+  pub fn build_bundle_graph(&self) -> anyhow::Result<Arc<BundleGraph>> {
+    self.runtime.block_on(async move {
+      let mut request_tracker = self.request_tracker.write().await;
+      let request_result = request_tracker
+        .run_request(BundleGraphRequest::default())
+        .await?;
+
+      let RequestResult::BundleGraph(bundle_graph_request_output) = request_result.as_ref() else {
+        panic!("Something went wrong with the request tracker")
+      };
+
+      Ok(bundle_graph_request_output.bundle_graph.clone())
+    })
+  }
+
+  #[tracing::instrument(level = "info", skip_all)]
   pub fn respond_to_fs_events(&self, events: WatchEvents) -> anyhow::Result<bool> {
     self.runtime.block_on(async move {
       Ok(
@@ -252,6 +272,10 @@ impl Atlaspack {
     }
 
     txn.commit()?;
+
+    self
+      .runtime
+      .block_on(async { self.request_tracker.read().await.write_to_cache() })?;
 
     Ok(())
   }

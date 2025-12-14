@@ -33,6 +33,7 @@ use package_json::BrowsersList;
 use package_json::BuiltInTargetDescriptor;
 use package_json::ModuleFormat;
 use package_json::PackageJson;
+use serde::{Deserialize, Serialize};
 
 use crate::request_tracker::Request;
 use crate::request_tracker::ResultAndInvalidations;
@@ -48,7 +49,7 @@ pub mod package_json;
 ///
 /// Targets will be generated from the project package.json file and input Atlaspack options.
 ///
-#[derive(Debug, Hash)]
+#[derive(Debug, Hash, Serialize, Deserialize)]
 pub struct TargetRequest {
   pub default_target_options: DefaultTargetOptions,
   pub entry: Entry,
@@ -57,7 +58,7 @@ pub struct TargetRequest {
   pub serve_options: ServeOptions,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct TargetRequestOutput {
   pub entry: PathBuf,
   pub targets: Vec<Target>,

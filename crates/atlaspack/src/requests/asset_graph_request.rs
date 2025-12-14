@@ -21,6 +21,7 @@ use super::asset_request::{AssetRequest, AssetRequestOutput};
 use super::entry_request::{EntryRequest, EntryRequestOutput};
 use super::path_request::{PathRequest, PathRequestOutput};
 use super::target_request::{TargetRequest, TargetRequestOutput};
+use serde::{Deserialize, Serialize};
 
 /// The AssetGraphRequest is in charge of building the AssetGraphRequest
 /// In doing so, it kicks of the EntryRequest, TargetRequest, PathRequest and AssetRequests.
@@ -36,7 +37,7 @@ impl Hash for AssetGraphRequest {
   fn hash<H: Hasher>(&self, _state: &mut H) {}
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct AssetGraphRequestOutput {
   pub graph: Arc<AssetGraph>,
 }

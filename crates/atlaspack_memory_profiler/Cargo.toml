@@ -11,4 +11,5 @@ workspace = true
 napi = { workspace = true }
 napi-derive = { workspace = true }
 memory-stats = "1.0"
+parking_lot = { workspace = true }
 serde = { workspace = true }

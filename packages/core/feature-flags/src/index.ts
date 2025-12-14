@@ -355,6 +355,30 @@ export const DEFAULT_FEATURE_FLAGS = {
     // Enable for tests only in v3 mode
     process.env.ATLASPACK_BUILD_ENV === 'test' &&
     process.env.ATLASPACK_V3 === 'true',
+
+  /**
+   * Enable Rust engine for core bundling operations
+   *
+   * @author Matt Jones <mjones4@atlassian.com>
+   * @since 2025-12-13
+   */
+  rustEngineEnabled: false,
+
+  /**
+   * Enable dual run mode (both JS and Rust engines) for comparison
+   *
+   * @author Matt Jones <mjones4@atlassian.com>
+   * @since 2025-12-13
+   */
+  rustEngineDualRun: false,
+
+  /**
+   * Force fallback to JS engine even if Rust engine is enabled
+   *
+   * @author Matt Jones <mjones4@atlassian.com>
+   * @since 2025-12-13
+   */
+  rustEngineForceJsFallback: false,
 };
 
 export type FeatureFlags = typeof DEFAULT_FEATURE_FLAGS;

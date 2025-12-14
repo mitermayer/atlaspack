@@ -1,0 +1,14 @@
+{
+  "name": "postcss-custom-rpc",
+  "version": "1.0.0",
+  "main": "index.css",
+  "dependencies": {
+    "postcss": "*"
+  },
+  "parcel": {
+    "extends": "@atlaspack/config-default",
+    "transformers": {
+      "*.css": ["@atlaspack/transformer-postcss", "@atlaspack/transformer-css"]
+    }
+  }
+}

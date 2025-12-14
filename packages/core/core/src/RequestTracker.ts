@@ -1782,7 +1782,7 @@ export function getWatcherOptions({
   return {ignore, backend: watchBackend};
 }
 
-function getCacheKey(options: AtlaspackOptions) {
+export function getCacheKey(options: AtlaspackOptions) {
   if (getFeatureFlag('cachePerformanceImprovements')) {
     const hash = hashString(
       `${ATLASPACK_VERSION}:${JSON.stringify(options.entries)}:${

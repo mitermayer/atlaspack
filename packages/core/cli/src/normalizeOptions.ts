@@ -51,6 +51,7 @@ export interface Options {
   profileNative?: string | boolean;
   contentHash?: boolean;
   featureFlag?: Partial<FeatureFlags>;
+  engine?: 'js' | 'rust' | 'dual';
   optimize?: boolean;
   sourceMaps?: boolean;
   scopeHoist?: boolean;
@@ -236,6 +237,13 @@ export async function normalizeOptions(
       publicUrl: command.publicUrl,
       distDir: command.distDir,
     },
-    featureFlags: command.featureFlag,
+    featureFlags: {
+      ...command.featureFlag,
+      // Convert engine option to feature flags
+      ...(command.engine && {
+        rustEngineEnabled: command.engine !== 'js',
+        rustEngineDualRun: command.engine === 'dual',
+      }),
+    },
   };
 }

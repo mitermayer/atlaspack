@@ -1,0 +1,16 @@
+{
+  "code": "<!doctype html>\n<html lang=\"en\">\n  <head>\n    <meta charset=\"UTF-8\">\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n    <title>Test HTML</title>\n    <style data-parcel-key=\"77aaf0594a50cba9\">\n      body {\n        font-family: Arial, sans-serif;\n        margin: 0;\n        padding: 20px;\n      }\n      .container {\n        max-width: 800px;\n        margin: 0 auto;\n      }\n    </style>\n  </head>\n  <body>\n    <div class=\"container\">\n      <h1>Hello World</h1>\n      <p>This is a test HTML file for transformer parity.</p>\n      <button id=\"btn\">Click me</button>\n    </div>\n    <script data-parcel-key=\"7c47d46ea6f097cf\">\n      document.getElementById('btn').addEventListener('click', function () {\n        alert('Button clicked!');\n      });\n    </script>\n  </body>\n</html>\n",
+  "dependencies": [
+    {
+      "specifier": "77aaf0594a50cba9",
+      "priority": "sync",
+      "isOptional": false
+    },
+    {
+      "specifier": "7c47d46ea6f097cf",
+      "priority": "sync",
+      "isOptional": false
+    }
+  ],
+  "metadata": {}
+}

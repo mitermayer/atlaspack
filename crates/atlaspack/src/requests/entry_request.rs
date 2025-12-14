@@ -6,13 +6,14 @@ use async_trait::async_trait;
 use atlaspack_core::config_loader::ConfigLoader;
 use atlaspack_core::diagnostic_error;
 use atlaspack_core::types::{DiagnosticBuilder, SourceField};
+use serde::{Deserialize, Serialize};
 
 use super::RequestResult;
 
 use crate::request_tracker::{Request, ResultAndInvalidations, RunRequestContext, RunRequestError};
 
 /// A resolved entry file for the build
-#[derive(Clone, Debug, Default, Hash, PartialEq)]
+#[derive(Clone, Debug, Default, Hash, PartialEq, Serialize, Deserialize)]
 pub struct Entry {
   pub file_path: PathBuf,
   pub package_path: PathBuf, // directory that contains the package.json file used to resolve dependencies etc.
@@ -20,12 +21,12 @@ pub struct Entry {
 }
 
 /// The EntryRequest resolves an entry path or glob to the actual file location
-#[derive(Debug, Hash)]
+#[derive(Debug, Hash, Serialize, Deserialize)]
 pub struct EntryRequest {
   pub entry: String,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub struct EntryRequestOutput {
   pub entries: Vec<Entry>,
   pub files: Vec<PathBuf>, // Files that affect entry resolution (like package.json)

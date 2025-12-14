@@ -101,6 +101,10 @@ export const commonOptions: OptionsDefinition = {
     },
     {},
   ],
+  '--engine <type>': new commander.Option(
+    '--engine <type>',
+    'set the bundler engine type',
+  ).choices(['js', 'rust', 'dual']),
 };
 
 export const hmrOptions: OptionsDefinition = {
