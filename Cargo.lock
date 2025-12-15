@@ -647,6 +647,7 @@ dependencies = [
  "atlaspack_core",
  "pathdiff",
  "serde",
+ "tokio",
 ]
 
 [[package]]

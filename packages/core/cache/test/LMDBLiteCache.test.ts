@@ -104,7 +104,7 @@ describe('LMDBLiteCache', () => {
   it('should NOT fail when trying to open after GC', async () => {
     const testDir = path.join(cacheDir, 'gc_test');
 
-    let cache1 = new LMDBLiteCache(testDir);
+    let cache1: LMDBLiteCache | null = new LMDBLiteCache(testDir);
     await cache1.ensure();
     await cache1.setBlob('key', Buffer.from(serialize({value: 42})));
 
@@ -148,7 +148,7 @@ describe('LMDBLiteCache', () => {
 
     const testDir = path.join(cacheDir, 'worker_threads_test');
 
-    let cache = new LMDBLiteCache(testDir);
+    let cache: LMDBLiteCache | null = new LMDBLiteCache(testDir);
     await cache.set('main_thread_key', {
       mainThreadId: 0,
       hello: 'world',
@@ -235,7 +235,7 @@ describe('LMDBLiteCache', () => {
       });
 
       await new Promise((resolve: any) => setTimeout(resolve, 500));
-      worker.terminate();
+      await worker.terminate();
     }
   });
 });

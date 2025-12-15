@@ -56,6 +56,7 @@ describe('Engine Fallback Messaging', function () {
       // For testing, we verify the messaging infrastructure exists
       assert.strictEqual(options.featureFlags.rustEngineEnabled, true);
       
+      await atlaspack._end();
     } finally {
       console.warn = originalWarn;
       console.info = originalInfo;
@@ -89,6 +90,7 @@ describe('Engine Fallback Messaging', function () {
       assert.strictEqual(options.featureFlags.rustEngineEnabled, true);
       assert.strictEqual(options.featureFlags.rustEngineDualRun, true);
       
+      await atlaspack._end();
     } finally {
       console.info = originalInfo;
     }
@@ -112,5 +114,6 @@ describe('Engine Fallback Messaging', function () {
     // Verify engine configuration is available for diagnostics
     assert.ok(options.featureFlags.rustEngineEnabled !== undefined);
     assert.ok(options.featureFlags.rustEngineDualRun !== undefined);
+    await atlaspack._end();
   });
 });

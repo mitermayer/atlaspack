@@ -32,6 +32,7 @@ describe('Rollout & Fallback Integration', function () {
     const options = atlaspack._getResolvedAtlaspackOptions();
     assert.strictEqual(options.featureFlags.rustEngineEnabled, false);
     assert.strictEqual(options.featureFlags.rustEngineDualRun, false);
+    await atlaspack._end();
   });
 
   it('enables Rust engine via ATLASPACK_ENGINE=rust', async () => {
@@ -48,6 +49,7 @@ describe('Rollout & Fallback Integration', function () {
     const options = atlaspack._getResolvedAtlaspackOptions();
     assert.strictEqual(options.featureFlags.rustEngineEnabled, true);
     assert.strictEqual(options.featureFlags.rustEngineDualRun, false);
+    await atlaspack._end();
   });
 
   it('enables Dual Run via ATLASPACK_ENGINE=dual', async () => {
@@ -64,6 +66,7 @@ describe('Rollout & Fallback Integration', function () {
     const options = atlaspack._getResolvedAtlaspackOptions();
     assert.strictEqual(options.featureFlags.rustEngineEnabled, true);
     assert.strictEqual(options.featureFlags.rustEngineDualRun, true);
+    await atlaspack._end();
   });
 
   it('explicitly sets JS engine via ATLASPACK_ENGINE=js', async () => {
@@ -80,6 +83,7 @@ describe('Rollout & Fallback Integration', function () {
     const options = atlaspack._getResolvedAtlaspackOptions();
     assert.strictEqual(options.featureFlags.rustEngineEnabled, false);
     assert.strictEqual(options.featureFlags.rustEngineDualRun, false);
+    await atlaspack._end();
   });
 
   it('CLI/InitialOptions override ATLASPACK_ENGINE', async () => {
@@ -98,6 +102,7 @@ describe('Rollout & Fallback Integration', function () {
     // @ts-ignore
     const options = atlaspack._getResolvedAtlaspackOptions();
     assert.strictEqual(options.featureFlags.rustEngineEnabled, false);
+    await atlaspack._end();
   });
 
   it('CLI/InitialOptions override ATLASPACK_ENGINE for dual run', async () => {
@@ -119,6 +124,7 @@ describe('Rollout & Fallback Integration', function () {
     assert.strictEqual(options.featureFlags.rustEngineEnabled, true);
     // rustEngineDualRun should be false from CLI override
     assert.strictEqual(options.featureFlags.rustEngineDualRun, false);
+    await atlaspack._end();
   });
 
   it('handles invalid ATLASPACK_ENGINE values gracefully', async () => {
@@ -138,6 +144,7 @@ describe('Rollout & Fallback Integration', function () {
     // Should maintain default values
     assert.strictEqual(options.featureFlags.rustEngineEnabled, false);
     assert.strictEqual(options.featureFlags.rustEngineDualRun, false);
+    await atlaspack._end();
   });
 
   it('handles case-insensitive ATLASPACK_ENGINE values', async () => {
@@ -154,6 +161,7 @@ describe('Rollout & Fallback Integration', function () {
     const options = atlaspack._getResolvedAtlaspackOptions();
     assert.strictEqual(options.featureFlags.rustEngineEnabled, true);
     assert.strictEqual(options.featureFlags.rustEngineDualRun, false);
+    await atlaspack._end();
   });
 
   it('force disables Rust engine via ATLASPACK_ENGINE_FORCE_JS_FALLBACK=true', async () => {
@@ -176,6 +184,7 @@ describe('Rollout & Fallback Integration', function () {
     assert.strictEqual(options.featureFlags.atlaspackV3, false);
     
     delete process.env.ATLASPACK_ENGINE_FORCE_JS_FALLBACK;
+    await atlaspack._end();
   });
 
   it('force disables Rust engine via rustEngineForceJsFallback feature flag', async () => {
@@ -198,6 +207,7 @@ describe('Rollout & Fallback Integration', function () {
     assert.strictEqual(options.featureFlags.rustEngineEnabled, false);
     assert.strictEqual(options.featureFlags.rustEngineDualRun, false);
     assert.strictEqual(options.featureFlags.atlaspackV3, false);
+    await atlaspack._end();
   });
 
   it('bridges rustEngineEnabled to atlaspackV3', async () => {
@@ -215,5 +225,6 @@ describe('Rollout & Fallback Integration', function () {
     
     assert.strictEqual(options.featureFlags.rustEngineEnabled, true);
     assert.strictEqual(options.featureFlags.atlaspackV3, true);
+    await atlaspack._end();
   });
 });

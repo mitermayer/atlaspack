@@ -84,13 +84,25 @@ mod tests {
   #[tokio::test]
   async fn test_name_entry_bundle() {
     // Mock bundle with entry asset
-    let mut bundle = Bundle::default();
-    let target = Target {
-      dist_entry: Some("out/index.js".into()),
-      ..Target::default()
+    let mut bundle = Bundle {
+      id: "bundle1".into(),
+      bundle_behavior: None,
+      bundle_type: atlaspack_core::types::FileType::Js,
+      entry_asset_ids: vec!["asset1".into()],
+      env: Default::default(),
+      hash_reference: "hash".into(),
+      is_splittable: true,
+      main_entry_id: Some("asset1".into()),
+      manual_shared_bundle: None,
+      name: None,
+      needs_stable_name: false,
+      pipeline: None,
+      public_id: Some("pubid".into()),
+      target: Target {
+        dist_entry: Some("out/index.js".into()),
+        ..Target::default()
+      },
     };
-    bundle.target = target;
-    bundle.main_entry_id = Some("asset1".into());
 
     // Mock graph
     let mut bundle_graph = BundleGraph::new();

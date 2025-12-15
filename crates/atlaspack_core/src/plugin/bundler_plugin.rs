@@ -57,27 +57,3 @@ mod tests {
     let _bundler: Box<dyn BundlerPlugin> = Box::new(TestBundlerPlugin {});
   }
 }
-
-#[cfg(test)]
-mod tests {
-  use super::*;
-
-  #[derive(Debug)]
-  struct TestBundlerPlugin {}
-
-  #[async_trait]
-  impl BundlerPlugin for TestBundlerPlugin {
-    async fn bundle(&self, _bundle_graph: &mut BundleGraph) -> Result<(), anyhow::Error> {
-      todo!()
-    }
-
-    async fn optimize(&self, _bundle_graph: &mut BundleGraph) -> Result<(), anyhow::Error> {
-      todo!()
-    }
-  }
-
-  #[test]
-  fn can_be_dyn() {
-    let _bundler: Box<dyn BundlerPlugin> = Box::new(TestBundlerPlugin {});
-  }
-}
