@@ -17,7 +17,7 @@ pub struct OptimizeContext<'a> {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct OptimizedBundle {
   pub contents: Vec<u8>,
-  // TODO ast, map, type
+  pub map: Option<SourceMap>,
 }
 
 /// Optimises a bundle

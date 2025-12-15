@@ -271,6 +271,7 @@ dependencies = [
  "atlaspack_package_manager",
  "atlaspack_plugin_bundler_default",
  "atlaspack_plugin_namer_default",
+ "atlaspack_plugin_optimizer_css",
  "atlaspack_plugin_optimizer_inline_requires",
  "atlaspack_plugin_packager_js",
  "atlaspack_plugin_resolver",
@@ -647,6 +648,20 @@ dependencies = [
  "atlaspack_core",
  "pathdiff",
  "serde",
+ "tokio",
+]
+
+[[package]]
+name = "atlaspack_plugin_optimizer_css"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "atlaspack_core",
+ "lightningcss",
+ "parcel_sourcemap",
+ "serde",
+ "tempfile",
  "tokio",
 ]
 

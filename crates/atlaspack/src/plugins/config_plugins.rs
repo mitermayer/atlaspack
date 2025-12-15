@@ -18,6 +18,7 @@ use atlaspack_core::plugin::ValidatorPlugin;
 use atlaspack_core::plugin::composite_reporter_plugin::CompositeReporterPlugin;
 use atlaspack_plugin_bundler_default::DefaultBundler;
 use atlaspack_plugin_namer_default::DefaultNamerPlugin;
+use atlaspack_plugin_optimizer_css::CSSOptimizer;
 use atlaspack_plugin_optimizer_inline_requires::AtlaspackInlineRequiresOptimizerPlugin;
 use atlaspack_plugin_packager_js::AtlaspackJsPackagerPlugin;
 use atlaspack_plugin_resolver::AtlaspackResolver;
@@ -151,6 +152,12 @@ impl Plugins for ConfigPlugins {
     for optimizer in self.config.optimizers.get(path, named_pattern).iter() {
       if optimizer.package_name == "@atlaspack/optimizer-inline-requires" {
         optimizers.push(Box::new(AtlaspackInlineRequiresOptimizerPlugin));
+        continue;
+      }
+      if optimizer.package_name == "@atlaspack/optimizer-css" {
+        optimizers.push(Box::new(CSSOptimizer::new(
+          self.ctx.options.project_root.clone(),
+        )));
         continue;
       }
       optimizers.push(self.rpc_worker.create_optimizer(&self.ctx, optimizer)?);

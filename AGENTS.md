@@ -355,19 +355,24 @@ Tracing:
 
 ## Rust Migration Docs
 
-**⚠️ CURRENT STATUS (Dec 2025): Phase 2 Implementation In Progress**
+**⚠️ CURRENT STATUS (Dec 2025): Phase 3 Stabilization & Ecosystem In Progress**
 
 - **Phase 1 (Infrastructure)**: ✅ COMPLETE.
   - Baseline tests, parity harness, and golden fixtures are established.
   - Dual-run capability (`ATLASPACK_ENGINE=dual`) is active.
-- **Phase 2 (Implementation)**: ✅ MOSTLY COMPLETE.
-  - **Request Tracker**: ✅ Ported to Rust and verified (IMPL-1).
-  - **Asset Graph**: ✅ Ported and verified (IMPL-2).
-  - **Bundle Graph**: ✅ Ported (IMPL-2: Ideal Graph algorithm & Decorate Legacy Graph implemented).
-  - **Pipeline Scheduler**: ✅ Refactored and modularized (IMPL-4).
-  - **Watcher & HMR**: ✅ Implemented (IMPL-5).
-  - **Cache**: ✅ Serialized and Integrated (IMPL-3, IMPL-7).
-  - **Plugin Bridge**: ✅ Infrastructure Complete (IMPL-6: RPC Bindings & Plugins wired; NAPI Interop Pending).
+- **Phase 2 (Implementation)**: ✅ COMPLETE.
+  - **Request Tracker**: ✅ Ported to Rust and verified.
+  - **Asset Graph**: ✅ Ported and verified.
+  - **Bundle Graph**: ✅ Ported.
+  - **Pipeline Scheduler**: ✅ Refactored and modularized.
+  - **Watcher & HMR**: ✅ Implemented.
+  - **Cache**: ✅ Serialized and Integrated.
+  - **Plugin Bridge**: ✅ Infrastructure Complete.
+- **Phase 3 (Stabilization)**: 🔄 IN PROGRESS.
+  - **Reliability**: ✅ Panic Watchdog implemented (T18).
+  - **Ecosystem**: ✅ RPC adapters verified (T17).
+  - **Observability**: ⚠️ Blocked by config loading issue (T15).
+  - **Performance**: ⏳ Native optimizers pending (T19).
 
 For the detailed roadmap and task tracking, **ALWAYS** refer to:
 

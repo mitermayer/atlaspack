@@ -49,6 +49,9 @@ pub struct AtlaspackOptions {
   pub targets: Option<Targets>,
 
   #[serde(default)]
+  pub should_disable_cache: bool,
+
+  #[serde(default)]
   pub feature_flags: FeatureFlags,
 
   pub hmr_options: Option<HmrOptions>,

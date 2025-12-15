@@ -1,4 +1,5 @@
 use std::panic::{AssertUnwindSafe, catch_unwind};
+use std::str;
 use std::sync::Arc;
 use std::thread;
 
@@ -8,6 +9,7 @@ use atlaspack::AtlaspackError;
 use atlaspack::AtlaspackInitOptions;
 use atlaspack::WatchEvents;
 use atlaspack::rpc::nodejs::NodejsWorker;
+use atlaspack_core::types::AtlaspackOptions;
 use atlaspack_napi_helpers::JsTransferable;
 use atlaspack_napi_helpers::js_callable::JsCallable;
 use lmdb_js_lite::DatabaseHandle;
@@ -38,6 +40,7 @@ fn handle_panic(env: &Env, panic: Box<dyn std::any::Any + Send>) -> napi::Result
   } else {
     "Atlaspack panicked with unknown error".to_string()
   };
+  tracing::error!("{}", msg);
   let js_error = env.create_error(napi::Error::from_reason(msg))?;
   let js_object = js_error.coerce_to_object()?;
   NapiAtlaspackResult::error(env, js_object)
@@ -84,8 +87,7 @@ pub fn atlaspack_napi_create(
   let db_handle = lmdb.get_database().clone();
   atlaspack_napi_run_db_health_check(&db_handle)?;
 
-  // Get Atlaspack Options
-  let options = env.from_js_value(napi_options.options)?;
+  let options: AtlaspackOptions = env.from_js_value(napi_options.options)?;
   let get_workers = JsCallable::new_method_bound("getWorkers", &napi_options.napi_worker_pool)?;
 
   thread::spawn({

@@ -13,6 +13,10 @@ import {
 import exifReader from 'exif-reader';
 import sharp from 'sharp';
 
+// Limit sharp concurrency to avoid thread exhaustion (GLib errors) in CI/Test env
+sharp.concurrency(1);
+sharp.cache(false);
+
 describe('images', function () {
   this.timeout(10000);
 

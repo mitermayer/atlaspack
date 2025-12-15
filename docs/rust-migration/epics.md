@@ -35,7 +35,10 @@ Details: see per-epic folders under `docs/rust-migration/epics/<epic>/` (indexed
 
 ## Epic: Observability and Perf (T5)
 
-- [ ] Story: Metrics spans around FFI, scheduler stages, cache hits/misses, watch latency (dashboards & sampling docs). (Failed verification: telemetry tests need update)
+- [ ] Story: Metrics spans around FFI, scheduler stages, cache hits/misses, watch latency (dashboards & sampling docs).
+  - [x] Sub-task: Fix ConfigLoader deserialization error (T15 blocker).
+  - [ ] Sub-task: Implement V3 Reporter Integration (`runReporterReport`) to enable trace collection.
+  - [ ] Sub-task: Verify trace spans in `telemetry.test.ts`.
 - [ ] Story: Perf budgets in CI (cold/warm timings, memory) with thresholds.
 - [x] Story: Panic/timeout watchdog with JS fallback and chaos tests.
 
@@ -70,6 +73,7 @@ Details: see per-epic folders under `docs/rust-migration/epics/<epic>/` (indexed
 
 - [ ] Story: Rust-native optimizers for CSS, JS, image, and inline requires; acceptance: css/js/image/inline-requires optimizers are backed by Rust plugins, with outputs and sourcemaps matching JS goldens.
   - [x] Sub-task: Inline-requires optimizer ported and wired.
+  - [x] Sub-task: CSS optimizer ported and wired (crates/atlaspack_plugin_optimizer_css).
 - [ ] Story: JS-only optimizers wrapped behind stable RPC contracts; acceptance: cssnano/htmlnano/terser/svgo/data-url/blob-url are documented and invoked via plugin RPC with parity tests and a deprecation or replacement strategy where appropriate.
 - [ ] Story: Optimizer plugin parity golden suite; acceptance: per-optimizer fixtures and goldens enforced in CI, with allowed deltas documented.
 

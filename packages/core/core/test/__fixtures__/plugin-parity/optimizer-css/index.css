@@ -1,0 +1,9 @@
+.foo {
+  color: red;
+  display: block;
+}
+
+.bar {
+  color: blue;
+  display: flex;
+}

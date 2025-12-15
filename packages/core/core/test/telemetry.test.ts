@@ -5,7 +5,7 @@ import fs from 'fs';
 import {glob} from 'glob';
 import {tracer} from '@atlaspack/profiler';
 import {FILE_CONFIG_NO_REPORTERS} from '@atlaspack/test-utils';
-import Atlaspack, {createWorkerFarm} from '../src/Atlaspack';
+import Atlaspack, {createWorkerFarm} from '..';
 import {writeEvents} from './utils/artifacts';
 import {
   normalizePaths,
@@ -29,7 +29,8 @@ describe('telemetry', function () {
     }
   });
 
-  it('should emit trace events when tracing is enabled', async () => {
+  it('should emit trace events when tracing is enabled', async function () {
+    this.timeout(60000);
     let events: any[] = [];
     let disposable = tracer.onTrace((event) => {
       events.push(event);

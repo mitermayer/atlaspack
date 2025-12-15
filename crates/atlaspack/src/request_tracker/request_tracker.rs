@@ -893,15 +893,21 @@ impl RequestTracker {
     let request_graph_key = "rust_request_graph";
 
     let (graph, request_index) = {
-      let txn = db.database().read_txn()?;
-      if let Some(cached) = db.database().get(&txn, request_graph_key)? {
-        let (graph, request_index): (RequestGraph, HashMap<u64, NodeIndex>) =
-          serde_json::from_slice(&cached)?;
-        (graph, request_index)
-      } else {
+      if options.should_disable_cache {
         let mut graph = StableDiGraph::<RequestNode, RequestEdgeType>::new();
         graph.add_node(RequestNode::Root);
         (graph, HashMap::new())
+      } else {
+        let txn = db.database().read_txn()?;
+        if let Some(cached) = db.database().get(&txn, request_graph_key)? {
+          let (graph, request_index): (RequestGraph, HashMap<u64, NodeIndex>) =
+            serde_json::from_slice(&cached)?;
+          (graph, request_index)
+        } else {
+          let mut graph = StableDiGraph::<RequestNode, RequestEdgeType>::new();
+          graph.add_node(RequestNode::Root);
+          (graph, HashMap::new())
+        }
       }
     };
 

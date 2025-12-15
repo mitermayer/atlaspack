@@ -445,6 +445,7 @@ impl OptimizerPlugin for AtlaspackInlineRequiresOptimizerPlugin {
 
     Ok(OptimizedBundle {
       contents: result.output_code.into_bytes(),
+      map: None, // Inline requires optimizer doesn't update source maps yet
     })
   }
 }
