@@ -46,7 +46,9 @@ describe('Rust Ecosystem Adapters', function () {
     assert(
       output.includes('color:blue') ||
         output.includes('color: blue') ||
-        output.includes('color:  blue'),
+        output.includes('color:  blue') ||
+        output.includes('color: #00f') ||
+        output.includes('color:#00f'),
       'PostCSS plugin did not run (expected "color: blue")',
     );
     assert(!output.includes('red'), 'PostCSS plugin did not run (found "red")');

@@ -221,16 +221,6 @@ impl Plugins for ConfigPlugins {
     for transformer in self.config.transformers.get(path, named_pattern).iter() {
       let transformer_name = transformer.package_name.as_str();
 
-      match transformer_name {
-        // Currently JS plugins don't work and it's easier to just skip these.
-        // We also will probably remove babel from the defaults and support react refresh in Rust
-        // before releasing native asset graph
-        "@atlaspack/transformer-react-refresh-wrap" => continue,
-        "@atlaspack/transformer-posthtml" => continue,
-        "@atlaspack/transformer-postcss" => continue,
-        _ => {}
-      }
-
       let transformer = self
         .plugin_cache
         .get_or_init_transformer(transformer_name, || {
@@ -297,7 +287,7 @@ mod tests {
       .bundler()
       .expect("Not to panic");
 
-    assert_eq!(format!("{:?}", bundler), "RpcBundlerPlugin")
+    assert_eq!(format!("{:?}", bundler), "DefaultBundler")
   }
 
   #[test]
@@ -315,7 +305,7 @@ mod tests {
       .namers()
       .expect("Not to panic");
 
-    assert_eq!(format!("{:?}", namers), "[RpcNamerPlugin]")
+    assert_eq!(format!("{:?}", namers), "[DefaultNamerPlugin]")
   }
 
   #[test]
@@ -333,7 +323,7 @@ mod tests {
       .packager(Path::new("a.js"))
       .expect("Not to panic");
 
-    assert_eq!(format!("{:?}", packager), "RpcPackagerPlugin")
+    assert_eq!(format!("{:?}", packager), "AtlaspackJsPackagerPlugin")
   }
 
   #[test]
