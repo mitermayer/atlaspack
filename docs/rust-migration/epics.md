@@ -77,4 +77,4 @@ Details: see per-epic folders under `docs/rust-migration/epics/<epic>/` (indexed
 
 - [ ] Story: Rust engine metadata contract for runtimes; acceptance: runtimes (JS/HMR/React-refresh/service-worker/webextension) consume a stable metadata interface from the Rust engine, tested via HMR/watch and plugin parity suites.
 - [ ] Story: Reporter compatibility with Rust engine; acceptance: reporters (CLI/dev-server/tracer/LSP/etc.) receive equivalent events/diagnostics from JS and Rust engines with integration tests and docs.
-- [ ] Story: Ecosystem adapter strategy for Babel/PostCSS/MDX/etc.; acceptance: documented status per adapter (Rust-native, JS adapter, deprecated) with migration guidance and tests for maintained adapters.
+- [x] Story: Ecosystem adapter strategy for Babel/PostCSS/MDX/etc.; acceptance: documented status per adapter (Rust-native, JS adapter, deprecated) with migration guidance and tests for maintained adapters.
