@@ -25,6 +25,7 @@ describe('watch hmr', function () {
   let tmpDir: string;
   let sub: any;
   let ws: WebSocket;
+  let parcel: Parcel | undefined;
 
   beforeEach(() => {
     // create temp dir and copy fixture
@@ -39,6 +40,9 @@ describe('watch hmr', function () {
       await new Promise((r) => ws.on('close', r));
     }
     if (sub) await sub.unsubscribe();
+    if (parcel && (parcel as any).unstable__end) {
+      await (parcel as any).unstable__end();
+    }
     if (tmpDir && fs.existsSync(tmpDir)) {
       // Retry removal as it might be locked briefly
       try {
@@ -56,7 +60,7 @@ describe('watch hmr', function () {
     const messages: any[] = [];
     let messageIndex = 0;
 
-    const parcel = new Parcel({
+    parcel = new Parcel({
       entries: entry,
       mode: 'development',
       hmrOptions: {port},
@@ -172,7 +176,7 @@ describe('watch hmr', function () {
     const messages: any[] = [];
     let messageIndex = 0;
 
-    const parcel = new Parcel({
+    parcel = new Parcel({
       entries: entry,
       mode: 'development',
       hmrOptions: {port},

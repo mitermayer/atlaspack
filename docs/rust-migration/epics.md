@@ -93,9 +93,9 @@ Details: see per-epic folders under `docs/rust-migration/epics/<epic>/` (indexed
 
 ## Epic: JS Plugin Execution Support in Rust Engine (T13)
 
-- [ ] Story: JS Host Infrastructure; acceptance: `PluginOptions` and `MutableAsset` implemented in `atlaspack-v3` to support JS plugins running under the Rust engine.
-- [ ] Story: JS Plugin Execution hooks; acceptance: `runNamerName`, `runOptimizerOptimize`, and `runPackagerPackage` implemented in `atlaspack-v3` and wired to Rust engine.
-- [ ] Story: Runtime Parity; acceptance: `RuntimeBundleGraph` implemented to support JS-side graph traversals during plugin execution (from T11).
+- [x] Story: JS Host Infrastructure; acceptance: `PluginOptions` and `MutableAsset` implemented in `atlaspack-v3` to support JS plugins running under the Rust engine.
+- [x] Story: JS Plugin Execution hooks; acceptance: `runNamerName`, `runOptimizerOptimize`, and `runPackagerPackage` implemented in `atlaspack-v3` and wired to Rust engine.
+- [x] Story: Runtime Parity; acceptance: `RuntimeBundleGraph` implemented to support JS-side graph traversals during plugin execution (from T11).
 
 ## Epic: Ecosystem Compatibility & JS Host Parity (Phase 4)
 
@@ -110,3 +110,5 @@ Details: see per-epic folders under `docs/rust-migration/epics/<epic>/` (indexed
 - [ ] Story: Fix NAPI `entries` deserialization bug (T_INFRA_1).
 - [ ] Story: Run Kitchen Sink tests against Rust engine (T_VAL_1).
 - [ ] Story: Benchmark Rust vs JS performance (T_VAL_2).
+- [ ] Story: Complete RuntimeBundleGraph coverage (T_VAL_3); acceptance: implement `getAssetById`, `getSymbolResolution`, and `getEntryRoot` for runtime consumers.
+- [ ] Story: JS Bundler/Compressor stance (T_VAL_4); acceptance: either implement JS bundler/compressor hooks in `worker.ts` or explicitly document Rust-only bundler/compressor support as the stable path.

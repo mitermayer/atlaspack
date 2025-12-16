@@ -83,6 +83,9 @@ describe('incremental invalidation parity', function () {
       if (subscription) {
         await subscription.unsubscribe();
       }
+      if ((atlaspack as any)?.unstable__end) {
+        await (atlaspack as any).unstable__end();
+      }
     }
 
     return snapshots;

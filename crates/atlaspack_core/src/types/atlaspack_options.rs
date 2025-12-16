@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use std::fmt::Display;
+use std::fmt::{self, Display};
 use std::path::PathBuf;
 
 use serde::Deserialize;
@@ -31,6 +31,7 @@ pub struct AtlaspackOptions {
 
   pub serve_options: ServeOptions,
 
+  #[serde(default, deserialize_with = "deserialize_entries")]
   pub entries: Vec<String>,
   #[serde(default, deserialize_with = "deserialize_env")]
   pub env: Option<BTreeMap<String, String>>,
@@ -167,6 +168,49 @@ where
       .filter_map(|(k, v)| v.map(|v| (k, v)))
       .collect()
   }))
+}
+
+fn deserialize_entries<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
+where
+  D: Deserializer<'de>,
+{
+  struct EntriesVisitor;
+
+  impl<'de> serde::de::Visitor<'de> for EntriesVisitor {
+    type Value = Vec<String>;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+      formatter.write_str("a sequence of entry strings or a map of numeric keys to entry strings")
+    }
+
+    fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+    where
+      A: serde::de::SeqAccess<'de>,
+    {
+      let mut entries = Vec::new();
+      while let Some(value) = seq.next_element::<String>()? {
+        entries.push(value);
+      }
+      Ok(entries)
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+      A: serde::de::MapAccess<'de>,
+    {
+      let mut keyed = Vec::new();
+      while let Some((key, value)) = map.next_entry::<String, String>()? {
+        // Treat numeric keys as indexes; ignore non-numeric keys.
+        if let Ok(idx) = key.parse::<usize>() {
+          keyed.push((idx, value));
+        }
+      }
+      keyed.sort_by_key(|(idx, _)| *idx);
+      Ok(keyed.into_iter().map(|(_, v)| v).collect())
+    }
+  }
+
+  deserializer.deserialize_any(EntriesVisitor)
 }
 
 fn deserialize_public_url<'de, D>(deserializer: D) -> Result<String, D::Error>
