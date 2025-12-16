@@ -1,0 +1,20 @@
+[package]
+name = "atlaspack_plugin_optimizer_swc"
+version = "0.1.0"
+edition.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+atlaspack_core = { path = "../atlaspack_core" }
+atlaspack_sourcemap = { path = "../atlaspack_sourcemap" }
+# We need swc_core for minification
+swc_core = { workspace = true, features = ["ecma_ast", "ecma_codegen", "ecma_parser", "ecma_visit", "ecma_minifier", "common", "ecma_transforms"] }
+serde = { workspace = true }
+serde_json = { workspace = true }
+
+[dev-dependencies]
+tokio = { workspace = true }

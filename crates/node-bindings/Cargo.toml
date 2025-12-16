@@ -50,13 +50,12 @@ xxhash-rust = { workspace = true, features = ["xxh3"] }
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 atlaspack = { path = "../atlaspack", features = ["nodejs"] }
+atlaspack_image = { path = "../atlaspack_image" }
 atlaspack-dev-dep-resolver = { path = "../../packages/utils/dev-dep-resolver" }
 atlaspack-macros = { path = "../macros", features = ["napi"] }
 
 crossbeam-channel = { workspace = true }
 indexmap = { workspace = true }
-libc = { workspace = true }
-mozjpeg-sys = { workspace = true }
 napi = { workspace = true, features = [
   "async",
   "napi4",
@@ -64,7 +63,6 @@ napi = { workspace = true, features = [
   "serde-json",
 ] }
 once_cell = { workspace = true }
-oxipng = { workspace = true }
 rayon = { workspace = true }
 swc_core = { workspace = true }
 swc_atlaskit_tokens = { path = "../swc_atlaskit_tokens" }

@@ -1,6 +1,6 @@
 use anyhow::Result;
 use async_trait::async_trait;
-use atlaspack_core::asset_graph::{AssetGraph, AssetGraphNode};
+use atlaspack_core::asset_graph::AssetGraphNode;
 use atlaspack_core::bundle_graph::{BundleGraphEdgeType, BundleGraphNode};
 use atlaspack_core::plugin::{PackageContext, PackagedBundle, PackagerPlugin};
 use petgraph::visit::EdgeRef;

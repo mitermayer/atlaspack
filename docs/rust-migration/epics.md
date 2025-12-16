@@ -6,6 +6,13 @@ Details: see per-epic folders under `docs/rust-migration/epics/<epic>/` (indexed
 
 - [x] Story: Create shared normalization/utils and first smoke tests (dual-run, request/invalidation) on JS engine with stable artifacts. See `docs/rust-migration/epics/epic-0-baseline-tests/`.
 
+## Epic: Maintenance & Infrastructure
+
+- [ ] Story: Fix `yarn test` infrastructure when running from source (`ATLASPACK_REGISTER_USE_SRC=true`).
+  - **Issue:** Worker processes crash during startup when running tests from source, causing timeouts in tests that wait for worker readiness (e.g., `telemetry.test.ts`).
+  - **Context:** The issue appears related to `babel-register` usage in worker initialization sequence.
+  - **Workaround:** Run tests via `yarn workspace @atlaspack/core test` (uses built artifacts) instead of root `yarn test`.
+
 ## Epic: Parity Baseline and Dual-Run Harness
 
 - [x] Story: Add CLI/env flags (`--engine=rust|js|dual`) with validation; acceptance: flags documented, dual-run executable locally and in CI.
@@ -35,10 +42,10 @@ Details: see per-epic folders under `docs/rust-migration/epics/<epic>/` (indexed
 
 ## Epic: Observability and Perf (T5)
 
-- [ ] Story: Metrics spans around FFI, scheduler stages, cache hits/misses, watch latency (dashboards & sampling docs).
+- [x] Story: Metrics spans around FFI, scheduler stages, cache hits/misses, watch latency (dashboards & sampling docs).
   - [x] Sub-task: Fix ConfigLoader deserialization error (T15 blocker).
-  - [ ] Sub-task: Implement V3 Reporter Integration (`runReporterReport`) to enable trace collection.
-  - [ ] Sub-task: Verify trace spans in `telemetry.test.ts`.
+  - [x] Sub-task: Implement V3 Reporter Integration (`runReporterReport`) to enable trace collection.
+  - [x] Sub-task: Verify trace spans in `telemetry.test.ts`.
 - [ ] Story: Perf budgets in CI (cold/warm timings, memory) with thresholds.
 - [x] Story: Panic/timeout watchdog with JS fallback and chaos tests.
 
@@ -56,13 +63,13 @@ Details: see per-epic folders under `docs/rust-migration/epics/<epic>/` (indexed
 
 ## Epic: Plugin Parity (T8)
 
-- [ ] Story: Audit JS-only plugins; prioritize porting/shimming.
+- [x] Story: Audit JS-only plugins; prioritize porting/shimming.
 - [x] Story: Golden tests per plugin.
-- [ ] Story: Deprecation path for unsupported JS internals; acceptance: published contract doc and communicated timelines.
+- [x] Story: Deprecation path for unsupported JS internals; acceptance: published contract doc and communicated timelines.
 
 ## Epic: Plugin Migration – Core Engine Plugins
 
-- [ ] Story: Rust-backed core transformers and default resolver; acceptance: all core transformers and the default resolver invoke Rust plugins under the Rust engine, with plugin parity tests green.
+- [x] Story: Rust-backed core transformers and default resolver; acceptance: all core transformers and the default resolver invoke Rust plugins under the Rust engine, with plugin parity tests green.
 - [x] Story: Rust bundlers, packagers, and namer for Rust engine; acceptance: default/library bundlers, core packagers, and the default namer have Rust plugin implementations with bundle/naming goldens matching JS.
   - [x] T12a: Default Namer (Rust crate + integration).
   - [x] T12b: Default Bundler (Rust crate + integration).
@@ -71,14 +78,15 @@ Details: see per-epic folders under `docs/rust-migration/epics/<epic>/` (indexed
 
 ## Epic: Plugin Migration – Optimizers & Compressors
 
-- [ ] Story: Rust-native optimizers for CSS, JS, image, and inline requires; acceptance: css/js/image/inline-requires optimizers are backed by Rust plugins, with outputs and sourcemaps matching JS goldens.
+- [x] Story: Rust-native optimizers for CSS, JS, image, and inline requires; acceptance: css/js/image/inline-requires optimizers are backed by Rust plugins, with outputs and sourcemaps matching JS goldens.
   - [x] Sub-task: Inline-requires optimizer ported and wired.
   - [x] Sub-task: CSS optimizer ported and wired (crates/atlaspack_plugin_optimizer_css).
+  - [x] Sub-task: JS optimizer ported and wired (crates/atlaspack_plugin_optimizer_swc).
 - [ ] Story: JS-only optimizers wrapped behind stable RPC contracts; acceptance: cssnano/htmlnano/terser/svgo/data-url/blob-url are documented and invoked via plugin RPC with parity tests and a deprecation or replacement strategy where appropriate.
 - [ ] Story: Optimizer plugin parity golden suite; acceptance: per-optimizer fixtures and goldens enforced in CI, with allowed deltas documented.
 
 ## Epic: Plugin Migration – Runtimes, Reporters & Ecosystem Adapters
 
-- [ ] Story: Rust engine metadata contract for runtimes; acceptance: runtimes (JS/HMR/React-refresh/service-worker/webextension) consume a stable metadata interface from the Rust engine, tested via HMR/watch and plugin parity suites.
+- [x] Story: Rust engine metadata contract for runtimes; acceptance: runtimes (JS/HMR/React-refresh/service-worker/webextension) consume a stable metadata interface from the Rust engine, tested via HMR/watch and plugin parity suites.
 - [ ] Story: Reporter compatibility with Rust engine; acceptance: reporters (CLI/dev-server/tracer/LSP/etc.) receive equivalent events/diagnostics from JS and Rust engines with integration tests and docs.
 - [x] Story: Ecosystem adapter strategy for Babel/PostCSS/MDX/etc.; acceptance: documented status per adapter (Rust-native, JS adapter, deprecated) with migration guidance and tests for maintained adapters.

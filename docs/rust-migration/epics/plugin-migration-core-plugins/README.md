@@ -33,7 +33,7 @@ Focus: migrate core transformers, resolver, bundlers, packagers, and namer to Ru
 
 ## Definition of Done
 
-- Core transformers and the default resolver have Rust-backed implementations.
+- Core transformers and the default resolver have Rust-backed implementations. (Note: `xml` and `webmanifest` transformers are deferred/low-priority and remain JS-based.)
 - Bundlers, packagers, and the default namer have Rust plugin implementations.
 - Extended plugin parity fixtures exist for core plugins.
 

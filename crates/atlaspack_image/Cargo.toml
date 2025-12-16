@@ -1,0 +1,10 @@
+[package]
+name = "atlaspack_image"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = { workspace = true }
+libc = { workspace = true }
+mozjpeg-sys = { workspace = true }
+oxipng = { workspace = true }

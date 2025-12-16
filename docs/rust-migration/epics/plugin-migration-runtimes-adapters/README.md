@@ -2,6 +2,10 @@
 
 Focus: ensure runtimes and reporters work seamlessly with the Rust engine, and define a clear strategy for ecosystem adapters (Babel, PostCSS, MDX, etc.) that may remain JS-based but must interoperate with Rust orchestrator data.
 
+## Implementation Notes
+
+- RuntimeBundleGraph implemented as DTO-backed proxy.
+
 ## Key paths
 
 - Runtimes:

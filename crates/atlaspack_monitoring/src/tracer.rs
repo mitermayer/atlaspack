@@ -13,6 +13,73 @@ use tracing_subscriber::fmt::format::FmtSpan;
 use tracing_subscriber::prelude::*;
 
 use crate::from_env::{FromEnvError, optional_var};
+use serde_json::json;
+
+pub trait TraceCallback: Send + Sync + std::fmt::Debug {
+  fn on_event(&self, event: String);
+}
+
+struct NodejsLayer {
+  callback: Arc<dyn TraceCallback>,
+}
+
+impl<S> tracing_subscriber::Layer<S> for NodejsLayer
+where
+  S: tracing::Subscriber + for<'a> tracing_subscriber::registry::LookupSpan<'a>,
+{
+  fn on_new_span(
+    &self,
+    _attrs: &tracing::span::Attributes<'_>,
+    id: &tracing::Id,
+    ctx: tracing_subscriber::layer::Context<'_, S>,
+  ) {
+    let span = ctx.span(id).expect("Span not found, this is a bug");
+    let name = span.name();
+
+    let now = std::time::SystemTime::now()
+      .duration_since(std::time::UNIX_EPOCH)
+      .unwrap()
+      .as_micros() as f64;
+
+    let pid = std::process::id();
+    let tid = format!("{:?}", std::thread::current().id());
+
+    let event = json!({
+      "name": name,
+      "cat": "default",
+      "ph": "B",
+      "ts": now,
+      "pid": pid,
+      "tid": tid,
+    });
+
+    self.callback.on_event(event.to_string());
+  }
+
+  fn on_close(&self, id: tracing::Id, ctx: tracing_subscriber::layer::Context<'_, S>) {
+    let span = ctx.span(&id).expect("Span not found, this is a bug");
+    let name = span.name();
+
+    let now = std::time::SystemTime::now()
+      .duration_since(std::time::UNIX_EPOCH)
+      .unwrap()
+      .as_micros() as f64;
+
+    let pid = std::process::id();
+    let tid = format!("{:?}", std::thread::current().id());
+
+    let event = json!({
+      "name": name,
+      "cat": "default",
+      "ph": "E",
+      "ts": now,
+      "pid": pid,
+      "tid": tid,
+    });
+
+    self.callback.on_event(event.to_string());
+  }
+}
 
 #[derive(Debug, Deserialize, Serialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", tag = "mode")]
@@ -82,7 +149,10 @@ pub struct Tracer {
 }
 
 impl Tracer {
-  pub fn new(options: &[TracerMode]) -> anyhow::Result<Self> {
+  pub fn new(
+    options: &[TracerMode],
+    trace_callback: Option<Arc<dyn TraceCallback>>,
+  ) -> anyhow::Result<Self> {
     let mut worker_guards = vec![];
 
     // We will always write tracing to the log file
@@ -141,11 +211,14 @@ impl Tracer {
 
     let sentry_layer = sentry_tracing::layer();
 
+    let nodejs_layer = trace_callback.map(|callback| NodejsLayer { callback });
+
     let subscriber = Registry::default()
       .with(layer)
       .with(stdout_layer)
       .with(sentry_layer)
-      .with(chrome_layer);
+      .with(chrome_layer)
+      .with(nodejs_layer);
 
     tracing::subscriber::set_global_default(subscriber)?;
 

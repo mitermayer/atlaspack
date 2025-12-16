@@ -3,6 +3,7 @@
 //! They are all disabled by default.
 //!
 //! Reporting should only be initialized once.
+use std::sync::Arc;
 use parking_lot::Mutex;
 use std::time::Duration;
 
@@ -10,7 +11,7 @@ use std::time::Duration;
 pub use crash_reporter::CrashReporterOptions;
 
 pub use sentry_integration::SentryOptions;
-pub use tracer::TracerMode;
+pub use tracer::{TraceCallback, TracerMode};
 
 #[cfg(not(target_env = "musl"))]
 mod crash_reporter;
@@ -42,6 +43,7 @@ pub struct MonitoringOptions {
   pub sentry_options: Option<SentryOptions>,
   #[cfg(not(target_env = "musl"))]
   pub crash_reporter_options: Option<CrashReporterOptions>,
+  pub trace_callback: Option<Arc<dyn tracer::TraceCallback>>,
 }
 
 impl MonitoringOptions {
@@ -51,6 +53,7 @@ impl MonitoringOptions {
       sentry_options: SentryOptions::from_env()?,
       #[cfg(not(target_env = "musl"))]
       crash_reporter_options: CrashReporterOptions::from_env()?,
+      trace_callback: None,
     })
   }
 }
@@ -68,7 +71,10 @@ pub fn initialize_monitoring(options: MonitoringOptions) -> anyhow::Result<()> {
     .transpose()?;
 
   // Order matters, tracer must be initialized after sentry
-  let tracer = Some(tracer::Tracer::new(&options.tracing_options)?);
+  let tracer = Some(tracer::Tracer::new(
+    &options.tracing_options,
+    options.trace_callback,
+  )?);
 
   #[cfg(not(target_env = "musl"))]
   let crash_handler = options

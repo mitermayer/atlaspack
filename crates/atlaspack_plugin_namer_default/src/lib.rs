@@ -24,7 +24,11 @@ impl NamerPlugin for DefaultNamerPlugin {
       // This is inefficient but necessary given current API limitations
       bundle_graph.graph.node_weights().find_map(|node| {
         if let BundleGraphNode::Asset(a) = node {
-          if a.id == *id { Some(a) } else { None }
+          if a.id == *id {
+            Some(a)
+          } else {
+            None
+          }
         } else {
           None
         }

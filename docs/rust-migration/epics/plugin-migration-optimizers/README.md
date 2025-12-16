@@ -7,8 +7,12 @@ Focus: move CSS/JS/image optimization and related transforms to Rust-backed plug
 - JS optimizer plugins:
   - `packages/optimizers/{css,cssnano,htmlnano,image,inline-requires,svgo,swc,terser,blob-url,data-url}/`.
 - Rust optimizer crates:
-  - Existing: `crates/atlaspack_plugin_optimizer_inline_requires/`.
-  - Planned: `crates/atlaspack_plugin_optimizer_{css,js,image,blob_url,data_url,...}/`.
+  - Existing:
+    - `crates/atlaspack_plugin_optimizer_inline_requires/`
+    - `crates/atlaspack_plugin_optimizer_css/`
+    - `crates/atlaspack_plugin_optimizer_swc/` (JS)
+    - `crates/atlaspack_plugin_optimizer_image/`
+  - Planned: `crates/atlaspack_plugin_optimizer_{blob_url,data_url,...}/`.
 - Parity tests and fixtures:
   - Plugin parity tests: `packages/core/core/test/plugin-parity/*.test.ts` (to be extended for optimizers).
   - Golden fixtures: `packages/core/core/test/__fixtures__/plugin-parity/<plugin>/`.

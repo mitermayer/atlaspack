@@ -42,6 +42,12 @@ impl PartialEq for BundleGraph {
   }
 }
 
+impl Default for BundleGraph {
+  fn default() -> Self {
+    Self::new()
+  }
+}
+
 impl BundleGraph {
   pub fn new() -> Self {
     let mut graph = StableDiGraph::new();

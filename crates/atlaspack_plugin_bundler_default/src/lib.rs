@@ -2,7 +2,7 @@ use anyhow::Result;
 use async_trait::async_trait;
 use atlaspack_core::asset_graph::AssetGraph;
 use atlaspack_core::bundle_graph::BundleGraph;
-use atlaspack_core::plugin::{BundlerPlugin, PluginContext};
+use atlaspack_core::plugin::BundlerPlugin;
 use atlaspack_core::types::AtlaspackOptions;
 
 mod decorate_legacy_graph;

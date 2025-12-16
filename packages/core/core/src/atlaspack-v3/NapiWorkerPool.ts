@@ -1,3 +1,4 @@
+import {EventEmitter} from 'events';
 import type {NapiWorkerPool as INapiWorkerPool} from '@atlaspack/types';
 import {Worker} from 'worker_threads';
 import path from 'path';
@@ -15,12 +16,13 @@ export type NapiWorkerPoolOptions = {
   workerCount?: number;
 };
 
-export class NapiWorkerPool implements INapiWorkerPool {
+export class NapiWorkerPool extends EventEmitter implements INapiWorkerPool {
   #workers: Worker[];
   #napiWorkers: Array<Promise<Transferable>>;
   #workerCount: number;
 
   constructor({workerCount}: NapiWorkerPoolOptions = {workerCount: undefined}) {
+    super();
     // @ts-expect-error TS2322
     this.#workerCount =
       workerCount ??
@@ -39,9 +41,15 @@ export class NapiWorkerPool implements INapiWorkerPool {
       let worker = new Worker(WORKER_PATH);
       this.#workers.push(worker);
       this.#napiWorkers.push(
-        new Promise((res: (result: Promise<never>) => void) =>
-          worker.once('message', res),
-        ),
+        new Promise((res: (result: Promise<never>) => void) => {
+          worker.on('message', (msg) => {
+            if (msg && typeof msg === 'object' && msg.type === 'report') {
+              this.emit('report', msg.event);
+            } else {
+              res(msg);
+            }
+          });
+        }),
       );
     }
   }

@@ -272,7 +272,9 @@ dependencies = [
  "atlaspack_plugin_bundler_default",
  "atlaspack_plugin_namer_default",
  "atlaspack_plugin_optimizer_css",
+ "atlaspack_plugin_optimizer_image",
  "atlaspack_plugin_optimizer_inline_requires",
+ "atlaspack_plugin_optimizer_swc",
  "atlaspack_plugin_packager_js",
  "atlaspack_plugin_resolver",
  "atlaspack_plugin_rpc",
@@ -386,6 +388,7 @@ dependencies = [
  "atlaspack-resolver",
  "atlaspack_atlaskit_tokens",
  "atlaspack_core",
+ "atlaspack_image",
  "atlaspack_memory_profiler",
  "atlaspack_monitoring",
  "atlaspack_napi_helpers",
@@ -402,18 +405,15 @@ dependencies = [
  "indexmap",
  "indoc",
  "jemallocator",
- "libc",
  "lmdb-js-lite",
  "log",
  "mimalloc",
  "mockall",
- "mozjpeg-sys",
  "napi",
  "napi-build",
  "napi-derive",
  "num_cpus",
  "once_cell",
- "oxipng",
  "parking_lot",
  "petgraph",
  "rayon",
@@ -557,6 +557,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "atlaspack_image"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "libc",
+ "mozjpeg-sys",
+ "oxipng",
+]
+
+[[package]]
 name = "atlaspack_memoization_cache"
 version = "0.1.0"
 dependencies = [
@@ -666,6 +676,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "atlaspack_plugin_optimizer_image"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "atlaspack_core",
+ "atlaspack_image",
+ "serde",
+]
+
+[[package]]
 name = "atlaspack_plugin_optimizer_inline_requires"
 version = "0.1.0"
 dependencies = [
@@ -675,6 +696,20 @@ dependencies = [
  "atlaspack_swc_runner",
  "pretty_assertions",
  "swc_core",
+]
+
+[[package]]
+name = "atlaspack_plugin_optimizer_swc"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "async-trait",
+ "atlaspack_core",
+ "atlaspack_sourcemap",
+ "serde",
+ "serde_json",
+ "swc_core",
+ "tokio",
 ]
 
 [[package]]
@@ -6103,6 +6138,7 @@ dependencies = [
  "swc_common 14.0.4",
  "swc_ecma_ast",
  "swc_ecma_codegen",
+ "swc_ecma_minifier",
  "swc_ecma_parser",
  "swc_ecma_preset_env",
  "swc_ecma_quote_macros",

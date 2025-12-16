@@ -7,6 +7,7 @@ import {NodePackageManager} from '@atlaspack/package-manager';
 import type {
   Resolver,
   Transformer,
+  Runtime,
   FilePath,
   FileSystem,
 } from '@atlaspack/types';
@@ -25,6 +26,7 @@ import {
   bundleBehaviorMap,
   dependencyPriorityMap,
 } from './compat';
+import {RuntimeBundleGraph, RuntimeBundleGraphDto} from './RuntimeBundleGraph';
 import {FeatureFlags} from '@atlaspack/feature-flags';
 
 const CONFIG = Symbol.for('parcel-plugin-config');
@@ -33,12 +35,14 @@ const RPC_VERSION = 1;
 export class AtlaspackWorker {
   #resolvers: Map<string, ResolverState<any>>;
   #transformers: Map<string, TransformerState<any>>;
+  #runtimes: Map<string, RuntimeState<any>>;
   #fs: FileSystem;
   #packageManager: NodePackageManager;
 
   constructor() {
     this.#resolvers = new Map();
     this.#transformers = new Map();
+    this.#runtimes = new Map();
     this.#fs = new NodeFS();
     this.#packageManager = new NodePackageManager(this.#fs, '/');
   }
@@ -102,6 +106,9 @@ export class AtlaspackWorker {
           break;
         case 'transformer':
           this.#transformers.set(specifier, {transformer: instance});
+          break;
+        case 'runtime':
+          this.#runtimes.set(specifier, {runtime: instance});
           break;
       }
     },
@@ -402,16 +409,105 @@ export class AtlaspackWorker {
   );
 
   runReporterReport: JsCallable<[unknown], Promise<void>> = jsCallable(
-    async () => {
+    async (event) => {
       await Promise.resolve();
-      throw new Error('runReporterReport not implemented');
+      if (parentPort) {
+        parentPort.postMessage({type: 'report', event});
+      }
     },
   );
 
-  runRuntimeApply: JsCallable<[unknown], Promise<void>> = jsCallable(
-    async () => {
-      await Promise.resolve();
-      throw new Error('runRuntimeApply not implemented');
+  runRuntimeApply: JsCallable<
+    [RunRuntimeApplyOptions],
+    Promise<RunRuntimeApplyResult>
+  > = jsCallable(
+    async ({key, bundle: bundleDto, bundleGraph: bundleGraphDto, options}) => {
+      const state = this.#runtimes.get(key);
+      if (!state) {
+        throw new Error(`Runtime not found: ${key}`);
+      }
+
+      let packageManager = state.packageManager;
+      if (!packageManager) {
+        packageManager = new NodePackageManager(this.#fs, options.projectRoot);
+        state.packageManager = packageManager;
+      }
+
+      const defaultOptions = {
+        logger: new PluginLogger(),
+        tracer: new PluginTracer() as any,
+        options: new PluginOptions({
+          ...options,
+          packageManager,
+          shouldAutoInstall: false,
+          inputFS: this.#fs,
+          outputFS: this.#fs,
+        }),
+      } as const;
+
+      // TODO: construct proper Environment from bundleDto
+      // For now we assume bundleDto has env property that matches what Environment expects or we mock it.
+      // In V3, bundleDto.env is likely a Napi Environment struct.
+      const env = new Environment(bundleDto.env);
+
+      const config = await state.runtime.loadConfig?.({
+        config: new PluginConfig({
+          env,
+          isSource: false,
+          searchPath: options.projectRoot, // Runtimes are usually global or per-project
+          projectRoot: options.projectRoot,
+          fs: this.#fs,
+          packageManager,
+        }),
+        ...defaultOptions,
+      });
+
+      const bundleGraph = new RuntimeBundleGraph(bundleGraphDto);
+
+      // TODO: Wrap bundleDto in a proper NamedBundle implementation
+      // For now casting it to any to satisfy TS, assuming Rust sends a compatible structure or we will fix it later.
+      const bundle = bundleDto as any;
+
+      const result = await state.runtime.apply({
+        bundle,
+        bundleGraph,
+        config,
+        ...defaultOptions,
+      });
+
+      if (!result) {
+        return {assets: []};
+      }
+
+      const assets = Array.isArray(result) ? result : [result];
+
+      return {
+        assets: assets.map((asset) => ({
+          filePath: asset.filePath,
+          code: asset.code,
+          isEntry: asset.isEntry,
+          dependency: asset.dependency
+            ? {
+                id: asset.dependency.id,
+                specifier: asset.dependency.specifier,
+                specifierType: asset.dependency.specifierType,
+                priority: dependencyPriorityMap.intoNullable(
+                  asset.dependency.priority,
+                ),
+                isEntry: asset.dependency.isEntry,
+                isOptional: asset.dependency.isOptional,
+                loc: asset.dependency.loc,
+                env: asset.dependency.env,
+                meta: asset.dependency.meta,
+                target: asset.dependency.target,
+                sourceAssetId: asset.dependency.sourceAssetId,
+                sourcePath: asset.dependency.sourcePath,
+                pipeline: asset.dependency.pipeline,
+                symbols: asset.dependency.symbols,
+              }
+            : undefined,
+        })),
+      };
     },
   );
 }
@@ -488,3 +584,24 @@ type RunTransformerTransformOptions = {
 
 // @ts-expect-error TS2694
 type RunTransformerTransformResult = [napi.RpcAssetResult, Buffer, string];
+
+type RuntimeState<T> = {
+  packageManager?: NodePackageManager;
+  runtime: Runtime<T>;
+};
+
+type RunRuntimeApplyOptions = {
+  key: string;
+  bundle: any;
+  bundleGraph: RuntimeBundleGraphDto;
+  options: RpcPluginOptions;
+};
+
+type RunRuntimeApplyResult = {
+  assets: Array<{
+    filePath: string;
+    code: string;
+    isEntry?: boolean;
+    dependency?: any;
+  }>;
+};

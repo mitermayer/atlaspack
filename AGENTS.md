@@ -371,8 +371,8 @@ Tracing:
 - **Phase 3 (Stabilization)**: 🔄 IN PROGRESS.
   - **Reliability**: ✅ Panic Watchdog implemented (T18).
   - **Ecosystem**: ✅ RPC adapters verified (T17).
-  - **Observability**: ⚠️ Blocked by config loading issue (T15).
-  - **Performance**: ⏳ Native optimizers pending (T19).
+  - **Observability**: ✅ Complete (T5).
+  - **Performance**: 🔄 In Progress (Native Optimizers).
 
 For the detailed roadmap and task tracking, **ALWAYS** refer to:
 

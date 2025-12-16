@@ -1,8 +1,46 @@
+use atlaspack_monitoring::TraceCallback;
+use napi::threadsafe_function::{ErrorStrategy, ThreadsafeFunction, ThreadsafeFunctionCallMode};
+use napi::{Env, JsFunction, JsObject};
 use napi_derive::napi;
+use std::sync::Arc;
+
+struct JsTraceCallback {
+  tsfn: ThreadsafeFunction<String, ErrorStrategy::Fatal>,
+}
+
+impl std::fmt::Debug for JsTraceCallback {
+  fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+    write!(f, "JsTraceCallback")
+  }
+}
+
+impl TraceCallback for JsTraceCallback {
+  fn on_event(&self, event: String) {
+    self.tsfn
+      .call(event, ThreadsafeFunctionCallMode::NonBlocking);
+  }
+}
 
 #[napi]
-pub fn initialize_monitoring() -> napi::Result<()> {
-  atlaspack_monitoring::initialize_from_env()
+pub fn initialize_monitoring(_env: Env, options: Option<JsObject>) -> napi::Result<()> {
+  let mut trace_callback: Option<Arc<dyn TraceCallback>> = None;
+
+  if let Some(opts) = options {
+    if opts.has_named_property("onTrace")? {
+      let func: JsFunction = opts.get_named_property("onTrace")?;
+      let tsfn = func.create_threadsafe_function(0, |ctx| {
+        ctx.env.create_string_from_std(ctx.value).map(|v| vec![v])
+      })?;
+      trace_callback = Some(Arc::new(JsTraceCallback { tsfn }));
+    }
+  }
+
+  let mut monitoring_options = atlaspack_monitoring::MonitoringOptions::from_env()
+    .map_err(|err| napi::Error::from_reason(err.to_string()))?;
+
+  monitoring_options.trace_callback = trace_callback;
+
+  atlaspack_monitoring::initialize_monitoring(monitoring_options)
     .map_err(|err| napi::Error::from_reason(err.to_string()))
 }
 

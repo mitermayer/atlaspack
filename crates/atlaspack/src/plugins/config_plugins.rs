@@ -19,7 +19,9 @@ use atlaspack_core::plugin::composite_reporter_plugin::CompositeReporterPlugin;
 use atlaspack_plugin_bundler_default::DefaultBundler;
 use atlaspack_plugin_namer_default::DefaultNamerPlugin;
 use atlaspack_plugin_optimizer_css::CSSOptimizer;
+use atlaspack_plugin_optimizer_image::AtlaspackImageOptimizerPlugin;
 use atlaspack_plugin_optimizer_inline_requires::AtlaspackInlineRequiresOptimizerPlugin;
+use atlaspack_plugin_optimizer_swc::SwcOptimizer;
 use atlaspack_plugin_packager_js::AtlaspackJsPackagerPlugin;
 use atlaspack_plugin_resolver::AtlaspackResolver;
 use atlaspack_plugin_rpc::RpcWorkerRef;
@@ -158,6 +160,14 @@ impl Plugins for ConfigPlugins {
         optimizers.push(Box::new(CSSOptimizer::new(
           self.ctx.options.project_root.clone(),
         )));
+        continue;
+      }
+      if optimizer.package_name == "@atlaspack/optimizer-image" {
+        optimizers.push(Box::new(AtlaspackImageOptimizerPlugin));
+        continue;
+      }
+      if optimizer.package_name == "@atlaspack/optimizer-swc" {
+        optimizers.push(Box::new(SwcOptimizer));
         continue;
       }
       optimizers.push(self.rpc_worker.create_optimizer(&self.ctx, optimizer)?);

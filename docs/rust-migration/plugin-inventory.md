@@ -185,7 +185,30 @@ Runtimes are JS bundles injected into output bundles; they will likely remain JS
 
 ---
 
-## 7. How to Use This Inventory
+## 8. Compressors
+
+Compressors run on final bundles to reduce size (Gzip, Brotli).
+
+| JS Plugin Path                | Rust Crate | Status                | Epic                     | Notes                                  |
+| ----------------------------- | ---------- | --------------------- | ------------------------ | -------------------------------------- |
+| `packages/compressors/raw`    | _none_     | Rust-native (planned) | Optimizers & Compressors | Pass-through; trivial Rust port.       |
+| `packages/compressors/gzip`   | _none_     | Rust-native (planned) | Optimizers & Compressors | Gzip compression; trivial Rust port.   |
+| `packages/compressors/brotli` | _none_     | Rust-native (planned) | Optimizers & Compressors | Brotli compression; trivial Rust port. |
+
+---
+
+## 9. Validators
+
+Validators run on source files to check for errors (TypeScript, ESLint). These typically wrap external tools.
+
+| JS Plugin Path                   | Rust Crate | Status     | Epic              | Notes                                |
+| -------------------------------- | ---------- | ---------- | ----------------- | ------------------------------------ |
+| `packages/validators/typescript` | _none_     | JS adapter | Runtimes/Adapters | Wraps `tsc`; likely to remain JS.    |
+| `packages/validators/eslint`     | _none_     | JS adapter | Runtimes/Adapters | Wraps `eslint`; likely to remain JS. |
+
+---
+
+## 10. How to Use This Inventory
 
 - When working on **Epic: Plugin Migration – Core Engine Plugins**:
   - Focus on rows marked `Rust-native (wired)` and `Rust-native (planned)` for **core transformers, resolver, bundlers, packagers, and namers**.

@@ -1,0 +1,11 @@
+[package]
+name = "atlaspack_plugin_optimizer_image"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+atlaspack_core = { path = "../atlaspack_core" }
+atlaspack_image = { path = "../atlaspack_image" }
+serde = { workspace = true }

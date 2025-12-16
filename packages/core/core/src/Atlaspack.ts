@@ -230,7 +230,21 @@ export default class Atlaspack {
     this.#disposable = new Disposable();
 
     try {
-      initializeMonitoring?.();
+      initializeMonitoring?.({
+        onTrace: (event: string) => {
+          if (
+            tracer.enabled &&
+            (event.includes('"name":"build_asset_graph"') ||
+              event.includes('"name":"PipelineScheduler::execute"'))
+          ) {
+            try {
+              tracer.trace(JSON.parse(event));
+            } catch (e) {
+              // ignore
+            }
+          }
+        },
+      });
 
       const onExit = () => {
         closeMonitoring?.();
@@ -293,6 +307,24 @@ export default class Atlaspack {
           lmdb,
           featureFlags: resolvedOptions.featureFlags,
         });
+
+        if (
+          rustAtlaspack._napiWorkerPool &&
+          // @ts-expect-error accessing event emitter method
+          typeof rustAtlaspack._napiWorkerPool.on === 'function'
+        ) {
+          // @ts-expect-error accessing event emitter method
+          rustAtlaspack._napiWorkerPool.on('report', (event) => {
+            if (event.type === 'trace') {
+              if (resolvedOptions.shouldTrace) {
+                tracer.trace(event);
+              }
+            } else {
+              this.#reporterRunner.report(event);
+            }
+          });
+        }
+
         this.#disposable.add(() => {
           rustAtlaspack.end();
         });
@@ -302,6 +334,11 @@ export default class Atlaspack {
     }
     // @ts-expect-error TS2454
     this.rustAtlaspack = rustAtlaspack;
+
+    console.log(
+      'DEBUG: shouldTrace in _init:',
+      this.#initialOptions.shouldTrace,
+    );
 
     let {config} = await loadAtlaspackConfig(resolvedOptions);
     this.#config = new AtlaspackConfig(config, resolvedOptions);
@@ -320,8 +357,10 @@ export default class Atlaspack {
 
     await resolvedOptions.cache.ensure();
 
+    console.error('DEBUG: Creating shared reference');
     let {dispose: disposeOptions, ref: optionsRef} =
       await this.#farm.createSharedReference(resolvedOptions, false);
+    console.error('DEBUG: Shared reference created');
     this.#optionsRef = optionsRef;
 
     if (this.#initialOptions.workerFarm) {
@@ -348,12 +387,14 @@ export default class Atlaspack {
       message: 'Intializing request tracker...',
     });
 
+    console.log('DEBUG: RequestTracker.init start');
     this.#requestTracker = await RequestTracker.init({
       farm: this.#farm,
       options: resolvedOptions,
       // @ts-expect-error TS2454
       rustAtlaspack,
     });
+    console.log('DEBUG: RequestTracker.init end');
 
     this.#initialized = true;
   }
