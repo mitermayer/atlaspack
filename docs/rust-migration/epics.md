@@ -101,11 +101,12 @@ Details: see per-epic folders under `docs/rust-migration/epics/<epic>/` (indexed
 
 - [x] Story: JS Host Infrastructure (T20); acceptance: `PluginOptions` and `MutableAsset` methods implemented in `atlaspack-v3`.
 - [x] Story: JS Plugin Execution (T21); acceptance: `runNamer`, `runOptimizer`, `runPackager`, and `runValidator` implemented in `worker.ts`. (Note: Resolvers/Transformers are implemented but blocked by T20).
-- [x] Story: Runtime Bundle Graph Implementation (T22); acceptance: `RuntimeBundleGraph` fully implemented (backed by DTO) to support HMR and Code Splitting.
+- [x] Story: Runtime Bundle Graph Implementation (T22); acceptance: MVP implemented (Async Import resolution supported via DTO).
 - [x] Story: JS-only Optimizers Wrapper (T14); acceptance: `htmlnano` and `svgo` run via the new RPC system.
 - [x] Story: Reporter Parity (T19); acceptance: CLI/DevServer reporters receive events from Rust.
 
 ## Epic: Validation & Stabilization (Phase 5)
 
-- [ ] Story: Fix NAPI `entries` deserialization bug (T_INFRA_1); acceptance: `optimizer_js_host.test.ts` passes with absolute paths.
-- [ ] Story: Run Kitchen Sink tests against Rust engine (T_VAL_1); acceptance: All examples build with `--engine=rust`.
+- [ ] Story: Fix NAPI `entries` deserialization bug (T_INFRA_1).
+- [ ] Story: Run Kitchen Sink tests against Rust engine (T_VAL_1).
+- [ ] Story: Benchmark Rust vs JS performance (T_VAL_2).

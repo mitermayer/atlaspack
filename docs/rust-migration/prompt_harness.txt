@@ -21,6 +21,7 @@ T8: Plugin parity goldens/tests — `docs/rust-migration/epics/plugin-parity/`
 PHASE 5: VALIDATION & STABILIZATION
 - Execute T_INFRA_1 (NAPI Deserialization Fix)
 - Execute T_VAL_1 (Kitchen Sink Validation)
+- Execute T_VAL_2 (Benchmark Rust vs JS performance)
 
 State management:
 - Maintain a task table with statuses (PENDING/IN_PROGRESS/DONE/FAILED). Output it at the start of every turn.

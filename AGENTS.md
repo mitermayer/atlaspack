@@ -355,7 +355,7 @@ Tracing:
 
 ## Rust Migration Docs
 
-**⚠️ CURRENT STATUS (Dec 2025): Phase 5 Validation (Pending)**
+**⚠️ CURRENT STATUS (Dec 2025): Phase 5 (Validation): Pending**
 
 - **Phase 1 (Infrastructure)**: ✅ COMPLETE.
   - Baseline tests, parity harness, and golden fixtures are established.

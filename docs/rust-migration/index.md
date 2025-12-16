@@ -68,7 +68,7 @@ Focus: preparing for broad adoption, handling the long tail, and ensuring full J
     - Implement full JS Host Infrastructure (T20), JS Plugin Execution (T21), and Runtime Bundle Graph (T22).
     - _Why_: Required to support the vast ecosystem of existing JS plugins without rewriting them all in Rust immediately.
 
-### 5. Validation & Stabilization (Phase 5)
+### 5. Validation & Stabilization (Phase 5) - CURRENT
 
 Focus: verifying the engine against real-world examples and fixing critical infrastructure bugs.
 
@@ -78,6 +78,9 @@ Focus: verifying the engine against real-world examples and fixing critical infr
 13. **Kitchen Sink Validation** (T_VAL_1)
     - Run Kitchen Sink tests against Rust engine.
     - _Why_: Validates the engine against a comprehensive set of features and edge cases.
+14. **Performance Benchmarking** (T_VAL_2)
+    - Benchmark Rust vs JS performance.
+    - _Why_: Quantify the performance benefits of the Rust engine.
 
 ---
 
