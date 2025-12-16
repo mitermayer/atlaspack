@@ -23,6 +23,8 @@ describe('incremental invalidation parity', function () {
       entries: entryFile,
       defaultConfig: '@atlaspack/config-default',
       mode: 'development',
+      projectRoot: path.resolve(__dirname, '../../../../'),
+      workerFarm: {useLocalWorker: true},
       env: {
         ATLASPACK_ENGINE: engine,
       },

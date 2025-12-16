@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 
+import fs from 'fs/promises';
+import path from 'path';
+import {tmpdir} from 'os';
 import {LMDBLiteCache} from '../src/LMDBLiteCache';
 import {CacheSchemaManager} from '../src/CacheSchemaManager';
 import {HashParityMatrixTester} from '../src/HashParityMatrixTester';
 import {WASMFallbackValidator} from '../src/WASMFallbackValidator';
-import {writeEvents, writeSummary} from '../../../core/test/utils/artifacts';
+import {writeEvents, writeSummary} from './utils/artifacts';
 
 /* eslint-disable no-console */
 
@@ -92,9 +95,8 @@ async function runCacheValidation(options: CommandOptions = {}): Promise<void> {
           });
         }
       } catch (error) {
-        console.warn(
-          `⚠️  Could not compare with previous results: ${error.message}`,
-        );
+        const msg = error instanceof Error ? error.message : String(error);
+        console.warn(`⚠️  Could not compare with previous results: ${msg}`);
       }
     }
 
@@ -192,7 +194,7 @@ async function runCacheMigration(
   try {
     await cache.ensure();
 
-    const currentVersion = await schemaManager.getStoredVersion(cache);
+    const currentVersion = await (schemaManager as any).getStoredVersion(cache);
     console.log(`📋 Current version: ${currentVersion}`);
 
     if (targetVersion) {
@@ -202,7 +204,7 @@ async function runCacheMigration(
 
     await schemaManager.migrateCache(cache);
 
-    const newVersion = await schemaManager.getStoredVersion(cache);
+    const newVersion = await (schemaManager as any).getStoredVersion(cache);
     console.log(`✅ Migration completed. New version: ${newVersion}`);
   } catch (error) {
     console.error('❌ Migration failed:', error);
@@ -230,7 +232,7 @@ async function runCacheDiagnostics(cacheDir: string): Promise<void> {
 
     // Get cache info
     const keys = Array.from(cache.keys());
-    const version = await schemaManager.getStoredVersion(cache);
+    const version = await (schemaManager as any).getStoredVersion(cache);
 
     console.log(`📊 Cache Statistics:`);
     console.log(`   Version: ${version}`);
@@ -343,8 +345,9 @@ Examples:
         process.exit(1);
     }
   } catch (error) {
-    console.error('❌ Command failed:', error.message);
-    if (options.verbose) {
+    const msg = error instanceof Error ? error.message : String(error);
+    console.error('❌ Command failed:', msg);
+    if (options.verbose && error instanceof Error && error.stack) {
       console.error(error.stack);
     }
     process.exit(1);

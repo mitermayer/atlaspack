@@ -32,7 +32,7 @@ export class RuntimeBundleGraph implements BundleGraph<NamedBundle> {
   }
 
   getAssetById(_id: string): Asset {
-    throw new Error('Method getAssetById not implemented.');
+    throw new Error('getAssetById is not implemented in RuntimeBundleGraph');
   }
 
   getAssetPublicId(asset: Asset): string {
@@ -175,7 +175,9 @@ export class RuntimeBundleGraph implements BundleGraph<NamedBundle> {
     _symbol: Symbol,
     _boundary?: NamedBundle | null,
   ): SymbolResolution {
-    throw new Error('Method getSymbolResolution not implemented.');
+    throw new Error(
+      'getSymbolResolution is not implemented in RuntimeBundleGraph',
+    );
   }
 
   getExportedSymbols(
@@ -215,7 +217,7 @@ export class RuntimeBundleGraph implements BundleGraph<NamedBundle> {
   }
 
   getEntryRoot(_target: Target): FilePath {
-    throw new Error('Method getEntryRoot not implemented.');
+    throw new Error('getEntryRoot is not implemented in RuntimeBundleGraph');
   }
 
   getConditionsForDependencies(

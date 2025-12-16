@@ -1,6 +1,6 @@
 import {LMDBLiteCache} from '../src/LMDBLiteCache';
 import {CacheSchemaManager} from '../src/CacheSchemaManager';
-import {writeEvents, writeSummary} from '../../../core/test/utils/artifacts';
+import {writeEvents, writeSummary} from './utils/artifacts';
 import {tmpdir} from 'os';
 import * as path from 'path';
 import * as fs from 'fs/promises';

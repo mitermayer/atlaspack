@@ -194,7 +194,6 @@ export class MutableAsset implements IMutableAsset {
   // eslint-disable-next-line no-unused-vars
   addDependency(options: DependencyOptions): string {
     const id = Math.random().toString(36).slice(2);
-    // @ts-expect-error: Stub implementation mismatch
     const dep: Dependency = {
       id,
       specifier: options.specifier,
@@ -204,15 +203,10 @@ export class MutableAsset implements IMutableAsset {
       isOptional: options.isOptional ?? false,
       isEntry: false,
       loc: options.loc,
-      // @ts-expect-error: Stub implementation mismatch
-      env: options.env
-        ? // @ts-expect-error: Stub implementation mismatch
-          {...this.env, ...options.env}
-        : this.env,
+      env: options.env ? {...this.env, ...options.env} : this.env,
       meta: options.meta || {},
       target: undefined,
-      // @ts-expect-error: Stub implementation mismatch
-      symbols: new MutableDependencySymbols(null),
+      symbols: new MutableDependencySymbols(null) as any,
       pipeline: options.pipeline,
       resolveFrom: options.resolveFrom,
       range: options.range,
@@ -237,7 +231,6 @@ export class MutableAsset implements IMutableAsset {
 
   // eslint-disable-next-line no-unused-vars
   setEnvironment(opts: EnvironmentOptions): void {
-    // @ts-expect-error: Stub implementation mismatch
     this.env = {...this.env, ...opts};
   }
 

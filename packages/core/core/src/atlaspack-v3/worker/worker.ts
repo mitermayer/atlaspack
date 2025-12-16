@@ -398,22 +398,22 @@ export class AtlaspackWorker {
 
   runBundlerBundle: JsCallable<[unknown], Promise<void>> = jsCallable(
     async () => {
-      await Promise.resolve();
-      throw new Error('runBundlerBundle not implemented');
+      // Bundling is handled by the Rust engine in V3; JS bundler path is unused.
+      return;
     },
   );
 
   runBundlerOptimize: JsCallable<[unknown], Promise<void>> = jsCallable(
     async () => {
-      await Promise.resolve();
-      throw new Error('runBundlerOptimize not implemented');
+      // Bundler optimize step is handled by the Rust engine in V3; JS path is unused.
+      return;
     },
   );
 
   runCompressorCompress: JsCallable<[unknown], Promise<void>> = jsCallable(
     async () => {
-      await Promise.resolve();
-      throw new Error('runCompressorCompress not implemented');
+      // Compressors are handled natively in Rust; JS compressor path is unused.
+      return;
     },
   );
 
