@@ -17,7 +17,7 @@ import type {
   EnvironmentOptions,
 } from '@atlaspack/types';
 import {bundleBehaviorMap} from './bitflags';
-import {MutableAssetSymbols} from './asset-symbols';
+import {MutableAssetSymbols, MutableDependencySymbols} from './asset-symbols';
 
 // @ts-expect-error TS2694
 export type InnerAsset = napi.Asset;
@@ -49,6 +49,9 @@ export class MutableAsset implements IMutableAsset {
   #map: string | null | undefined;
   #projectRoot: string;
   #sourceMap: SourceMap | null | undefined;
+  #dependencies: Array<Dependency>;
+  #stream: Readable | null | undefined;
+  #code: string | null | undefined;
 
   get astGenerator(): ASTGenerator | null | undefined {
     throw new Error('get MutableAsset.astGenerator');
@@ -88,6 +91,16 @@ export class MutableAsset implements IMutableAsset {
     this.#inner = asset;
     this.#map = map;
     this.#projectRoot = projectRoot;
+    this.#dependencies = [];
+  }
+
+  // Getters for worker.ts to access the state
+  get code(): string | null | undefined {
+    return this.#code;
+  }
+
+  get dependencies(): Array<Dependency> {
+    return this.#dependencies;
   }
 
   // eslint-disable-next-line require-await
@@ -106,10 +119,14 @@ export class MutableAsset implements IMutableAsset {
 
   // eslint-disable-next-line require-await
   async getCode(): Promise<string> {
+    if (this.#code != null) {
+      return this.#code;
+    }
     return this.#contents.toString();
   }
 
   setCode(code: string): void {
+    this.#code = code;
     this.#contents = Buffer.from(code);
   }
 
@@ -120,13 +137,18 @@ export class MutableAsset implements IMutableAsset {
 
   setBuffer(buf: Buffer): void {
     this.#contents = buf;
+    this.#code = undefined;
   }
 
   getStream(): Readable {
+    if (this.#stream) {
+      return this.#stream;
+    }
     return Readable.from(this.#contents);
   }
 
   setStream(stream: Readable): void {
+    this.#stream = stream;
     const data: Array<Buffer> = [];
 
     stream.on('data', (chunk) => {
@@ -166,22 +188,57 @@ export class MutableAsset implements IMutableAsset {
   }
 
   getDependencies(): ReadonlyArray<Dependency> {
-    throw new Error('MutableAsset.getDependencies');
+    return this.#dependencies;
   }
 
   // eslint-disable-next-line no-unused-vars
   addDependency(options: DependencyOptions): string {
-    throw new Error('MutableAsset.addDependency()');
+    const id = Math.random().toString(36).slice(2);
+    // @ts-expect-error: Stub implementation mismatch
+    const dep: Dependency = {
+      id,
+      specifier: options.specifier,
+      specifierType: options.specifierType,
+      priority: options.priority || 'sync',
+      needsStableName: options.needsStableName ?? false,
+      isOptional: options.isOptional ?? false,
+      isEntry: false,
+      loc: options.loc,
+      // @ts-expect-error: Stub implementation mismatch
+      env: options.env
+        ? // @ts-expect-error: Stub implementation mismatch
+          {...this.env, ...options.env}
+        : this.env,
+      meta: options.meta || {},
+      target: undefined,
+      // @ts-expect-error: Stub implementation mismatch
+      symbols: new MutableDependencySymbols(null),
+      pipeline: options.pipeline,
+      resolveFrom: options.resolveFrom,
+      range: options.range,
+      sourceAssetId: this.id,
+      sourcePath: this.filePath,
+      sourceAssetType: this.type,
+      bundleBehavior: undefined,
+      packageConditions: [],
+    };
+    this.#dependencies.push(dep);
+    return id;
   }
 
   // eslint-disable-next-line no-unused-vars
   addURLDependency(url: string, opts: Partial<DependencyOptions>): string {
-    throw new Error('MutableAsset.addURLDependency()');
+    return this.addDependency({
+      ...opts,
+      specifier: url,
+      specifierType: 'url',
+    });
   }
 
   // eslint-disable-next-line no-unused-vars
   setEnvironment(opts: EnvironmentOptions): void {
-    throw new Error('MutableAsset.setEnvironment()');
+    // @ts-expect-error: Stub implementation mismatch
+    this.env = {...this.env, ...opts};
   }
 
   // eslint-disable-next-line no-unused-vars

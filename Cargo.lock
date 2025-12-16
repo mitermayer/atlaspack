@@ -751,6 +751,7 @@ dependencies = [
  "napi",
  "once_cell",
  "parking_lot",
+ "petgraph",
  "serde",
  "serde_json",
  "tokio",

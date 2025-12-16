@@ -13,9 +13,15 @@ import type {
   Target,
 } from '@atlaspack/types';
 
+export interface BundleGroupDto {
+  id: string;
+  entryAssetId: string;
+  bundles: string[];
+}
+
 export interface RuntimeBundleGraphDto {
-  // Placeholder for now
-  bundleGraphId: string;
+  resolutions: Record<string, string>;
+  bundleGroups: Record<string, BundleGroupDto>;
 }
 
 export class RuntimeBundleGraph implements BundleGraph<NamedBundle> {
@@ -68,13 +74,28 @@ export class RuntimeBundleGraph implements BundleGraph<NamedBundle> {
   }
 
   resolveAsyncDependency(
-    _dependency: Dependency,
+    dependency: Dependency,
     _bundle?: NamedBundle | null,
   ):
     | {type: 'bundle_group'; value: BundleGroup}
     | {type: 'asset'; value: Asset}
     | null
     | undefined {
+    const bundleGroupId = this.#dto.resolutions[dependency.id];
+    if (bundleGroupId != null) {
+      const bundleGroupDto = this.#dto.bundleGroups[bundleGroupId];
+      if (bundleGroupDto) {
+        return {
+          type: 'bundle_group',
+          value: {
+            entryAssetId: bundleGroupDto.entryAssetId,
+            target: null as any, // Target is not available in DTO
+            // @ts-expect-error: Stub implementation mismatch
+            id: bundleGroupId,
+          },
+        };
+      }
+    }
     return null;
   }
 
@@ -113,9 +134,23 @@ export class RuntimeBundleGraph implements BundleGraph<NamedBundle> {
   }
 
   getBundlesInBundleGroup(
-    _bundleGroup: BundleGroup,
+    bundleGroup: BundleGroup,
     _opts?: {includeInline: boolean},
   ): Array<NamedBundle> {
+    // @ts-expect-error: Stub implementation mismatch
+    const id = bundleGroup.id;
+    if (id != null) {
+      const dto = this.#dto.bundleGroups[id];
+      if (dto) {
+        return dto.bundles.map(
+          (bundleId) =>
+            ({
+              id: bundleId,
+              publicId: bundleId,
+            }) as unknown as NamedBundle,
+        );
+      }
+    }
     return [];
   }
 

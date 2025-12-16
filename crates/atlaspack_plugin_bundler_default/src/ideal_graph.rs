@@ -15,6 +15,7 @@ pub enum BundleRootEdge {
   Lazy,
 }
 
+#[allow(dead_code)]
 pub struct IdealGraph {
   pub bundle_root_graph: StableDiGraph<usize, BundleRootEdge>,
   pub reachable_roots: Vec<FixedBitSet>,

@@ -68,6 +68,17 @@ Focus: preparing for broad adoption, handling the long tail, and ensuring full J
     - Implement full JS Host Infrastructure (T20), JS Plugin Execution (T21), and Runtime Bundle Graph (T22).
     - _Why_: Required to support the vast ecosystem of existing JS plugins without rewriting them all in Rust immediately.
 
+### 5. Validation & Stabilization (Phase 5)
+
+Focus: verifying the engine against real-world examples and fixing critical infrastructure bugs.
+
+12. **NAPI Deserialization Fix** (T_INFRA_1)
+    - Fix NAPI `entries` deserialization bug for absolute paths.
+    - _Why_: Ensures correct handling of file paths in the Rust engine, critical for consistent builds.
+13. **Kitchen Sink Validation** (T_VAL_1)
+    - Run Kitchen Sink tests against Rust engine.
+    - _Why_: Validates the engine against a comprehensive set of features and edge cases.
+
 ---
 
 ## Epics and Tickets

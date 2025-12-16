@@ -153,7 +153,7 @@ whoami = "1.5.2"
 xxhash-rust = "0.8.15"
 
 # DEPRECATED
-serde_yaml = "0.9.34+deprecated"
+serde_yaml = "0.9.34"
 
 # CANNOT UPDATE
 ## rkyv includes a breaking change in a minor release which breaks parcel_sourcemap

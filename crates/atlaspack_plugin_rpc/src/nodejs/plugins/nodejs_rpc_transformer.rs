@@ -1,10 +1,5 @@
 use async_trait::async_trait;
 use atlaspack_core::plugin::PluginOptions;
-use napi::JsBuffer;
-use napi::JsObject;
-use napi::JsString;
-use napi::JsUnknown;
-use napi::bindgen_prelude::FromNapiValue;
 use std::fmt;
 use std::fmt::Debug;
 use std::hash::Hash;
@@ -24,6 +19,7 @@ use atlaspack_core::plugin::TransformContext;
 use atlaspack_core::plugin::TransformResult;
 use atlaspack_core::plugin::TransformerPlugin;
 use atlaspack_core::types::Asset;
+use atlaspack_core::types::InternalFileCreateInvalidation as InvalidateOnFileCreate;
 use atlaspack_core::types::engines::Engines;
 use atlaspack_core::types::*;
 
@@ -127,7 +123,8 @@ impl TransformerPlugin for NodejsRpcTransformerPlugin {
       },
     };
 
-    let (result, contents, map) = self
+    let asset_for_worker = asset.clone();
+    let result = self
       .nodejs_workers
       .next_worker()
       .transformer_register_fn
@@ -137,11 +134,11 @@ impl TransformerPlugin for NodejsRpcTransformerPlugin {
 
           // Passing in an empty buffer causes napi to panic. If asset has no
           // code, we pass an empty Vec instead.
-          let contents = if asset.code.is_empty() {
+          let contents = if asset_for_worker.code.is_empty() {
             env.create_buffer_with_data(Vec::new())?
           } else {
-            let mut contents = env.create_buffer(asset.code.len())?;
-            contents.copy_from_slice(&asset.code);
+            let mut contents = env.create_buffer(asset_for_worker.code.len())?;
+            contents.copy_from_slice(&asset_for_worker.code);
             contents
           };
 
@@ -154,66 +151,71 @@ impl TransformerPlugin for NodejsRpcTransformerPlugin {
           Ok(vec![run_transformer_opts, contents.into_unknown(), map])
         },
         |env, return_value| {
-          let return_value = JsObject::from_unknown(return_value)?;
-
-          let transform_result = return_value.get_element::<JsUnknown>(0)?;
-          let transform_result = env.from_js_value::<RpcAssetResult, _>(transform_result)?;
-
-          let contents = return_value.get_element::<JsUnknown>(1)?;
-
-          // If there was nothing returned from an asset transform, then the
-          // buffer will be empty, which causes napi to panic. If it is empty,
-          // the worker will return `null` instead of an empty buffer, which
-          // means we can check for it here and use an empty Vec.
-          let contents = if contents.is_buffer()? {
-            JsBuffer::from_unknown(contents)?.into_value()?.to_vec()
-          } else {
-            vec![]
-          };
-
-          let map = return_value.get_element::<JsString>(2)?.into_utf8()?;
-          let map = if map.is_empty() {
-            None
-          } else {
-            Some(map.into_owned()?)
-          };
-
-          Ok((transform_result, contents, map))
+          let result = env.from_js_value::<JsTransformerResult, _>(return_value)?;
+          Ok(result)
         },
       )
       .await?;
 
-    let transformed_asset = Asset {
-      id: result.id,
-      code: Code::new(contents),
-      bundle_behavior: result.bundle_behavior,
-      env: asset_env.clone(),
-      file_path: result.file_path,
-      file_type: result.file_type,
-      map: if let Some(json) = map {
+    let mut assets_iter = result.assets.into_iter();
+    let first_asset = assets_iter
+      .next()
+      .ok_or_else(|| anyhow::Error::msg("Transformer returned no assets"))?;
+
+    let convert_asset = |js_asset: JsTransformerAsset| -> Result<Asset, Error> {
+      let code = Code::from(js_asset.code);
+      let map = if let Some(json) = js_asset.map {
         Some(SourceMap::from_json(
           &self.plugin_options.project_root,
           &json,
         )?)
       } else {
-        original_source_map
-      },
-      meta: result.meta,
-      pipeline: result.pipeline,
-      query: result.query,
-      stats,
-      symbols: result.symbols,
-      unique_key: result.unique_key,
-      side_effects: result.side_effects,
-      is_bundle_splittable: result.is_bundle_splittable,
-      is_source: result.is_source,
-      ..asset
+        None
+      };
+
+      Ok(Asset {
+        id: js_asset.id,
+        code,
+        bundle_behavior: js_asset.bundle_behavior,
+        env: asset_env.clone(),
+        file_path: js_asset.file_path,
+        file_type: js_asset.file_type,
+        map,
+        meta: js_asset.meta,
+        pipeline: js_asset.pipeline,
+        query: js_asset.query,
+        stats: stats.clone(),
+        symbols: js_asset.symbols,
+        unique_key: js_asset.unique_key,
+        side_effects: js_asset.side_effects,
+        is_bundle_splittable: js_asset.is_bundle_splittable,
+        is_source: js_asset.is_source,
+        ..asset.clone()
+      })
     };
 
+    let mut transformed_asset = convert_asset(first_asset)?;
+    if transformed_asset.map.is_none() {
+      transformed_asset.map = original_source_map;
+    }
+
+    let mut discovered_assets = Vec::new();
+    for js_asset in assets_iter {
+      let asset = convert_asset(js_asset)?;
+      discovered_assets.push(AssetWithDependencies {
+        asset,
+        dependencies: vec![],
+      });
+    }
+
     Ok(TransformResult {
-      // Adding dependencies from Node plugins isn't yet supported
-      // TODO: Handle invalidations
       asset: transformed_asset,
+      discovered_assets,
+      invalidate_on_file_change: result
+        .invalidate_on_file_change
+        .into_iter()
+        .map(PathBuf::from)
+        .collect(),
       ..Default::default()
     })
   }
@@ -223,13 +225,14 @@ impl TransformerPlugin for NodejsRpcTransformerPlugin {
 /// fields that can be modified by transformers
 #[derive(PartialEq, Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct RpcAssetResult {
+pub struct JsTransformerAsset {
   pub id: String,
   pub bundle_behavior: Option<BundleBehavior>,
   pub file_path: PathBuf,
   #[serde(rename = "type")]
   pub file_type: FileType,
-  pub code: Code,
+  pub code: String,
+  pub map: Option<String>,
   pub meta: JSONObject,
   pub pipeline: Option<String>,
   pub query: Option<String>,
@@ -238,6 +241,20 @@ pub struct RpcAssetResult {
   pub side_effects: bool,
   pub is_bundle_splittable: bool,
   pub is_source: bool,
+}
+
+#[derive(Deserialize, Debug)]
+#[serde(rename_all = "camelCase")]
+struct JsTransformerResult {
+  assets: Vec<JsTransformerAsset>,
+  #[allow(dead_code)]
+  #[serde(default)]
+  invalidate_on_file_create: Vec<InvalidateOnFileCreate>,
+  #[serde(default)]
+  invalidate_on_file_change: Vec<String>,
+  #[allow(dead_code)]
+  #[serde(default)]
+  invalidate_on_env_change: Vec<String>,
 }
 
 // This Environment mostly replicates the core Environment but makes everything

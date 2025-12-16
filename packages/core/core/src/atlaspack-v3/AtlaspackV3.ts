@@ -6,6 +6,8 @@ import {
   Lmdb,
   AtlaspackNapiOptions,
 } from '@atlaspack/rust';
+import {EventEmitter} from 'events';
+import path from 'path';
 import {NapiWorkerPool} from './NapiWorkerPool';
 import ThrowableDiagnostic from '@atlaspack/diagnostic';
 import type {Event} from '@parcel/watcher';
@@ -25,7 +27,7 @@ export type AtlaspackV3Options = {
   napiWorkerPool?: INapiWorkerPool;
 } & AtlaspackNapiOptions['options'];
 
-export class AtlaspackV3 {
+export class AtlaspackV3 extends EventEmitter {
   _atlaspack_napi: AtlaspackNapi;
   _napiWorkerPool: INapiWorkerPool;
   _isDefaultNapiWorkerPool: boolean;
@@ -35,9 +37,13 @@ export class AtlaspackV3 {
     napiWorkerPool: INapiWorkerPool,
     isDefaultNapiWorkerPool: boolean,
   ) {
+    super();
     this._atlaspack_napi = atlaspack_napi;
     this._napiWorkerPool = napiWorkerPool;
     this._isDefaultNapiWorkerPool = isDefaultNapiWorkerPool;
+
+    // @ts-expect-error accessing event emitter method
+    this._napiWorkerPool.on('report', (event) => this.emit('report', event));
   }
 
   static async create({
@@ -80,13 +86,25 @@ export class AtlaspackV3 {
       }
     }
 
+    const modifiedOptions = {...options};
+    // Workaround for NAPI bug with long strings in arrays
+    // @ts-expect-error TS2339
+    if (modifiedOptions.entries) {
+      // @ts-expect-error TS2339
+      const projectRoot = modifiedOptions.projectRoot || process.cwd();
+      // @ts-expect-error TS2339
+      modifiedOptions.entries = modifiedOptions.entries.map((e: string) =>
+        path.isAbsolute(e) ? path.relative(projectRoot, e) : e,
+      );
+    }
+
     // @ts-expect-error TS2488
     const [internal, error] = await atlaspackNapiCreate(
       {
         fs,
         packageManager,
         threads,
-        options,
+        options: modifiedOptions,
         napiWorkerPool,
       },
       lmdb,

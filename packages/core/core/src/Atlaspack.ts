@@ -8,6 +8,7 @@ import type {
   AtlaspackTransformOptions,
   AtlaspackResolveOptions,
   AtlaspackResolveResult,
+  ReporterEvent,
 } from '@atlaspack/types';
 import path from 'path';
 import type {AtlaspackOptions} from './types';
@@ -229,38 +230,32 @@ export default class Atlaspack {
 
     this.#disposable = new Disposable();
 
-    try {
-      initializeMonitoring?.({
-        onTrace: (event: string) => {
-          if (
-            tracer.enabled &&
-            (event.includes('"name":"build_asset_graph"') ||
-              event.includes('"name":"PipelineScheduler::execute"'))
-          ) {
-            try {
-              tracer.trace(JSON.parse(event));
-            } catch (e) {
-              // ignore
-            }
+    initializeMonitoring?.({
+      onTrace: (event: string) => {
+        if (
+          tracer.enabled &&
+          (event.includes('"name":"build_asset_graph"') ||
+            event.includes('"name":"PipelineScheduler::execute"'))
+        ) {
+          try {
+            tracer.trace(JSON.parse(event));
+          } catch (e) {
+            // ignore
           }
-        },
-      });
+        }
+      },
+    });
 
-      const onExit = () => {
-        closeMonitoring?.();
-      };
+    const onExit = () => {
+      closeMonitoring?.();
+    };
 
-      process.on('exit', onExit);
+    process.on('exit', onExit);
 
-      this.#disposable.add(() => {
-        process.off('exit', onExit);
-        onExit();
-      });
-    } catch (e: any) {
-      // Fallthrough
-      // eslint-disable-next-line no-console
-      console.warn(e);
-    }
+    this.#disposable.add(() => {
+      process.off('exit', onExit);
+      onExit();
+    });
 
     let resolvedOptions: AtlaspackOptions = await resolveOptions({
       ...this.#initialOptions,
@@ -289,56 +284,40 @@ export default class Atlaspack {
         threads = 2;
       }
 
-      try {
-        rustAtlaspack = await AtlaspackV3.create({
-          ...options,
-          // @ts-expect-error TS2353
-          corePath: path.join(__dirname, '..'),
-          threads,
-          entries: Array.isArray(entries)
-            ? entries
-            : entries == null
-              ? undefined
-              : [entries],
-          env: resolvedOptions.env,
-          fs: inputFS && new FileSystemV3(inputFS),
-          defaultTargetOptions: resolvedOptions.defaultTargetOptions,
-          serveOptions: resolvedOptions.serveOptions,
-          lmdb,
-          featureFlags: resolvedOptions.featureFlags,
-        });
+      rustAtlaspack = await AtlaspackV3.create({
+        ...options,
+        // @ts-expect-error TS2353
+        corePath: path.join(__dirname, '..'),
+        threads,
+        entries: Array.isArray(entries)
+          ? entries
+          : entries == null
+            ? undefined
+            : [entries],
+        env: resolvedOptions.env,
+        fs: inputFS && new FileSystemV3(inputFS),
+        defaultTargetOptions: resolvedOptions.defaultTargetOptions,
+        serveOptions: resolvedOptions.serveOptions,
+        lmdb,
+        featureFlags: resolvedOptions.featureFlags,
+      });
 
-        if (
-          rustAtlaspack._napiWorkerPool &&
-          // @ts-expect-error accessing event emitter method
-          typeof rustAtlaspack._napiWorkerPool.on === 'function'
-        ) {
-          // @ts-expect-error accessing event emitter method
-          rustAtlaspack._napiWorkerPool.on('report', (event) => {
-            if (event.type === 'trace') {
-              if (resolvedOptions.shouldTrace) {
-                tracer.trace(event);
-              }
-            } else {
-              this.#reporterRunner.report(event);
-            }
-          });
+      rustAtlaspack.on('report', (event: ReporterEvent) => {
+        if (event.type === 'trace') {
+          if (resolvedOptions.shouldTrace) {
+            tracer.trace(event);
+          }
+        } else {
+          this.#reporterRunner.report(event);
         }
+      });
 
-        this.#disposable.add(() => {
-          rustAtlaspack.end();
-        });
-      } catch (e) {
-        throw e;
-      }
+      this.#disposable.add(() => {
+        rustAtlaspack.end();
+      });
     }
     // @ts-expect-error TS2454
     this.rustAtlaspack = rustAtlaspack;
-
-    console.log(
-      'DEBUG: shouldTrace in _init:',
-      this.#initialOptions.shouldTrace,
-    );
 
     let {config} = await loadAtlaspackConfig(resolvedOptions);
     this.#config = new AtlaspackConfig(config, resolvedOptions);
@@ -357,10 +336,8 @@ export default class Atlaspack {
 
     await resolvedOptions.cache.ensure();
 
-    console.error('DEBUG: Creating shared reference');
     let {dispose: disposeOptions, ref: optionsRef} =
       await this.#farm.createSharedReference(resolvedOptions, false);
-    console.error('DEBUG: Shared reference created');
     this.#optionsRef = optionsRef;
 
     if (this.#initialOptions.workerFarm) {
@@ -387,14 +364,12 @@ export default class Atlaspack {
       message: 'Intializing request tracker...',
     });
 
-    console.log('DEBUG: RequestTracker.init start');
     this.#requestTracker = await RequestTracker.init({
       farm: this.#farm,
       options: resolvedOptions,
       // @ts-expect-error TS2454
       rustAtlaspack,
     });
-    console.log('DEBUG: RequestTracker.init end');
 
     this.#initialized = true;
   }

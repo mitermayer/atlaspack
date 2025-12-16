@@ -5,9 +5,16 @@ use atlaspack_core::bundle_graph::BundleGraph;
 use atlaspack_core::plugin::NamerPlugin;
 use atlaspack_core::plugin::PluginContext;
 use atlaspack_core::types::Bundle;
+use serde::Deserialize;
 use std::fmt;
 use std::fmt::Debug;
+use std::path::PathBuf;
 use std::sync::Arc;
+
+#[derive(Deserialize)]
+struct JsNamerResult {
+  name: Option<PathBuf>,
+}
 
 pub struct NodejsRpcNamerPlugin {
   _name: String,
@@ -45,6 +52,7 @@ impl NamerPlugin for NodejsRpcNamerPlugin {
       "bundle": bundle,
       "bundleGraph": null
     });
-    worker.namer_name_fn.call_serde(args).await
+    let result: JsNamerResult = worker.namer_name_fn.call_serde(args).await?;
+    Ok(result.name)
   }
 }
