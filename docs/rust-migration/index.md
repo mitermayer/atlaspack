@@ -51,9 +51,9 @@ Focus: heavy computational tasks and build optimization.
    - Implement metrics spans, dashboards, and CI perf budgets.
    - _Why_: We need visibility into whether the Rust engine is actually faster and stable before broad rollout.
 
-### 4. Rollout & Ecosystem (Operational Readiness)
+### 4. Rollout & Ecosystem (Operational Readiness) - Phase 4
 
-Focus: preparing for broad adoption and handling the long tail.
+Focus: preparing for broad adoption, handling the long tail, and ensuring full JS plugin compatibility.
 
 8. **Rollout Docs & Playbook** (Epic: Rollout and Fallback)
    - Finalize opt-in/out docs, CLI help, and the phased rollout plan.
@@ -64,6 +64,9 @@ Focus: preparing for broad adoption and handling the long tail.
 10. **Panic Watchdog & Fallback** (Epic: Observability and Perf)
     - Implement the crash watchdog with seamless JS fallback.
     - _Why_: Safety net for the final rollout to production.
+11. **Ecosystem Compatibility & JS Host Parity** (Phase 4)
+    - Implement full JS Host Infrastructure (T20), JS Plugin Execution (T21), and Runtime Bundle Graph (T22).
+    - _Why_: Required to support the vast ecosystem of existing JS plugins without rewriting them all in Rust immediately.
 
 ---
 
@@ -81,6 +84,7 @@ Focus: preparing for broad adoption and handling the long tail.
 - Plugin Migration – Core Engine Plugins: `./epics/plugin-migration-core-plugins/`
 - Plugin Migration – Optimizers & Compressors: `./epics/plugin-migration-optimizers/`
 - Plugin Migration – Runtimes & Ecosystem Adapters: `./epics/plugin-migration-runtimes-adapters/`
+- Ecosystem Compatibility & JS Host Parity (Phase 4): `./epics/ecosystem-compatibility/`
 
 ## Source-of-truth references in repo
 

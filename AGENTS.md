@@ -373,6 +373,7 @@ Tracing:
   - **Ecosystem**: ✅ RPC adapters verified (T17).
   - **Observability**: ✅ Complete (T5).
   - **Performance**: 🔄 In Progress (Native Optimizers).
+- **Phase 4 (Ecosystem)**: ⏳ Pending (JS Host Parity, Reporters).
 
 For the detailed roadmap and task tracking, **ALWAYS** refer to:
 

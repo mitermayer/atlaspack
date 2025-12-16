@@ -90,3 +90,17 @@ Details: see per-epic folders under `docs/rust-migration/epics/<epic>/` (indexed
 - [x] Story: Rust engine metadata contract for runtimes; acceptance: runtimes (JS/HMR/React-refresh/service-worker/webextension) consume a stable metadata interface from the Rust engine, tested via HMR/watch and plugin parity suites.
 - [ ] Story: Reporter compatibility with Rust engine; acceptance: reporters (CLI/dev-server/tracer/LSP/etc.) receive equivalent events/diagnostics from JS and Rust engines with integration tests and docs.
 - [x] Story: Ecosystem adapter strategy for Babel/PostCSS/MDX/etc.; acceptance: documented status per adapter (Rust-native, JS adapter, deprecated) with migration guidance and tests for maintained adapters.
+
+## Epic: JS Plugin Execution Support in Rust Engine (T13)
+
+- [ ] Story: JS Host Infrastructure; acceptance: `PluginOptions` and `MutableAsset` implemented in `atlaspack-v3` to support JS plugins running under the Rust engine.
+- [ ] Story: JS Plugin Execution hooks; acceptance: `runNamerName`, `runOptimizerOptimize`, and `runPackagerPackage` implemented in `atlaspack-v3` and wired to Rust engine.
+- [ ] Story: Runtime Parity; acceptance: `RuntimeBundleGraph` implemented to support JS-side graph traversals during plugin execution (from T11).
+
+## Epic: Ecosystem Compatibility & JS Host Parity (Phase 4)
+
+- [ ] Story: JS Host Infrastructure (T20); acceptance: `PluginOptions` and `MutableAsset` methods implemented in `atlaspack-v3`.
+- [ ] Story: JS Plugin Execution (T21); acceptance: `runNamer`, `runOptimizer`, `runPackager`, and `runValidator` implemented in `worker.ts`. (Note: Resolvers/Transformers are implemented but blocked by T20).
+- [ ] Story: Runtime Bundle Graph Implementation (T22); acceptance: `RuntimeBundleGraph` fully implemented (backed by DTO) to support HMR and Code Splitting.
+- [ ] Story: JS-only Optimizers Wrapper (T14); acceptance: `htmlnano` and `svgo` run via the new RPC system.
+- [ ] Story: Reporter Parity (T19); acceptance: CLI/DevServer reporters receive events from Rust.

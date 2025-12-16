@@ -18,6 +18,13 @@ T6: Rollout & fallback flags/docs tests — `docs/rust-migration/epics/rollout-f
 T7: Compatibility & cache tests — `docs/rust-migration/epics/compatibility-cache/`
 T8: Plugin parity goldens/tests — `docs/rust-migration/epics/plugin-parity/`
 
+PHASE 4: ECOSYSTEM PARITY
+- Execute T20 (JS Host Infrastructure)
+- Execute T21 (JS Plugin Execution)
+- Execute T22 (Runtime Bundle Graph / HMR Fix)
+- Execute T14 (JS Optimizers)
+- Execute T19 (Reporters)
+
 State management:
 - Maintain a task table with statuses (PENDING/IN_PROGRESS/DONE/FAILED). Output it at the start of every turn.
 - Do not skip tasks. Only move to the next task when the current one is validated.

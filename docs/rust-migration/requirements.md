@@ -1,5 +1,11 @@
 # Requirements
 
+## Status Snapshot (Dec 2025)
+
+- **Core Engine**: Complete (Phase 2 & 3).
+- **Plugin Support**: In Progress (Core plugins done, JS Adapters pending).
+- **Ecosystem Compatibility**: Partially Met (Phase 4 in progress).
+
 ## Functional
 
 - Engine: Rust owns request/asset/bundle graph orchestration; deterministic scheduling; identical outputs and IDs to JS within tolerance.
