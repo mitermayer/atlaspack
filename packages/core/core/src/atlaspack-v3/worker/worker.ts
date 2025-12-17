@@ -396,25 +396,16 @@ export class AtlaspackWorker {
     },
   );
 
-  runBundlerBundle: JsCallable<[unknown], Promise<void>> = jsCallable(
-    async () => {
-      // Bundling is handled by the Rust engine in V3; JS bundler path is unused.
-      return;
-    },
+  runBundlerBundle: JsCallable<[unknown], Promise<void>> = jsCallable(() =>
+    Promise.resolve(),
   );
 
-  runBundlerOptimize: JsCallable<[unknown], Promise<void>> = jsCallable(
-    async () => {
-      // Bundler optimize step is handled by the Rust engine in V3; JS path is unused.
-      return;
-    },
+  runBundlerOptimize: JsCallable<[unknown], Promise<void>> = jsCallable(() =>
+    Promise.resolve(),
   );
 
-  runCompressorCompress: JsCallable<[unknown], Promise<void>> = jsCallable(
-    async () => {
-      // Compressors are handled natively in Rust; JS compressor path is unused.
-      return;
-    },
+  runCompressorCompress: JsCallable<[unknown], Promise<void>> = jsCallable(() =>
+    Promise.resolve(),
   );
 
   runNamerName: JsCallable<[RunNamerNameOptions], Promise<RunNamerNameResult>> =
@@ -663,9 +654,9 @@ export class AtlaspackWorker {
           }
           return null;
         },
-        getInlineBundleContents: async (bundle, bundleGraph) => {
+        getInlineBundleContents: (_bundle, _bundleGraph) => {
           // TODO: Implement getInlineBundleContents if needed
-          return {contents: ''};
+          return Promise.resolve({contents: ''});
         },
         ...defaultOptions,
       });
@@ -730,10 +721,7 @@ export class AtlaspackWorker {
         if (validator.getConfig) {
           state.config = await validator.getConfig({
             asset: mutableAsset as unknown as Asset,
-            resolveConfig: async (_configNames) => {
-              // TODO: Implement resolveConfig via RPC or FS
-              return null;
-            },
+            resolveConfig: (_configNames) => Promise.resolve(null),
             ...defaultOptions,
           });
         }

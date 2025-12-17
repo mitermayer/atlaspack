@@ -338,13 +338,14 @@ export default class Atlaspack {
 
     // Provide a minimal createSharedReference for farms that do not expose it (e.g. rust/local worker path).
     if (typeof (this.#farm as any).createSharedReference !== 'function') {
-      (this.#farm as any).createSharedReference = async (value: any) => ({
-        dispose: () => {},
-        ref: value,
-      });
+      (this.#farm as any).createSharedReference = (value: any) =>
+        Promise.resolve({
+          dispose: () => {},
+          ref: value,
+        });
     }
     if (typeof (this.#farm as any).callAllWorkers !== 'function') {
-      (this.#farm as any).callAllWorkers = async () => {};
+      (this.#farm as any).callAllWorkers = () => Promise.resolve();
     }
 
     let {dispose: disposeOptions, ref: optionsRef} = await (
