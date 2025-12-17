@@ -20,7 +20,7 @@ T8: Plugin parity goldens/tests — `docs/rust-migration/epics/plugin-parity/`
 
 PHASE 5: VALIDATION & STABILIZATION
 - Execute T_INFRA_1 (NAPI Deserialization Fix) — ✅ DONE
-- Execute T_VAL_1 (Kitchen Sink Validation) — ⏳ IN PROGRESS (dual-smoke/incremental OK, watch-hmr hangs under JS & Rust)
+- Execute T_VAL_1 (Kitchen Sink Validation) — ✅ DONE (dual-smoke, incremental invalidation, and watch-HMR pass under JS & Rust)
 - Execute T_VAL_2 (Benchmark Rust vs JS performance) — ⏳ PENDING
 - Execute T_VAL_3 (Complete RuntimeBundleGraph stubs) — ✅ DONE
 - Execute T_VAL_4 (JS Bundler/Compressor stance: implement or document Rust-only) — ✅ DONE

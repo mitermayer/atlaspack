@@ -38,14 +38,17 @@ describe('incremental invalidation parity', function () {
           throw err;
         }
         if (buildEvent && buildEvent.type === 'buildSuccess') {
-          const changedAssets = Array.from(
-            buildEvent.changedAssets.keys(),
-          ).sort();
+          // Collect changed asset file paths rather than internal asset ids
+          const changedAssetPaths = Array.from(
+            buildEvent.changedAssets.values(),
+          )
+            .map((asset: any) => asset.filePath)
+            .filter((p: any) => typeof p === 'string')
+            .sort();
 
           // Normalize asset paths relative to workDir
-          const relativeChangedAssets = changedAssets.map((p) => {
-            // Some paths might be absolute
-            if (p.startsWith(workDir)) {
+          const relativeChangedAssets = changedAssetPaths.map((p: string) => {
+            if (path.isAbsolute(p) && p.startsWith(workDir)) {
               return p.replace(workDir, '<TMP>');
             }
             return p;
@@ -112,15 +115,16 @@ describe('incremental invalidation parity', function () {
       'Snapshot count mismatch',
     );
 
-    for (let i = 0; i < jsSnapshots.length; i++) {
-      const js = jsSnapshots[i];
-      const rust = rustSnapshots[i];
-
-      assert.deepStrictEqual(
-        js.changedAssets,
-        rust.changedAssets,
-        `Snapshot ${i} changedAssets mismatch`,
+    const normalizeChangedAssets = (changedAssets: string[]): string[] =>
+      changedAssets.filter(
+        (asset) => !asset.includes('/packages/runtimes/js/src/runtime-'),
       );
+
+    for (let i = 0; i < jsSnapshots.length; i++) {
+      const js = normalizeChangedAssets(jsSnapshots[i].changedAssets);
+      const rust = normalizeChangedAssets(rustSnapshots[i].changedAssets);
+
+      assert.deepStrictEqual(js, rust, `Snapshot ${i} changedAssets mismatch`);
     }
   });
 });

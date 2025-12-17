@@ -343,16 +343,25 @@ export default class Atlaspack {
     let {config} = await loadAtlaspackConfig(resolvedOptions);
     this.#config = new AtlaspackConfig(config, resolvedOptions);
 
-    if (this.#initialOptions.workerFarm) {
+    let ownsWorkerFarm = false;
+
+    if (this.#initialOptions.workerFarm instanceof WorkerFarm) {
       if (this.#initialOptions.workerFarm.ending) {
         throw new Error('Supplied WorkerFarm is ending');
       }
+
       this.#farm = this.#initialOptions.workerFarm;
     } else {
+      // Treat a plain workerFarm value as farm options and create the farm ourselves.
+      let workerFarmOptions = (this.#initialOptions.workerFarm ??
+        {}) as Partial<FarmOptions>;
+
       this.#farm = createWorkerFarm({
         shouldPatchConsole: resolvedOptions.shouldPatchConsole,
         shouldTrace: resolvedOptions.shouldTrace,
+        ...workerFarmOptions,
       });
+      ownsWorkerFarm = true;
     }
 
     await resolvedOptions.cache.ensure();
@@ -374,13 +383,13 @@ export default class Atlaspack {
     ).createSharedReference(resolvedOptions, false);
     this.#optionsRef = optionsRef;
 
-    if (this.#initialOptions.workerFarm) {
+    if (ownsWorkerFarm) {
+      // When Atlaspack created the worker farm, shut it down on dispose.
+      this.#disposable.add(() => this.#farm.end());
+    } else {
       // If we don't own the farm, dispose of only these references when
       // Atlaspack ends.
       this.#disposable.add(disposeOptions);
-    } else {
-      // Otherwise, when shutting down, end the entire farm we created.
-      this.#disposable.add(() => this.#farm.end());
     }
 
     this.#watchEvents = new ValueEmitter();

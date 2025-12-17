@@ -108,7 +108,7 @@ Details: see per-epic folders under `docs/rust-migration/epics/<epic>/` (indexed
 ## Epic: Validation & Stabilization (Phase 5)
 
 - [x] Story: Fix NAPI `entries` deserialization bug (T_INFRA_1).
-- [ ] Story: Run Kitchen Sink tests against Rust engine (T_VAL_1).
+- [x] Story: Run Kitchen Sink tests against Rust engine (T_VAL_1).
 - [ ] Story: Benchmark Rust vs JS performance (T_VAL_2).
 - [x] Story: Complete RuntimeBundleGraph coverage (T_VAL_3); acceptance: implement `getAssetById`, `getSymbolResolution`, and `getEntryRoot` for runtime consumers.
 - [x] Story: JS Bundler/Compressor stance (T_VAL_4); acceptance: either implement JS bundler/compressor hooks in `worker.ts` or explicitly document Rust-only bundler/compressor support as the stable path.

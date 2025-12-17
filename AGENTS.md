@@ -374,7 +374,7 @@ Tracing:
   - **Observability**: ✅ Complete (T5).
   - **Performance**: ✅ Native Optimizers integrated.
 - **Phase 4 (Ecosystem)**: ✅ COMPLETE.
-- **Phase 5 (Validation)**: ⏳ In Progress (NAPI fix and JS host coverage done; Kitchen Sink HMR/telemetry under Rust still pending).
+- **Phase 5 (Validation)**: ⏳ In Progress (T_INFRA_1, T_VAL_1, T_VAL_3, T_VAL_4 done; T_VAL_2 benchmarking pending).
 
 For the detailed roadmap and task tracking, **ALWAYS** refer to:
 

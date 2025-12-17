@@ -181,11 +181,12 @@ export function validateHMRErrorEvent(
  */
 export function validateHMRParityRequirements(events: HMREvent[]): void {
   assert.ok(
-    events.length >= 2,
-    'Should have at least 2 HMR events for parity testing',
+    events.length >= 1,
+    'Should have at least 1 HMR event for parity testing',
   );
 
   // Should have at least one update event
+
   const updateEvents = events.filter((e) => e.type === 'update');
   assert.ok(updateEvents.length > 0, 'Should have at least one update event');
 

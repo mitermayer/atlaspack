@@ -30,36 +30,52 @@ export default async function getFlowOptions(
     return null;
   }
 
-  // @ts-expect-error TS2709
-  const babelCore: BabelCore = await options.packageManager.require(
-    '@babel/core',
-    config.searchPath,
-    {
-      range: BABEL_CORE_RANGE,
-      saveDev: true,
-      shouldAutoInstall: options.shouldAutoInstall,
-    },
-  );
+  try {
+    // @ts-expect-error TS2709
+    const babelCore: BabelCore = await options.packageManager.require(
+      '@babel/core',
+      config.searchPath,
+      {
+        range: BABEL_CORE_RANGE,
+        saveDev: true,
+        shouldAutoInstall: options.shouldAutoInstall,
+      },
+    );
 
-  await options.packageManager.require(
-    '@babel/plugin-transform-flow-strip-types',
-    config.searchPath,
-    {
-      range: '^7.0.0',
-      saveDev: true,
-      shouldAutoInstall: options.shouldAutoInstall,
-    },
-  );
+    await options.packageManager.require(
+      '@babel/plugin-transform-flow-strip-types',
+      config.searchPath,
+      {
+        range: '^7.0.0',
+        saveDev: true,
+        shouldAutoInstall: options.shouldAutoInstall,
+      },
+    );
 
-  return {
-    plugins: [
-      babelCore.createConfigItem(
-        ['@babel/plugin-transform-flow-strip-types', {requireDirective: true}],
-        {
-          type: 'plugin',
-          dirname: path.dirname(config.searchPath),
-        },
-      ),
-    ],
-  };
+    return {
+      plugins: [
+        babelCore.createConfigItem(
+          [
+            '@babel/plugin-transform-flow-strip-types',
+            {requireDirective: true},
+          ],
+          {
+            type: 'plugin',
+            dirname: path.dirname(config.searchPath),
+          },
+        ),
+      ],
+    };
+  } catch (e: any) {
+    // If Babel is not available, skip Flow stripping rather than failing the build.
+    // This matches environments where Flow types are handled by other tooling (e.g. SWC).
+    if (
+      e &&
+      (e.code === 'MODULE_NOT_FOUND' || e.code === 'MODULE_NOT_FOUND_ERROR')
+    ) {
+      return null;
+    }
+
+    throw e;
+  }
 }
