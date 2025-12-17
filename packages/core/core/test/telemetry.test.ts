@@ -19,6 +19,16 @@ const TRACE_SNAPSHOT_PATH = path.join(
   '__fixtures__/telemetry/trace.json',
 );
 
+process.on('unhandledRejection', (reason) => {
+  // eslint-disable-next-line no-console
+  console.error('[telemetry.test] unhandledRejection', reason);
+});
+
+process.on('uncaughtException', (err) => {
+  // eslint-disable-next-line no-console
+  console.error('[telemetry.test] uncaughtException', err, err.stack);
+});
+
 describe('telemetry', function () {
   let workerFarm;
 

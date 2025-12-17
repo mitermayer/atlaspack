@@ -6,7 +6,12 @@ use std::path::Path;
 
 #[napi]
 pub fn transform(opts: JsObject, env: Env) -> napi::Result<JsUnknown> {
-  let config: atlaspack_js_swc_core::Config = env.from_js_value(opts)?;
+  let config: atlaspack_js_swc_core::Config = env.from_js_value(opts).map_err(|err| {
+    napi::Error::new(
+      napi::Status::InvalidArg,
+      format!("Failed to deserialize JS transform config: {err}"),
+    )
+  })?;
 
   let result = atlaspack_js_swc_core::transform(&config, None)?;
   env.to_js_value(&result)
@@ -57,7 +62,12 @@ mod native_only {
       None
     };
 
-    let config: atlaspack_js_swc_core::Config = env.from_js_value(opts)?;
+    let config: atlaspack_js_swc_core::Config = env.from_js_value(opts).map_err(|err| {
+      napi::Error::new(
+        napi::Status::InvalidArg,
+        format!("Failed to deserialize JS transform config (async): {err}"),
+      )
+    })?;
     let (deferred, promise) = env.create_deferred()?;
 
     rayon::spawn(move || {

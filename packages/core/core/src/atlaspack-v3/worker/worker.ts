@@ -359,40 +359,47 @@ export class AtlaspackWorker {
         '[V3] Unimplemented: New asset returned from Node transformer',
       );
 
-      let assetBuffer: Buffer | null = await mutableAsset.getBuffer();
+      const code = await mutableAsset.getCode();
 
-      // If the asset has no code, we set the buffer to null, which we can
-      // detect in Rust, to avoid passing back an empty buffer, which we can't.
-      if (assetBuffer.length === 0) {
-        assetBuffer = null;
+      let mapString: string | undefined;
+      if (mutableAsset.isMapDirty) {
+        const sourceMap = await mutableAsset.getMap();
+        if (sourceMap) {
+          mapString = JSON.stringify(sourceMap.toVLQ());
+        }
       }
 
-      return [
-        {
-          id: mutableAsset.id,
-          bundleBehavior: bundleBehaviorMap.intoNullable(
-            mutableAsset.bundleBehavior,
-          ),
-          code: [],
-          filePath: mutableAsset.filePath,
-          isBundleSplittable: mutableAsset.isBundleSplittable,
-          isSource: mutableAsset.isSource,
-          meta: mutableAsset.meta,
-          pipeline: mutableAsset.pipeline,
-          // Query should be undefined if it's empty
-          query: mutableAsset.query.toString() || undefined,
-          sideEffects: mutableAsset.sideEffects,
-          symbols: mutableAsset.symbols.intoNapi(),
-          type: mutableAsset.type,
-          uniqueKey: mutableAsset.uniqueKey,
-        },
-        assetBuffer,
-        // Only send back the map if it has changed
-        mutableAsset.isMapDirty
-          ? // @ts-expect-error TS2533
-            JSON.stringify((await mutableAsset.getMap()).toVLQ())
-          : '',
-      ];
+      const assetResult: any = {
+        id: mutableAsset.id,
+        bundleBehavior: bundleBehaviorMap.intoNullable(
+          mutableAsset.bundleBehavior,
+        ),
+        filePath: mutableAsset.filePath,
+        type: mutableAsset.type,
+        code,
+        meta: mutableAsset.meta,
+        pipeline: mutableAsset.pipeline ?? undefined,
+        // Query should be undefined if it's empty
+        query: mutableAsset.query.toString() || undefined,
+        sideEffects: mutableAsset.sideEffects,
+        symbols: mutableAsset.symbols.intoNapi(),
+        uniqueKey: mutableAsset.uniqueKey,
+        isBundleSplittable: mutableAsset.isBundleSplittable,
+        isSource: mutableAsset.isSource,
+      };
+
+      if (mapString != null) {
+        assetResult.map = mapString;
+      }
+
+      const rpcResult: RunTransformerTransformResult = {
+        assets: [assetResult],
+        invalidateOnFileCreate: [],
+        invalidateOnFileChange: [],
+        invalidateOnEnvChange: [],
+      };
+
+      return rpcResult;
     },
   );
 
@@ -924,8 +931,27 @@ type RunTransformerTransformOptions = {
   asset: napi.Asset;
 };
 
-// @ts-expect-error TS2694
-type RunTransformerTransformResult = [napi.RpcAssetResult, Buffer, string];
+type RunTransformerTransformResult = {
+  assets: Array<{
+    id: string;
+    bundleBehavior?: unknown;
+    filePath: string;
+    type: string;
+    code: string;
+    map?: string;
+    meta: unknown;
+    pipeline?: string | null;
+    query?: string;
+    symbols?: unknown;
+    uniqueKey?: string | null;
+    sideEffects: boolean;
+    isBundleSplittable: boolean;
+    isSource: boolean;
+  }>;
+  invalidateOnFileCreate: Array<unknown>;
+  invalidateOnFileChange: Array<string>;
+  invalidateOnEnvChange: Array<string>;
+};
 
 type RuntimeState<T> = {
   packageManager?: NodePackageManager;

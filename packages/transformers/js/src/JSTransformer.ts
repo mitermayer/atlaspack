@@ -592,6 +592,215 @@ export default new Transformer({
       type: string;
       uniqueKey: string;
     }> = [];
+
+    let transformResult;
+    try {
+      transformResult = await (transformAsync || transform)({
+        filename: asset.filePath,
+        code,
+        module_id: asset.id,
+        project_root: options.projectRoot,
+        replace_env: !asset.env.isNode(),
+        inline_fs: Boolean(config?.inlineFS) && !asset.env.isNode(),
+        insert_node_globals:
+          !asset.env.isNode() && asset.env.sourceType !== 'script',
+        node_replacer: asset.env.isNode(),
+        is_browser: asset.env.isBrowser(),
+        is_worker: asset.env.isWorker() || asset.env.isTesseract(),
+        env,
+        is_type_script: asset.type === 'ts' || asset.type === 'tsx',
+        is_jsx: isJSX,
+        jsx_pragma: config?.pragma,
+        jsx_pragma_frag: config?.pragmaFrag,
+        automatic_jsx_runtime: Boolean(config?.automaticJSXRuntime),
+        jsx_import_source: config?.jsxImportSource,
+        is_development: options.mode === 'development',
+        react_refresh: Boolean(
+          asset.env.isBrowser() &&
+            !asset.env.isLibrary &&
+            !asset.env.isWorker() &&
+            !asset.env.isTesseract() &&
+            !asset.env.isWorklet() &&
+            config?.reactRefresh &&
+            options.hmrOptions &&
+            options.mode === 'development',
+        ),
+        decorators: Boolean(config?.decorators),
+        use_define_for_class_fields: Boolean(config?.useDefineForClassFields),
+        targets,
+        source_maps: !!asset.env.sourceMap,
+        scope_hoist:
+          asset.env.shouldScopeHoist && asset.env.sourceType !== 'script',
+        source_type: asset.env.sourceType === 'script' ? 'Script' : 'Module',
+        supports_module_workers: supportsModuleWorkers,
+        is_library: asset.env.isLibrary,
+        is_esm_output: asset.env.outputFormat === 'esmodule',
+        trace_bailouts: options.logLevel === 'verbose',
+        is_swc_helpers: /@swc[/\\]helpers/.test(asset.filePath),
+        standalone: asset.query.has('standalone'),
+        inline_constants: config.inlineConstants,
+        conditional_bundling: options.featureFlags.conditionalBundlingApi,
+        hmr_improvements: options.featureFlags.hmrImprovements,
+        add_display_name: Boolean(config.addReactDisplayName),
+        exports_rebinding_optimisation:
+          options.featureFlags.exportsRebindingOptimisation,
+        magic_comments:
+          Boolean(config?.magicComments) ||
+          getFeatureFlag('supportWebpackChunkName'),
+        is_source: asset.isSource,
+        nested_promise_import_fix: options.featureFlags.nestedPromiseImportFix,
+        global_aliasing_config: config.globalAliasingConfig,
+        enable_ssr_typeof_replacement: Boolean(
+          config.enableSsrTypeofReplacement,
+        ),
+        enable_lazy_loading: Boolean(config.enableLazyLoading),
+        enable_dead_returns_removal: Boolean(config.enableDeadReturnsRemoval),
+        enable_unused_bindings_removal: Boolean(
+          config.enableUnusedBindingsRemoval,
+        ),
+        enable_static_prevaluation: Boolean(config.enableStaticPrevaluation),
+        enable_react_hooks_removal: Boolean(config.enableReactHooksRemoval),
+        enable_react_async_import_lift: Boolean(
+          config.enableReactAsyncImportLift,
+        ),
+        react_async_lift_by_default: Boolean(config.reactAsyncLiftByDefault),
+        react_async_lift_report_level: String(config.reactAsyncLiftReportLevel),
+        sync_dynamic_import_config: config.syncDynamicImportConfig,
+        callMacro: asset.isSource
+          ? async (
+              err: any,
+              src: any,
+              exportName: any,
+              args: any,
+              loc: any,
+            ) => {
+              let mod;
+              try {
+                mod = await options.packageManager.require(src, asset.filePath);
+
+                // Default interop for CommonJS modules.
+                if (
+                  exportName === 'default' &&
+                  !mod.__esModule &&
+                  Object.prototype.toString.call(config) !== '[object Module]'
+                ) {
+                  mod = {default: mod};
+                }
+
+                if (!Object.hasOwnProperty.call(mod, exportName)) {
+                  throw new Error(`"${src}" does not export "${exportName}".`);
+                }
+              } catch (err: any) {
+                throw {
+                  kind: 1,
+                  message: err.message,
+                };
+              }
+
+              try {
+                if (typeof mod[exportName] === 'function') {
+                  let ctx: MacroContext = {
+                    // Allows macros to emit additional assets to add as dependencies (e.g. css).
+                    addAsset(a: MacroAsset) {
+                      let k = String(macroAssets.length);
+                      let map;
+                      if (asset.env.sourceMap) {
+                        // Generate a source map that maps each line of the asset to the original macro call.
+                        map = new SourceMap(options.projectRoot);
+                        // @ts-expect-error TS2304
+                        let mappings: Array<IndexedMapping<string>> = [];
+                        let line = 1;
+                        for (let i = 0; i <= a.content.length; i++) {
+                          if (i === a.content.length || a.content[i] === '\n') {
+                            mappings.push({
+                              generated: {
+                                line,
+                                column: 0,
+                              },
+                              source: asset.filePath,
+                              original: {
+                                line: loc.line,
+                                column: loc.col,
+                              },
+                            });
+                            line++;
+                          }
+                        }
+
+                        map.addIndexedMappings(mappings);
+                        if (originalMap) {
+                          map.extends(originalMap);
+                        } else {
+                          if (!getFeatureFlag('omitSourcesContentInMemory')) {
+                            map.setSourceContent(
+                              asset.filePath,
+                              code.toString(),
+                            );
+                          }
+                        }
+                      }
+
+                      macroAssets.push({
+                        type: a.type,
+                        content: a.content,
+                        map,
+                        uniqueKey: k,
+                      });
+
+                      asset.addDependency({
+                        specifier: k,
+                        specifierType: 'esm',
+                      });
+                    },
+                    invalidateOnFileChange(filePath: FilePath) {
+                      asset.invalidateOnFileChange(filePath);
+                    },
+                    invalidateOnFileCreate(
+                      invalidation: FileCreateInvalidation,
+                    ) {
+                      asset.invalidateOnFileCreate(invalidation);
+                    },
+                    invalidateOnEnvChange(env: string) {
+                      asset.invalidateOnEnvChange(env);
+                    },
+                    invalidateOnStartup() {
+                      asset.invalidateOnStartup();
+                    },
+                    invalidateOnBuild() {
+                      asset.invalidateOnBuild();
+                    },
+                  };
+
+                  return mod[exportName].apply(ctx, args);
+                } else {
+                  throw new Error(
+                    `"${exportName}" in "${src}" is not a function.`,
+                  );
+                }
+              } catch (err: any) {
+                // Remove atlaspack core from stack and build string so Rust can process errors more easily.
+                let stack = (err.stack || '').split('\n').slice(1);
+                let message = err.message;
+                for (let line of stack) {
+                  if (line.includes(__filename)) {
+                    break;
+                  }
+                  message += '\n' + line;
+                }
+                throw {
+                  kind: 2,
+                  message,
+                };
+              }
+            }
+          : null,
+      });
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('[JSTransformer.transform] native transform error', err);
+      throw err;
+    }
+
     let {
       // @ts-expect-error TS2339
       dependencies,
@@ -621,193 +830,7 @@ export default new Transformer({
       conditions,
       // @ts-expect-error TS2339
       magic_comments,
-    } = await (transformAsync || transform)({
-      filename: asset.filePath,
-      code,
-      module_id: asset.id,
-      project_root: options.projectRoot,
-      replace_env: !asset.env.isNode(),
-      inline_fs: Boolean(config?.inlineFS) && !asset.env.isNode(),
-      insert_node_globals:
-        !asset.env.isNode() && asset.env.sourceType !== 'script',
-      node_replacer: asset.env.isNode(),
-      is_browser: asset.env.isBrowser(),
-      is_worker: asset.env.isWorker() || asset.env.isTesseract(),
-      env,
-      is_type_script: asset.type === 'ts' || asset.type === 'tsx',
-      is_jsx: isJSX,
-      jsx_pragma: config?.pragma,
-      jsx_pragma_frag: config?.pragmaFrag,
-      automatic_jsx_runtime: Boolean(config?.automaticJSXRuntime),
-      jsx_import_source: config?.jsxImportSource,
-      is_development: options.mode === 'development',
-      react_refresh: Boolean(
-        asset.env.isBrowser() &&
-          !asset.env.isLibrary &&
-          !asset.env.isWorker() &&
-          !asset.env.isTesseract() &&
-          !asset.env.isWorklet() &&
-          config?.reactRefresh &&
-          options.hmrOptions &&
-          options.mode === 'development',
-      ),
-      decorators: Boolean(config?.decorators),
-      use_define_for_class_fields: Boolean(config?.useDefineForClassFields),
-      targets,
-      source_maps: !!asset.env.sourceMap,
-      scope_hoist:
-        asset.env.shouldScopeHoist && asset.env.sourceType !== 'script',
-      source_type: asset.env.sourceType === 'script' ? 'Script' : 'Module',
-      supports_module_workers: supportsModuleWorkers,
-      is_library: asset.env.isLibrary,
-      is_esm_output: asset.env.outputFormat === 'esmodule',
-      trace_bailouts: options.logLevel === 'verbose',
-      is_swc_helpers: /@swc[/\\]helpers/.test(asset.filePath),
-      standalone: asset.query.has('standalone'),
-      inline_constants: config.inlineConstants,
-      conditional_bundling: options.featureFlags.conditionalBundlingApi,
-      hmr_improvements: options.featureFlags.hmrImprovements,
-      add_display_name: Boolean(config.addReactDisplayName),
-      exports_rebinding_optimisation:
-        options.featureFlags.exportsRebindingOptimisation,
-      magic_comments:
-        Boolean(config?.magicComments) ||
-        getFeatureFlag('supportWebpackChunkName'),
-      is_source: asset.isSource,
-      nested_promise_import_fix: options.featureFlags.nestedPromiseImportFix,
-      global_aliasing_config: config.globalAliasingConfig,
-      enable_ssr_typeof_replacement: Boolean(config.enableSsrTypeofReplacement),
-      enable_lazy_loading: Boolean(config.enableLazyLoading),
-      enable_dead_returns_removal: Boolean(config.enableDeadReturnsRemoval),
-      enable_unused_bindings_removal: Boolean(
-        config.enableUnusedBindingsRemoval,
-      ),
-      enable_static_prevaluation: Boolean(config.enableStaticPrevaluation),
-      enable_react_hooks_removal: Boolean(config.enableReactHooksRemoval),
-      enable_react_async_import_lift: Boolean(
-        config.enableReactAsyncImportLift,
-      ),
-      react_async_lift_by_default: Boolean(config.reactAsyncLiftByDefault),
-      react_async_lift_report_level: String(config.reactAsyncLiftReportLevel),
-      sync_dynamic_import_config: config.syncDynamicImportConfig,
-      callMacro: asset.isSource
-        ? async (err: any, src: any, exportName: any, args: any, loc: any) => {
-            let mod;
-            try {
-              mod = await options.packageManager.require(src, asset.filePath);
-
-              // Default interop for CommonJS modules.
-              if (
-                exportName === 'default' &&
-                !mod.__esModule &&
-                Object.prototype.toString.call(config) !== '[object Module]'
-              ) {
-                mod = {default: mod};
-              }
-
-              if (!Object.hasOwnProperty.call(mod, exportName)) {
-                throw new Error(`"${src}" does not export "${exportName}".`);
-              }
-            } catch (err: any) {
-              throw {
-                kind: 1,
-                message: err.message,
-              };
-            }
-
-            try {
-              if (typeof mod[exportName] === 'function') {
-                let ctx: MacroContext = {
-                  // Allows macros to emit additional assets to add as dependencies (e.g. css).
-                  addAsset(a: MacroAsset) {
-                    let k = String(macroAssets.length);
-                    let map;
-                    if (asset.env.sourceMap) {
-                      // Generate a source map that maps each line of the asset to the original macro call.
-                      map = new SourceMap(options.projectRoot);
-                      // @ts-expect-error TS2304
-                      let mappings: Array<IndexedMapping<string>> = [];
-                      let line = 1;
-                      for (let i = 0; i <= a.content.length; i++) {
-                        if (i === a.content.length || a.content[i] === '\n') {
-                          mappings.push({
-                            generated: {
-                              line,
-                              column: 0,
-                            },
-                            source: asset.filePath,
-                            original: {
-                              line: loc.line,
-                              column: loc.col,
-                            },
-                          });
-                          line++;
-                        }
-                      }
-
-                      map.addIndexedMappings(mappings);
-                      if (originalMap) {
-                        map.extends(originalMap);
-                      } else {
-                        if (!getFeatureFlag('omitSourcesContentInMemory')) {
-                          map.setSourceContent(asset.filePath, code.toString());
-                        }
-                      }
-                    }
-
-                    macroAssets.push({
-                      type: a.type,
-                      content: a.content,
-                      map,
-                      uniqueKey: k,
-                    });
-
-                    asset.addDependency({
-                      specifier: k,
-                      specifierType: 'esm',
-                    });
-                  },
-                  invalidateOnFileChange(filePath: FilePath) {
-                    asset.invalidateOnFileChange(filePath);
-                  },
-                  invalidateOnFileCreate(invalidation: FileCreateInvalidation) {
-                    asset.invalidateOnFileCreate(invalidation);
-                  },
-                  invalidateOnEnvChange(env: string) {
-                    asset.invalidateOnEnvChange(env);
-                  },
-                  invalidateOnStartup() {
-                    asset.invalidateOnStartup();
-                  },
-                  invalidateOnBuild() {
-                    asset.invalidateOnBuild();
-                  },
-                };
-
-                return mod[exportName].apply(ctx, args);
-              } else {
-                throw new Error(
-                  `"${exportName}" in "${src}" is not a function.`,
-                );
-              }
-            } catch (err: any) {
-              // Remove atlaspack core from stack and build string so Rust can process errors more easily.
-              let stack = (err.stack || '').split('\n').slice(1);
-              let message = err.message;
-              for (let line of stack) {
-                if (line.includes(__filename)) {
-                  break;
-                }
-                message += '\n' + line;
-              }
-              throw {
-                kind: 2,
-                message,
-              };
-            }
-          }
-        : null,
-    });
+    } = transformResult;
 
     if (getFeatureFlag('conditionalBundlingApi')) {
       asset.meta.conditions = conditions;

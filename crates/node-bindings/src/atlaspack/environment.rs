@@ -36,7 +36,12 @@ struct EnvironmentIdParams {
 
 #[napi]
 pub fn create_environment_id(env: Env, params: JsUnknown) -> napi::Result<String> {
-  let params: EnvironmentIdParams = env.from_js_value(params)?;
+  let params: EnvironmentIdParams = env.from_js_value(params).map_err(|err| {
+    napi::Error::new(
+      napi::Status::InvalidArg,
+      format!("Failed to deserialize EnvironmentIdParams from JS: {err}"),
+    )
+  })?;
   let EnvironmentIdParams {
     context,
     engines,
@@ -107,7 +112,12 @@ impl EnvironmentManager {
 pub fn set_all_environments(env: Env, environments: JsUnknown) -> napi::Result<()> {
   let manager = ENVIRONMENT_MANAGER.get_or_init(EnvironmentManager::new);
 
-  let environments: Vec<Environment> = env.from_js_value(&environments)?;
+  let environments: Vec<Environment> = env.from_js_value(&environments).map_err(|err| {
+    napi::Error::new(
+      napi::Status::InvalidArg,
+      format!("Failed to deserialize Vec<Environment> from JS: {err}"),
+    )
+  })?;
   manager.set_all_environments(environments);
 
   Ok(())
@@ -149,7 +159,12 @@ pub fn get_environment(env: Env, id: String) -> napi::Result<JsUnknown> {
 /// Add an environment to the global manager
 #[napi]
 pub fn add_environment(env: Env, environment: JsUnknown) -> napi::Result<()> {
-  let environment: Environment = env.from_js_value(&environment)?;
+  let environment: Environment = env.from_js_value(&environment).map_err(|err| {
+    napi::Error::new(
+      napi::Status::InvalidArg,
+      format!("Failed to deserialize Environment from JS: {err}"),
+    )
+  })?;
   let manager = ENVIRONMENT_MANAGER.get_or_init(EnvironmentManager::new);
   manager.add_environment(environment);
   Ok(())

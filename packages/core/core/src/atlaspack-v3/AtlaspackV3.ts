@@ -87,6 +87,7 @@ export class AtlaspackV3 extends EventEmitter {
     }
 
     const modifiedOptions = {...options};
+
     // Previously we attempted to shorten absolute entry paths before
     // passing them through NAPI. This interfered with the Rust engine's
     // entry resolution which expects either absolute paths or paths
@@ -101,13 +102,34 @@ export class AtlaspackV3 extends EventEmitter {
       (modifiedOptions as any).projectRoot,
     );
 
+    // Build a minimal, JSON-serializable options object that matches the
+    // Rust `AtlaspackOptions` shape. This avoids passing complex JS-only
+    // fields (like FileSystem instances or caches) through N-API, which
+    // cannot be deserialized by serde.
+    const atlaspackOptions: any = {
+      corePath: (modifiedOptions as any).corePath ?? path.join(__dirname, '..'),
+      serveOptions: (modifiedOptions as any).serveOptions ?? false,
+      entries: (modifiedOptions as any).entries ?? [],
+      env: (modifiedOptions as any).env,
+      defaultConfig: (modifiedOptions as any).defaultConfig,
+      config: (modifiedOptions as any).config,
+      logLevel: (modifiedOptions as any).logLevel,
+      mode: (modifiedOptions as any).mode,
+      threads,
+      targets: (modifiedOptions as any).targets,
+      shouldDisableCache: (modifiedOptions as any).shouldDisableCache,
+      featureFlags: (modifiedOptions as any).featureFlags,
+      hmrOptions: (modifiedOptions as any).hmrOptions,
+      defaultTargetOptions: (modifiedOptions as any).defaultTargetOptions,
+    };
+
     // @ts-expect-error TS2488
     const [internal, error] = await atlaspackNapiCreate(
       {
         fs,
         packageManager,
         threads,
-        options: modifiedOptions,
+        options: atlaspackOptions,
         napiWorkerPool,
       },
       lmdb,

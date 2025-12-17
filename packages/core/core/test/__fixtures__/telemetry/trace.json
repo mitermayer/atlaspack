@@ -5,17 +5,9 @@
     "type": "trace"
   },
   {
-    "categories": ["reporter"],
-    "name": "@atlaspack/reporter-dev-server",
-    "type": "trace"
-  },
-  {
-    "args": {
-      "name": "<ROOT>/packages/core/core/test/__fixtures__/graph/basic/index.js"
-    },
-    "categories": ["resolve"],
-    "name": "@atlaspack/resolver-default",
-    "type": "trace"
+    "cat": "default",
+    "name": "build_asset_graph",
+    "ph": "B"
   },
   {
     "categories": ["reporter"],
@@ -28,17 +20,54 @@
     "type": "trace"
   },
   {
-    "args": {
-      "name": "./dep"
-    },
-    "categories": ["resolve"],
-    "name": "@atlaspack/resolver-default",
+    "categories": ["reporter"],
+    "name": "@atlaspack/reporter-dev-server",
+    "type": "trace"
+  },
+  {
+    "cat": "default",
+    "name": "PipelineScheduler::execute",
+    "ph": "B"
+  },
+  {
+    "categories": ["reporter"],
+    "name": "@atlaspack/reporter-dev-server",
+    "type": "trace"
+  },
+  {
+    "cat": "default",
+    "name": "PipelineScheduler::execute",
+    "ph": "E"
+  },
+  {
+    "categories": ["reporter"],
+    "name": "@atlaspack/reporter-dev-server",
     "type": "trace"
   },
   {
     "categories": ["reporter"],
     "name": "@atlaspack/reporter-dev-server",
     "type": "trace"
+  },
+  {
+    "categories": ["reporter"],
+    "name": "@atlaspack/reporter-dev-server",
+    "type": "trace"
+  },
+  {
+    "cat": "default",
+    "name": "PipelineScheduler::execute",
+    "ph": "B"
+  },
+  {
+    "categories": ["reporter"],
+    "name": "@atlaspack/reporter-dev-server",
+    "type": "trace"
+  },
+  {
+    "cat": "default",
+    "name": "PipelineScheduler::execute",
+    "ph": "E"
   },
   {
     "categories": ["reporter"],
@@ -51,13 +80,23 @@
     "type": "trace"
   },
   {
+    "cat": "default",
+    "name": "build_asset_graph",
+    "ph": "E"
+  },
+  {
+    "categories": ["reporter"],
+    "name": "@atlaspack/reporter-dev-server",
+    "type": "trace"
+  },
+  {
     "categories": ["reporter"],
     "name": "@atlaspack/reporter-dev-server",
     "type": "trace"
   },
   {
     "args": {
-      "name": "index.js"
+      "name": "<ROOT>/packages/core/core/test/__fixtures__/graph/basic/index.js"
     },
     "categories": ["bundle:@atlaspack/bundler-default:bundling:bundle"],
     "name": "@atlaspack/bundler-default",
@@ -65,7 +104,7 @@
   },
   {
     "args": {
-      "name": "index.js"
+      "name": "<ROOT>/packages/core/core/test/__fixtures__/graph/basic/index.js"
     },
     "categories": ["bundle:@atlaspack/bundler-default:bundling:optimize"],
     "name": "@atlaspack/bundler-default",
@@ -73,7 +112,7 @@
   },
   {
     "args": {
-      "name": "97e9cc922941140b"
+      "name": "ce12484db9003981"
     },
     "categories": ["namer"],
     "name": "@atlaspack/namer-default",

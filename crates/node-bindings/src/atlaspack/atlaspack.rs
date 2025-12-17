@@ -87,7 +87,20 @@ pub fn atlaspack_napi_create(
   let db_handle = lmdb.get_database().clone();
   atlaspack_napi_run_db_health_check(&db_handle)?;
 
-  let options: AtlaspackOptions = env.from_js_value(napi_options.options)?;
+  // Deserialize the options via serde_json first to avoid
+  // tight coupling between the JS shape and the N-API serde
+  // implementation. This also allows us to handle legacy
+  // entry formats (arrays or numeric-keyed maps) in a
+  // backwards-compatible way via AtlaspackOptions' custom
+  // deserializers.
+  let raw_options: serde_json::Value = env.from_js_value(napi_options.options)?;
+  let options: AtlaspackOptions = serde_json::from_value(raw_options).map_err(|err| {
+    napi::Error::new(
+      napi::Status::InvalidArg,
+      format!("Failed to deserialize AtlaspackOptions from JS: {err}"),
+    )
+  })?;
+
   let get_workers = JsCallable::new_method_bound("getWorkers", &napi_options.napi_worker_pool)?;
 
   thread::spawn({
@@ -227,7 +240,14 @@ pub fn atlaspack_napi_respond_to_fs_events(
   options: JsObject,
 ) -> napi::Result<JsObject> {
   let (deferred, promise) = env.create_deferred()?;
-  let options = env.from_js_value::<WatchEvents, _>(options)?;
+  let options = env
+    .from_js_value::<WatchEvents, _>(options)
+    .map_err(|err| {
+      napi::Error::new(
+        napi::Status::InvalidArg,
+        format!("Failed to deserialize WatchEvents from JS: {err}"),
+      )
+    })?;
 
   thread::spawn({
     let atlaspack = atlaspack_napi.clone();

@@ -692,12 +692,21 @@ export default class Atlaspack {
         throw e;
       }
 
+      // eslint-disable-next-line no-console
+      console.error('[Atlaspack._build] error object', e);
+
       let diagnostic = anyToDiagnostic(e);
       let event = {
         type: 'buildFailure',
         diagnostics: Array.isArray(diagnostic) ? diagnostic : [diagnostic],
         unstable_requestStats: this.#requestTracker.flushStats(),
       };
+
+      // eslint-disable-next-line no-console
+      console.error(
+        '[Atlaspack._build] buildFailure diagnostics',
+        JSON.stringify(event.diagnostics, null, 2),
+      );
 
       // @ts-expect-error TS2345
       await this.#reporterRunner.report(event);
