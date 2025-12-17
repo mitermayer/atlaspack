@@ -73,13 +73,15 @@ Focus: preparing for broad adoption, handling the long tail, and ensuring full J
 Focus: verifying the engine against real-world examples and fixing critical infrastructure bugs.
 
 12. **NAPI Deserialization Fix** (T_INFRA_1)
-    - Fix NAPI `entries` deserialization bug for absolute paths.
+    - ✅ Fixed NAPI `entries` deserialization bug for absolute paths.
     - _Why_: Ensures correct handling of file paths in the Rust engine, critical for consistent builds.
 13. **Kitchen Sink Validation** (T_VAL_1)
     - Run Kitchen Sink tests against Rust engine.
+    - Status: **In Progress**. Dual-smoke and incremental invalidation run under Rust, but watch/HMR kitchen-sink tests still hang and need investigation.
     - _Why_: Validates the engine against a comprehensive set of features and edge cases.
 14. **Performance Benchmarking** (T_VAL_2)
     - Benchmark Rust vs JS performance.
+    - Status: **Pending**.
     - _Why_: Quantify the performance benefits of the Rust engine.
 
 ---

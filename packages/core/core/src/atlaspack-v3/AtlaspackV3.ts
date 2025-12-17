@@ -87,16 +87,19 @@ export class AtlaspackV3 extends EventEmitter {
     }
 
     const modifiedOptions = {...options};
-    // Workaround for NAPI bug with long strings in arrays
-    // @ts-expect-error TS2339
-    if (modifiedOptions.entries) {
-      // @ts-expect-error TS2339
-      const projectRoot = modifiedOptions.projectRoot || process.cwd();
-      // @ts-expect-error TS2339
-      modifiedOptions.entries = modifiedOptions.entries.map((e: string) =>
-        path.isAbsolute(e) ? path.relative(projectRoot, e) : e,
-      );
-    }
+    // Previously we attempted to shorten absolute entry paths before
+    // passing them through NAPI. This interfered with the Rust engine's
+    // entry resolution which expects either absolute paths or paths
+    // relative to the current working directory. Keep entries as-is here
+    // and rely on the Rust engine to infer the project root correctly.
+
+    // eslint-disable-next-line no-console
+    console.log(
+      '[AtlaspackV3.create] options.entries',
+      (modifiedOptions as any).entries,
+      'projectRoot',
+      (modifiedOptions as any).projectRoot,
+    );
 
     // @ts-expect-error TS2488
     const [internal, error] = await atlaspackNapiCreate(

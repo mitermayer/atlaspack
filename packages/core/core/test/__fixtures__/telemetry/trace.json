@@ -11,7 +11,7 @@
   },
   {
     "args": {
-      "name": "<ROOT>/test/__fixtures__/graph/basic/index.js"
+      "name": "<ROOT>/packages/core/core/test/__fixtures__/graph/basic/index.js"
     },
     "categories": ["resolve"],
     "name": "@atlaspack/resolver-default",

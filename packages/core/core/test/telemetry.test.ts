@@ -5,7 +5,7 @@ import fs from 'fs';
 import {glob} from 'glob';
 import {tracer} from '@atlaspack/profiler';
 import {FILE_CONFIG_NO_REPORTERS} from '@atlaspack/test-utils';
-import Atlaspack, {createWorkerFarm} from '..';
+import Atlaspack, {createWorkerFarm} from '../src/Atlaspack';
 import {writeEvents} from './utils/artifacts';
 import {
   normalizePaths,
@@ -37,6 +37,8 @@ describe('telemetry', function () {
     });
 
     try {
+      // eslint-disable-next-line no-console
+      console.log('[telemetry.test] creating worker farm');
       workerFarm = createWorkerFarm();
       let atlaspack = new Atlaspack({
         entries: [path.join(FIXTURE_PATH, 'index.js')],
@@ -45,9 +47,17 @@ describe('telemetry', function () {
         mode: 'production',
         logLevel: 'warn',
         defaultConfig: FILE_CONFIG_NO_REPORTERS,
+        // Explicitly enable tracing for this test
+        shouldTrace: true,
       });
 
+      // Debug logging to understand where the test hangs
+      // These logs can be removed or reduced once the root cause is fixed.
+      // eslint-disable-next-line no-console
+      console.log('[telemetry.test] before atlaspack.run');
       await atlaspack.run();
+      // eslint-disable-next-line no-console
+      console.log('[telemetry.test] after atlaspack.run');
     } finally {
       disposable.dispose();
     }

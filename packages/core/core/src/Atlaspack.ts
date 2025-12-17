@@ -265,14 +265,28 @@ export default class Atlaspack {
 
     let rustAtlaspack: AtlaspackV3;
     if (resolvedOptions.featureFlags.atlaspackV3) {
+      // Use resolved options as the source of truth for the Rust engine.
+      // This ensures entries, projectRoot, and related paths are consistent
+      // with the JS engine configuration.
       // eslint-disable-next-line no-unused-vars
-      let {entries, inputFS, outputFS, ...options} = this.#initialOptions;
+      let {
+        entries,
+        inputFS,
+        outputFS,
+        cache,
+        env,
+        defaultTargetOptions,
+        serveOptions,
+        featureFlags,
+        projectRoot,
+        ...options
+      } = resolvedOptions;
 
-      if (!(resolvedOptions.cache instanceof LMDBLiteCache)) {
+      if (!(cache instanceof LMDBLiteCache)) {
         throw new Error('Atlaspack v3 must be run with lmdb lite cache');
       }
 
-      const lmdb: Lmdb = resolvedOptions.cache.getNativeRef();
+      const lmdb: Lmdb = cache.getNativeRef();
 
       const version = require('../package.json').version;
       await lmdb.put('current_session_version', Buffer.from(version));
@@ -284,22 +298,29 @@ export default class Atlaspack {
         threads = 2;
       }
 
+      const entriesForRust = entries.map((entry) =>
+        fromProjectPath(projectRoot, entry),
+      );
+
       rustAtlaspack = await AtlaspackV3.create({
         ...options,
         // @ts-expect-error TS2353
         corePath: path.join(__dirname, '..'),
         threads,
-        entries: Array.isArray(entries)
-          ? entries
-          : entries == null
-            ? undefined
-            : [entries],
-        env: resolvedOptions.env,
-        fs: inputFS && new FileSystemV3(inputFS),
-        defaultTargetOptions: resolvedOptions.defaultTargetOptions,
-        serveOptions: resolvedOptions.serveOptions,
+        // Provide entries relative to the current working directory,
+        // matching the Rust engine's expectation and CLI behaviour.
+        entries: entriesForRust,
+        env,
+        // Only provide a custom filesystem to the Rust engine when the caller
+        // explicitly supplied one. Otherwise, let the Rust engine use its
+        // own OS-based filesystem to avoid mismatches in entry resolution.
+        fs:
+          this.#initialOptions.inputFS &&
+          new FileSystemV3(this.#initialOptions.inputFS),
+        defaultTargetOptions,
+        serveOptions,
         lmdb,
-        featureFlags: resolvedOptions.featureFlags,
+        featureFlags,
       });
 
       rustAtlaspack.on('report', (event: ReporterEvent) => {
@@ -389,14 +410,24 @@ export default class Atlaspack {
 
   async run(): Promise<BuildSuccessEvent> {
     let startTime = Date.now();
+    // eslint-disable-next-line no-console
+    console.log('[Atlaspack.run] start');
     if (!this.#initialized) {
       await this._init();
     }
+    // eslint-disable-next-line no-console
+    console.log('[Atlaspack.run] after _init');
 
     let result = await this._build({startTime});
+    // eslint-disable-next-line no-console
+    console.log('[Atlaspack.run] after _build');
 
     await this.#requestTracker.writeToCache();
+    // eslint-disable-next-line no-console
+    console.log('[Atlaspack.run] after writeToCache');
     await this._end();
+    // eslint-disable-next-line no-console
+    console.log('[Atlaspack.run] after _end');
 
     if (result.type === 'buildFailure') {
       throw new BuildError(result.diagnostics);

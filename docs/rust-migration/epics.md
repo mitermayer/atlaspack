@@ -74,7 +74,7 @@ Details: see per-epic folders under `docs/rust-migration/epics/<epic>/` (indexed
   - [x] T12a: Default Namer (Rust crate + integration).
   - [x] T12b: Default Bundler (Rust crate + integration).
   - [x] T12c: Packagers (Rust crates for js/css/html/etc).
-- [ ] Story: Extended plugin parity fixtures for core plugins; acceptance: additional fixtures for JS/CSS/HTML/image/raw/svg/json/yaml covering scope hoisting, code splitting, HMR, and sourcemaps, enforced in CI.
+- [ ] Story: Extended plugin parity fixtures for core plugins; acceptance: additional fixtures for JS/CSS/HTML/image/raw/svg/json/yaml covering scope hoisting, code splitting, HMR, and sourcemaps, enforced in CI. (Still pending.)
 
 ## Epic: Plugin Migration – Optimizers & Compressors
 
@@ -82,13 +82,13 @@ Details: see per-epic folders under `docs/rust-migration/epics/<epic>/` (indexed
   - [x] Sub-task: Inline-requires optimizer ported and wired.
   - [x] Sub-task: CSS optimizer ported and wired (crates/atlaspack_plugin_optimizer_css).
   - [x] Sub-task: JS optimizer ported and wired (crates/atlaspack_plugin_optimizer_swc).
-- [ ] Story: JS-only optimizers wrapped behind stable RPC contracts; acceptance: cssnano/htmlnano/terser/svgo/data-url/blob-url are documented and invoked via plugin RPC with parity tests and a deprecation or replacement strategy where appropriate.
+- [x] Story: JS-only optimizers wrapped behind stable RPC contracts; acceptance: cssnano/htmlnano/terser/svgo/data-url/blob-url are documented and invoked via plugin RPC with parity tests and a deprecation or replacement strategy where appropriate.
 - [ ] Story: Optimizer plugin parity golden suite; acceptance: per-optimizer fixtures and goldens enforced in CI, with allowed deltas documented.
 
 ## Epic: Plugin Migration – Runtimes, Reporters & Ecosystem Adapters
 
 - [x] Story: Rust engine metadata contract for runtimes; acceptance: runtimes (JS/HMR/React-refresh/service-worker/webextension) consume a stable metadata interface from the Rust engine, tested via HMR/watch and plugin parity suites.
-- [ ] Story: Reporter compatibility with Rust engine; acceptance: reporters (CLI/dev-server/tracer/LSP/etc.) receive equivalent events/diagnostics from JS and Rust engines with integration tests and docs.
+- [x] Story: Reporter compatibility with Rust engine; acceptance: reporters (CLI/dev-server/tracer/LSP/etc.) receive equivalent events/diagnostics from JS and Rust engines with integration tests and docs.
 - [x] Story: Ecosystem adapter strategy for Babel/PostCSS/MDX/etc.; acceptance: documented status per adapter (Rust-native, JS adapter, deprecated) with migration guidance and tests for maintained adapters.
 
 ## Epic: JS Plugin Execution Support in Rust Engine (T13)
@@ -107,8 +107,8 @@ Details: see per-epic folders under `docs/rust-migration/epics/<epic>/` (indexed
 
 ## Epic: Validation & Stabilization (Phase 5)
 
-- [ ] Story: Fix NAPI `entries` deserialization bug (T_INFRA_1).
+- [x] Story: Fix NAPI `entries` deserialization bug (T_INFRA_1).
 - [ ] Story: Run Kitchen Sink tests against Rust engine (T_VAL_1).
 - [ ] Story: Benchmark Rust vs JS performance (T_VAL_2).
-- [ ] Story: Complete RuntimeBundleGraph coverage (T_VAL_3); acceptance: implement `getAssetById`, `getSymbolResolution`, and `getEntryRoot` for runtime consumers.
-- [ ] Story: JS Bundler/Compressor stance (T_VAL_4); acceptance: either implement JS bundler/compressor hooks in `worker.ts` or explicitly document Rust-only bundler/compressor support as the stable path.
+- [x] Story: Complete RuntimeBundleGraph coverage (T_VAL_3); acceptance: implement `getAssetById`, `getSymbolResolution`, and `getEntryRoot` for runtime consumers.
+- [x] Story: JS Bundler/Compressor stance (T_VAL_4); acceptance: either implement JS bundler/compressor hooks in `worker.ts` or explicitly document Rust-only bundler/compressor support as the stable path.
