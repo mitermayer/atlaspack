@@ -19,9 +19,14 @@ pub trait TraceCallback: Send + Sync + std::fmt::Debug {
   fn on_event(&self, event: String);
 }
 
-struct NodejsLayer {
-  callback: Arc<dyn TraceCallback>,
+static TRACE_CALLBACK: Mutex<Option<Arc<dyn TraceCallback>>> = Mutex::new(None);
+
+pub fn set_trace_callback(callback: Option<Arc<dyn TraceCallback>>) {
+  let mut slot = TRACE_CALLBACK.lock();
+  *slot = callback;
 }
+
+struct NodejsLayer;
 
 impl<S> tracing_subscriber::Layer<S> for NodejsLayer
 where
@@ -53,7 +58,14 @@ where
       "tid": tid,
     });
 
-    self.callback.on_event(event.to_string());
+    let callback = {
+      let guard = TRACE_CALLBACK.lock();
+      guard.clone()
+    };
+
+    if let Some(callback) = callback {
+      callback.on_event(event.to_string());
+    }
   }
 
   fn on_close(&self, id: tracing::Id, ctx: tracing_subscriber::layer::Context<'_, S>) {
@@ -77,7 +89,14 @@ where
       "tid": tid,
     });
 
-    self.callback.on_event(event.to_string());
+    let callback = {
+      let guard = TRACE_CALLBACK.lock();
+      guard.clone()
+    };
+
+    if let Some(callback) = callback {
+      callback.on_event(event.to_string());
+    }
   }
 }
 
@@ -211,7 +230,11 @@ impl Tracer {
 
     let sentry_layer = sentry_tracing::layer();
 
-    let nodejs_layer = trace_callback.map(|callback| NodejsLayer { callback });
+    // Always install the Node.js layer so the trace callback
+    // can be configured or updated later.
+    let nodejs_layer = Some(NodejsLayer);
+
+    set_trace_callback(trace_callback);
 
     let subscriber = Registry::default()
       .with(layer)

@@ -3,8 +3,8 @@
 //! They are all disabled by default.
 //!
 //! Reporting should only be initialized once.
-use std::sync::Arc;
 use parking_lot::Mutex;
+use std::sync::Arc;
 use std::time::Duration;
 
 #[cfg(not(target_env = "musl"))]
@@ -61,7 +61,9 @@ impl MonitoringOptions {
 pub fn initialize_monitoring(options: MonitoringOptions) -> anyhow::Result<()> {
   let mut global = MONITORING_GUARD.lock();
   if global.is_some() {
-    tracing::warn!("Monitoring is getting set-up twice, this will no-op");
+    // Monitoring was already initialized. Allow the trace callback
+    // to be updated while keeping the existing subscriber.
+    tracer::set_trace_callback(options.trace_callback);
     return Ok(());
   }
 
