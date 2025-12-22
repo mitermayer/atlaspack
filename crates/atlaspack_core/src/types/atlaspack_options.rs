@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use std::fmt::Display;
+use std::fmt::{self, Display};
 use std::path::PathBuf;
 
 use serde::Deserialize;
@@ -31,7 +31,9 @@ pub struct AtlaspackOptions {
 
   pub serve_options: ServeOptions,
 
+  #[serde(default, deserialize_with = "deserialize_entries")]
   pub entries: Vec<String>,
+  #[serde(default, deserialize_with = "deserialize_env")]
   pub env: Option<BTreeMap<String, String>>,
 
   #[serde(rename = "defaultConfig")]
@@ -46,6 +48,9 @@ pub struct AtlaspackOptions {
   pub threads: Option<usize>,
 
   pub targets: Option<Targets>,
+
+  #[serde(default)]
+  pub should_disable_cache: bool,
 
   #[serde(default)]
   pub feature_flags: FeatureFlags,
@@ -105,6 +110,7 @@ pub struct TargetDescriptor {
   pub dist_dir: Option<PathBuf>,
   pub dist_entry: Option<PathBuf>,
   pub engines: Option<Engines>,
+  #[serde(default, deserialize_with = "deserialize_env")]
   pub env: Option<BTreeMap<String, String>>,
   pub include_node_modules: Option<IncludeNodeModules>,
   pub is_library: Option<bool>,
@@ -140,7 +146,8 @@ impl<'de> Deserialize<'de> for BuildMode {
   where
     D: Deserializer<'de>,
   {
-    let s = String::deserialize(deserializer)?;
+    let s =
+      Option::<String>::deserialize(deserializer)?.unwrap_or_else(|| "development".to_string());
 
     Ok(match s.as_str() {
       "development" => BuildMode::Development,
@@ -150,6 +157,69 @@ impl<'de> Deserialize<'de> for BuildMode {
   }
 }
 
+fn deserialize_env<'de, D>(deserializer: D) -> Result<Option<BTreeMap<String, String>>, D::Error>
+where
+  D: Deserializer<'de>,
+{
+  let v: Option<BTreeMap<String, Option<String>>> = Option::deserialize(deserializer)?;
+  Ok(v.map(|map| {
+    map
+      .into_iter()
+      .filter_map(|(k, v)| v.map(|v| (k, v)))
+      .collect()
+  }))
+}
+
+fn deserialize_entries<'de, D>(deserializer: D) -> Result<Vec<String>, D::Error>
+where
+  D: Deserializer<'de>,
+{
+  struct EntriesVisitor;
+
+  impl<'de> serde::de::Visitor<'de> for EntriesVisitor {
+    type Value = Vec<String>;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+      formatter.write_str("a sequence of entry strings or a map of numeric keys to entry strings")
+    }
+
+    fn visit_seq<A>(self, mut seq: A) -> Result<Self::Value, A::Error>
+    where
+      A: serde::de::SeqAccess<'de>,
+    {
+      let mut entries = Vec::new();
+      while let Some(value) = seq.next_element::<String>()? {
+        entries.push(value);
+      }
+      Ok(entries)
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+      A: serde::de::MapAccess<'de>,
+    {
+      let mut keyed = Vec::new();
+      while let Some((key, value)) = map.next_entry::<String, String>()? {
+        // Treat numeric keys as indexes; ignore non-numeric keys.
+        if let Ok(idx) = key.parse::<usize>() {
+          keyed.push((idx, value));
+        }
+      }
+      keyed.sort_by_key(|(idx, _)| *idx);
+      Ok(keyed.into_iter().map(|(_, v)| v).collect())
+    }
+  }
+
+  deserializer.deserialize_any(EntriesVisitor)
+}
+
+fn deserialize_public_url<'de, D>(deserializer: D) -> Result<String, D::Error>
+where
+  D: Deserializer<'de>,
+{
+  let s: Option<String> = Option::deserialize(deserializer)?;
+  Ok(s.unwrap_or_else(|| String::from("/")))
+}
 #[derive(Clone, Debug, Deserialize, Hash, Serialize)]
 #[serde(default, rename_all = "camelCase")]
 pub struct DefaultTargetOptions {
@@ -157,6 +227,7 @@ pub struct DefaultTargetOptions {
   pub engines: Engines,
   pub is_library: Option<bool>,
   pub output_format: Option<OutputFormat>,
+  #[serde(deserialize_with = "deserialize_public_url")]
   pub public_url: String,
   pub should_optimize: Option<bool>,
   pub should_scope_hoist: Option<bool>,

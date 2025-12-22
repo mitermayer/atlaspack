@@ -1,0 +1,10 @@
+{
+  "extends": "@atlaspack/config-default",
+  "transformers": {
+    "*.png": ["@atlaspack/transformer-image"],
+    "*.jpg": ["@atlaspack/transformer-image"],
+    "*.jpeg": ["@atlaspack/transformer-image"],
+    "*.gif": ["@atlaspack/transformer-image"],
+    "*.webp": ["@atlaspack/transformer-image"]
+  }
+}

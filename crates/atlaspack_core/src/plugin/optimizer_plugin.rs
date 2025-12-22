@@ -2,6 +2,7 @@ use crate::bundle_graph::BundleGraph;
 use crate::types::Bundle;
 use crate::types::SourceMap;
 use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use std::fs::File;
 
@@ -13,9 +14,10 @@ pub struct OptimizeContext<'a> {
   // TODO getSourceMapReference?
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct OptimizedBundle {
-  pub contents: File,
-  // TODO ast, map, type
+  pub contents: Vec<u8>,
+  pub map: Option<SourceMap>,
 }
 
 /// Optimises a bundle

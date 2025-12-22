@@ -107,6 +107,7 @@ impl BundlerPlugin for TestingRpcPlugin {
   async fn bundle(
     &self,
     _bundle_graph: &mut atlaspack_core::bundle_graph::BundleGraph,
+    _asset_graph: &atlaspack_core::asset_graph::AssetGraph,
   ) -> Result<(), anyhow::Error> {
     Ok(())
   }
@@ -114,6 +115,7 @@ impl BundlerPlugin for TestingRpcPlugin {
   async fn optimize(
     &self,
     _bundle_graph: &mut atlaspack_core::bundle_graph::BundleGraph,
+    _asset_graph: &atlaspack_core::asset_graph::AssetGraph,
   ) -> Result<(), anyhow::Error> {
     Ok(())
   }

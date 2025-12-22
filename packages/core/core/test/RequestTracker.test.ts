@@ -693,6 +693,8 @@ describe('RequestTracker', () => {
           }),
         );
       }
+
+      await atlaspack._end();
     }
 
     it('throws a content key not found exception without bundling versioning', async () => {

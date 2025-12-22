@@ -7,11 +7,12 @@ use petgraph::graph::NodeIndex;
 use petgraph::stable_graph::StableDiGraph;
 use petgraph::visit::EdgeRef;
 use petgraph::visit::IntoEdgeReferences;
+use serde::{Deserialize, Serialize};
 
 use crate::types::Asset;
 use crate::types::Dependency;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 pub enum DependencyState {
   New,
   Deferred,
@@ -19,7 +20,7 @@ pub enum DependencyState {
   Resolved,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[allow(clippy::large_enum_variant)]
 pub enum AssetGraphNode {
   Root,
@@ -30,7 +31,7 @@ pub enum AssetGraphNode {
 
 pub type NodeId = usize;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct AssetGraph {
   pub graph: StableDiGraph<NodeId, ()>,
   nodes: Vec<AssetGraphNode>,
@@ -251,6 +252,14 @@ impl AssetGraph {
     self
       .graph
       .neighbors_directed(self.node_id_to_node_index[node_id], Direction::Outgoing)
+      .filter_map(|node_index| self.graph.node_weight(node_index).copied())
+      .collect()
+  }
+
+  pub fn get_incoming_neighbors(&self, node_id: &NodeId) -> Vec<NodeId> {
+    self
+      .graph
+      .neighbors_directed(self.node_id_to_node_index[node_id], Direction::Incoming)
       .filter_map(|node_index| self.graph.node_weight(node_index).copied())
       .collect()
   }

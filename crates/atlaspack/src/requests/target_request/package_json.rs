@@ -98,7 +98,9 @@ where
         for dist in replacements.values() {
           // skip on false
           if let Value::String(dist) = dist {
-            validate_extension::<D>("browser", Path::new(dist.as_str()), &allowed_extensions)?;
+            if dist.starts_with('.') {
+              validate_extension::<D>("browser", Path::new(dist.as_str()), &allowed_extensions)?;
+            }
           }
         }
       }
@@ -377,5 +379,20 @@ mod test {
         ..Default::default()
       }
     );
+  }
+
+  #[test]
+  fn test_browser_alias_parsing() {
+    let raw_package_json = r#"
+    {
+      "name": "example-package",
+      "browser": {
+        "react": "preact/compat"
+      }
+    }"#;
+
+    let package_json: PackageJson = serde_json::from_str(raw_package_json).unwrap();
+
+    assert!(package_json.browser.is_some());
   }
 }

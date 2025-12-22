@@ -1,0 +1,18 @@
+{
+  "name": "optimizer-css-fixture",
+  "version": "1.0.0",
+  "source": "index.css",
+  "targets": {
+    "app": {
+      "distDir": "./dist",
+      "engines": {
+        "browsers": [
+          "last 1 Chrome version"
+        ]
+      },
+      "optimize": true,
+      "scopeHoist": false,
+      "outputFormat": "esmodule"
+    }
+  }
+}

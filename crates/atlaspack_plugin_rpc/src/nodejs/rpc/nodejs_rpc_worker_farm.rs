@@ -67,7 +67,11 @@ impl RpcWorker for NodejsWorkerFarm {
     ctx: &PluginContext,
     plugin: &PluginNode,
   ) -> anyhow::Result<Box<dyn BundlerPlugin>> {
-    Ok(Box::new(NodejsRpcBundlerPlugin::new(ctx, plugin)?))
+    Ok(Box::new(NodejsRpcBundlerPlugin::new(
+      self.workers.clone(),
+      ctx,
+      plugin,
+    )?))
   }
 
   fn create_compressor(
@@ -75,7 +79,11 @@ impl RpcWorker for NodejsWorkerFarm {
     ctx: &PluginContext,
     plugin: &PluginNode,
   ) -> anyhow::Result<Box<dyn CompressorPlugin>> {
-    Ok(Box::new(NodejsRpcCompressorPlugin::new(ctx, plugin)?))
+    Ok(Box::new(NodejsRpcCompressorPlugin::new(
+      self.workers.clone(),
+      ctx,
+      plugin,
+    )?))
   }
 
   fn create_namer(
@@ -83,7 +91,11 @@ impl RpcWorker for NodejsWorkerFarm {
     ctx: &PluginContext,
     plugin: &PluginNode,
   ) -> anyhow::Result<Box<dyn NamerPlugin>> {
-    Ok(Box::new(NodejsRpcNamerPlugin::new(ctx, plugin)?))
+    Ok(Box::new(NodejsRpcNamerPlugin::new(
+      self.workers.clone(),
+      ctx,
+      plugin,
+    )?))
   }
 
   fn create_optimizer(
@@ -91,7 +103,11 @@ impl RpcWorker for NodejsWorkerFarm {
     ctx: &PluginContext,
     plugin: &PluginNode,
   ) -> anyhow::Result<Box<dyn OptimizerPlugin>> {
-    Ok(Box::new(NodejsRpcOptimizerPlugin::new(ctx, plugin)?))
+    Ok(Box::new(NodejsRpcOptimizerPlugin::new(
+      self.workers.clone(),
+      ctx,
+      plugin,
+    )?))
   }
 
   fn create_packager(
@@ -99,7 +115,11 @@ impl RpcWorker for NodejsWorkerFarm {
     ctx: &PluginContext,
     plugin: &PluginNode,
   ) -> anyhow::Result<Box<dyn PackagerPlugin>> {
-    Ok(Box::new(NodejsRpcPackagerPlugin::new(ctx, plugin)?))
+    Ok(Box::new(NodejsRpcPackagerPlugin::new(
+      self.workers.clone(),
+      ctx,
+      plugin,
+    )?))
   }
 
   fn create_reporter(
@@ -107,7 +127,11 @@ impl RpcWorker for NodejsWorkerFarm {
     ctx: &PluginContext,
     plugin: &PluginNode,
   ) -> anyhow::Result<Box<dyn ReporterPlugin>> {
-    Ok(Box::new(NodejsRpcReporterPlugin::new(ctx, plugin)?))
+    Ok(Box::new(NodejsRpcReporterPlugin::new(
+      self.workers.clone(),
+      ctx,
+      plugin,
+    )?))
   }
 
   fn create_runtime(
@@ -115,7 +139,11 @@ impl RpcWorker for NodejsWorkerFarm {
     ctx: &PluginContext,
     plugin: &PluginNode,
   ) -> anyhow::Result<Box<dyn RuntimePlugin>> {
-    Ok(Box::new(NodejsRpcRuntimePlugin::new(ctx, plugin)?))
+    Ok(Box::new(NodejsRpcRuntimePlugin::new(
+      self.workers.clone(),
+      ctx,
+      plugin,
+    )?))
   }
 }
 

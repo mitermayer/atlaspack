@@ -68,7 +68,14 @@ pub fn get_events_since(
   vcs_state_snapshot: JsUnknown,
   new_rev: Option<String>,
 ) -> napi::Result<JsObject> {
-  let vcs_state = env.from_js_value::<VCSState, _>(vcs_state_snapshot)?;
+  let vcs_state = env
+    .from_js_value::<VCSState, _>(vcs_state_snapshot)
+    .map_err(|err| {
+      napi::Error::new(
+        napi::Status::InvalidArg,
+        format!("Failed to deserialize VCSState from JS: {err}"),
+      )
+    })?;
 
   run_in_background(env, move || {
     let repo_path = Path::new(&repo_path);

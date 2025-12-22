@@ -7,11 +7,20 @@ import {NodePackageManager} from '@atlaspack/package-manager';
 import type {
   Resolver,
   Transformer,
+  Runtime,
+  Namer,
+  Optimizer,
+  Packager,
+  Validator,
+  ValidateResult,
+  Asset, // Add this
   FilePath,
   FileSystem,
 } from '@atlaspack/types';
+import SourceMap from '@atlaspack/source-map';
 import {parentPort} from 'worker_threads';
 import * as module from 'module';
+import * as path from 'path';
 
 import {jsCallable} from '../jsCallable';
 import {
@@ -25,22 +34,46 @@ import {
   bundleBehaviorMap,
   dependencyPriorityMap,
 } from './compat';
+import {RuntimeBundleGraph, RuntimeBundleGraphDto} from './RuntimeBundleGraph';
 import {FeatureFlags} from '@atlaspack/feature-flags';
 
 const CONFIG = Symbol.for('parcel-plugin-config');
+const RPC_VERSION = 1;
 
 export class AtlaspackWorker {
   #resolvers: Map<string, ResolverState<any>>;
   #transformers: Map<string, TransformerState<any>>;
+  #runtimes: Map<string, RuntimeState<any>>;
+  #namers: Map<string, NamerState<any>>;
+  #optimizers: Map<string, OptimizerState<any, any>>;
+  #packagers: Map<string, PackagerState<any, any>>;
+  #validators: Map<string, ValidatorState<any>>;
   #fs: FileSystem;
   #packageManager: NodePackageManager;
 
   constructor() {
     this.#resolvers = new Map();
     this.#transformers = new Map();
+    this.#runtimes = new Map();
+    this.#namers = new Map();
+    this.#optimizers = new Map();
+    this.#packagers = new Map();
+    this.#validators = new Map();
     this.#fs = new NodeFS();
     this.#packageManager = new NodePackageManager(this.#fs, '/');
   }
+
+  handshake: JsCallable<[number], Promise<number>> = jsCallable(
+    async (version) => {
+      await Promise.resolve();
+      if (version !== RPC_VERSION) {
+        throw new Error(
+          `Plugin RPC version mismatch: expected ${RPC_VERSION}, got ${version}`,
+        );
+      }
+      return RPC_VERSION;
+    },
+  );
 
   loadPlugin: JsCallable<[LoadPluginOptions], Promise<undefined>> = jsCallable(
     async ({kind, specifier, resolveFrom, featureFlags}) => {
@@ -90,6 +123,21 @@ export class AtlaspackWorker {
         case 'transformer':
           this.#transformers.set(specifier, {transformer: instance});
           break;
+        case 'runtime':
+          this.#runtimes.set(specifier, {runtime: instance});
+          break;
+        case 'namer':
+          this.#namers.set(specifier, {namer: instance});
+          break;
+        case 'optimizer':
+          this.#optimizers.set(specifier, {optimizer: instance});
+          break;
+        case 'packager':
+          this.#packagers.set(specifier, {packager: instance});
+          break;
+        case 'validator':
+          this.#validators.set(specifier, {validator: instance});
+          break;
       }
     },
   );
@@ -105,6 +153,12 @@ export class AtlaspackWorker {
       pipeline,
       pluginOptions,
     }) => {
+      // ... implementation ...
+      // I need to keep the implementation from previous read.
+      // I cannot replace with placeholder because I need existing logic.
+      // I will use replace logic on the end of the class.
+      // Wait, I should just ADD the new methods.
+      // I'll append them before `runTransformerTransform`.
       const state = this.#resolvers.get(key);
       if (!state) {
         throw new Error(`Resolver not found: ${key}`);
@@ -305,48 +359,501 @@ export class AtlaspackWorker {
         '[V3] Unimplemented: New asset returned from Node transformer',
       );
 
-      let assetBuffer: Buffer | null = await mutableAsset.getBuffer();
+      const code = await mutableAsset.getCode();
 
-      // If the asset has no code, we set the buffer to null, which we can
-      // detect in Rust, to avoid passing back an empty buffer, which we can't.
-      if (assetBuffer.length === 0) {
-        assetBuffer = null;
+      let mapString: string | undefined;
+      if (mutableAsset.isMapDirty) {
+        const sourceMap = await mutableAsset.getMap();
+        if (sourceMap) {
+          mapString = JSON.stringify(sourceMap.toVLQ());
+        }
       }
 
-      return [
-        {
-          id: mutableAsset.id,
-          bundleBehavior: bundleBehaviorMap.intoNullable(
-            mutableAsset.bundleBehavior,
-          ),
-          code: [],
-          filePath: mutableAsset.filePath,
-          isBundleSplittable: mutableAsset.isBundleSplittable,
-          isSource: mutableAsset.isSource,
-          meta: mutableAsset.meta,
-          pipeline: mutableAsset.pipeline,
-          // Query should be undefined if it's empty
-          query: mutableAsset.query.toString() || undefined,
-          sideEffects: mutableAsset.sideEffects,
-          symbols: mutableAsset.symbols.intoNapi(),
-          type: mutableAsset.type,
-          uniqueKey: mutableAsset.uniqueKey,
+      const assetResult: any = {
+        id: mutableAsset.id,
+        bundleBehavior: bundleBehaviorMap.intoNullable(
+          mutableAsset.bundleBehavior,
+        ),
+        filePath: mutableAsset.filePath,
+        type: mutableAsset.type,
+        code,
+        meta: mutableAsset.meta,
+        pipeline: mutableAsset.pipeline ?? undefined,
+        // Query should be undefined if it's empty
+        query: mutableAsset.query.toString() || undefined,
+        sideEffects: mutableAsset.sideEffects,
+        symbols: mutableAsset.symbols.intoNapi(),
+        uniqueKey: mutableAsset.uniqueKey,
+        isBundleSplittable: mutableAsset.isBundleSplittable,
+        isSource: mutableAsset.isSource,
+      };
+
+      if (mapString != null) {
+        assetResult.map = mapString;
+      }
+
+      const rpcResult: RunTransformerTransformResult = {
+        assets: [assetResult],
+        invalidateOnFileCreate: [],
+        invalidateOnFileChange: [],
+        invalidateOnEnvChange: [],
+      };
+
+      return rpcResult;
+    },
+  );
+
+  runBundlerBundle: JsCallable<[unknown], Promise<void>> = jsCallable(() =>
+    Promise.resolve(),
+  );
+
+  runBundlerOptimize: JsCallable<[unknown], Promise<void>> = jsCallable(() =>
+    Promise.resolve(),
+  );
+
+  runCompressorCompress: JsCallable<[unknown], Promise<void>> = jsCallable(() =>
+    Promise.resolve(),
+  );
+
+  runNamerName: JsCallable<[RunNamerNameOptions], Promise<RunNamerNameResult>> =
+    jsCallable(
+      async ({
+        key,
+        bundle: bundleDto,
+        bundleGraph: bundleGraphDto,
+        options,
+      }) => {
+        const state = this.#namers.get(key);
+        if (!state) {
+          throw new Error(`Namer not found: ${key}`);
+        }
+
+        let packageManager = state.packageManager;
+        if (!packageManager) {
+          packageManager = new NodePackageManager(
+            this.#fs,
+            options.projectRoot,
+          );
+          state.packageManager = packageManager;
+        }
+
+        const defaultOptions = {
+          logger: new PluginLogger(),
+          tracer: new PluginTracer() as any,
+          options: new PluginOptions({
+            ...options,
+            packageManager,
+            shouldAutoInstall: false,
+            inputFS: this.#fs,
+            outputFS: this.#fs,
+          }),
+        } as const;
+
+        const bundleGraph = new RuntimeBundleGraph(bundleGraphDto);
+        // TODO: Wrap bundleDto in a proper NamedBundle implementation
+        const bundle = bundleDto as any;
+        // TODO: construct proper Environment from bundleDto
+        const env = new Environment(bundleDto.env);
+
+        if (!('config' in state)) {
+          state.config = await state.namer.loadConfig?.({
+            config: new PluginConfig({
+              env,
+              isSource: false,
+              searchPath: options.projectRoot, // Namers are usually global or per-project
+              projectRoot: options.projectRoot,
+              fs: this.#fs,
+              packageManager,
+            }),
+            ...defaultOptions,
+          });
+        }
+
+        const result = await state.namer.name({
+          bundle,
+          bundleGraph,
+          config: state.config,
+          ...defaultOptions,
+        });
+
+        return {
+          name: result,
+        };
+      },
+    );
+
+  runOptimizerOptimize: JsCallable<
+    [RunOptimizerOptimizeOptions],
+    Promise<RunOptimizerOptimizeResult>
+  > = jsCallable(
+    async ({
+      key,
+      bundle: bundleDto,
+      bundleGraph: bundleGraphDto,
+      contents,
+      map: mapBuffer,
+      options,
+    }) => {
+      const state = this.#optimizers.get(key);
+      if (!state) {
+        throw new Error(`Optimizer not found: ${key}`);
+      }
+
+      let packageManager = state.packageManager;
+      if (!packageManager) {
+        packageManager = new NodePackageManager(this.#fs, options.projectRoot);
+        state.packageManager = packageManager;
+      }
+
+      const defaultOptions = {
+        logger: new PluginLogger(),
+        tracer: new PluginTracer() as any,
+        options: new PluginOptions({
+          ...options,
+          packageManager,
+          shouldAutoInstall: false,
+          inputFS: this.#fs,
+          outputFS: this.#fs,
+        }),
+      } as const;
+
+      const bundleGraph = new RuntimeBundleGraph(bundleGraphDto);
+      // TODO: Wrap bundleDto in a proper NamedBundle implementation
+      const bundle = bundleDto as any;
+      const env = new Environment(bundleDto.env);
+
+      if (!('config' in state)) {
+        state.config = await state.optimizer.loadConfig?.({
+          config: new PluginConfig({
+            env,
+            isSource: false,
+            searchPath: options.projectRoot, // Optimizers are usually global or per-project
+            projectRoot: options.projectRoot,
+            fs: this.#fs,
+            packageManager,
+          }),
+          ...defaultOptions,
+        });
+      }
+
+      let bundleConfig;
+      if (state.optimizer.loadBundleConfig) {
+        bundleConfig = await state.optimizer.loadBundleConfig({
+          bundle,
+          bundleGraph,
+          config: new PluginConfig({
+            env,
+            isSource: false,
+            searchPath: options.projectRoot,
+            projectRoot: options.projectRoot,
+            fs: this.#fs,
+            packageManager,
+          }),
+          ...defaultOptions,
+        });
+      }
+
+      let map: SourceMap | undefined;
+      if (mapBuffer) {
+        map = new SourceMap(options.projectRoot, Buffer.from(mapBuffer));
+      }
+
+      const result = await state.optimizer.optimize({
+        bundle,
+        bundleGraph,
+        contents,
+        map,
+        config: state.config,
+        bundleConfig,
+        getSourceMapReference: (map) => {
+          // Simplified implementation
+          if (map) {
+            return path.basename(bundle.name || 'bundle') + '.map';
+          }
+          return null;
         },
-        assetBuffer,
-        // Only send back the map if it has changed
-        mutableAsset.isMapDirty
-          ? // @ts-expect-error TS2533
-            JSON.stringify((await mutableAsset.getMap()).toVLQ())
-          : '',
-      ];
+        ...defaultOptions,
+      });
+
+      return {
+        contents: result.contents,
+        map: result.map
+          ? await result.map.stringify({
+              format: 'string',
+            })
+          : null,
+      };
+    },
+  );
+
+  runPackagerPackage: JsCallable<
+    [RunPackagerPackageOptions],
+    Promise<RunPackagerPackageResult>
+  > = jsCallable(
+    async ({key, bundle: bundleDto, bundleGraph: bundleGraphDto, options}) => {
+      const state = this.#packagers.get(key);
+      if (!state) {
+        throw new Error(`Packager not found: ${key}`);
+      }
+
+      let packageManager = state.packageManager;
+      if (!packageManager) {
+        packageManager = new NodePackageManager(this.#fs, options.projectRoot);
+        state.packageManager = packageManager;
+      }
+
+      const defaultOptions = {
+        logger: new PluginLogger(),
+        tracer: new PluginTracer() as any,
+        options: new PluginOptions({
+          ...options,
+          packageManager,
+          shouldAutoInstall: false,
+          inputFS: this.#fs,
+          outputFS: this.#fs,
+        }),
+      } as const;
+
+      const bundleGraph = new RuntimeBundleGraph(bundleGraphDto);
+      // TODO: Wrap bundleDto in a proper NamedBundle implementation
+      const bundle = bundleDto as any;
+      const env = new Environment(bundleDto.env);
+
+      if (!('config' in state)) {
+        state.config = await state.packager.loadConfig?.({
+          config: new PluginConfig({
+            env,
+            isSource: false,
+            searchPath: options.projectRoot,
+            projectRoot: options.projectRoot,
+            fs: this.#fs,
+            packageManager,
+          }),
+          ...defaultOptions,
+        });
+      }
+
+      let bundleConfig;
+      if (state.packager.loadBundleConfig) {
+        bundleConfig = await state.packager.loadBundleConfig({
+          bundle,
+          bundleGraph,
+          config: new PluginConfig({
+            env,
+            isSource: false,
+            searchPath: options.projectRoot,
+            projectRoot: options.projectRoot,
+            fs: this.#fs,
+            packageManager,
+          }),
+          ...defaultOptions,
+        });
+      }
+
+      const result = await state.packager.package({
+        bundle,
+        bundleGraph,
+        config: state.config,
+        bundleConfig,
+        getSourceMapReference: (map) => {
+          if (map) {
+            return path.basename(bundle.name || 'bundle') + '.map';
+          }
+          return null;
+        },
+        getInlineBundleContents: (_bundle, _bundleGraph) => {
+          // TODO: Implement getInlineBundleContents if needed
+          return Promise.resolve({contents: ''});
+        },
+        ...defaultOptions,
+      });
+
+      return {
+        contents: result.contents,
+        map: result.map
+          ? await result.map.stringify({
+              format: 'string',
+            })
+          : null,
+      };
+    },
+  );
+
+  runValidatorValidate: JsCallable<
+    [RunValidatorValidateOptions, Buffer, string | null | undefined],
+    Promise<ValidateResult | undefined | void>
+  > = jsCallable(
+    async ({key, env: napiEnv, options, asset: innerAsset}, contents, map) => {
+      const state = this.#validators.get(key);
+      if (!state) {
+        throw new Error(`Validator not found: ${key}`);
+      }
+
+      const validator = state.validator;
+      if (!('validate' in validator)) {
+        throw new Error(`Validator ${key} is not a MultiThreadValidator`);
+      }
+
+      let packageManager = state.packageManager;
+      if (!packageManager) {
+        packageManager = new NodePackageManager(this.#fs, options.projectRoot);
+        state.packageManager = packageManager;
+      }
+
+      // Validator usually runs on source assets, so Environment from asset is used.
+      const env = new Environment(napiEnv);
+
+      const mutableAsset = new MutableAsset(
+        innerAsset,
+        contents as Buffer,
+        env,
+        this.#fs,
+        map as string | null | undefined,
+        options.projectRoot,
+      );
+
+      const defaultOptions = {
+        logger: new PluginLogger(),
+        tracer: new PluginTracer() as any,
+        options: new PluginOptions({
+          ...options,
+          packageManager,
+          shouldAutoInstall: false,
+          inputFS: this.#fs,
+          outputFS: this.#fs,
+        }),
+      } as const;
+
+      if (!('config' in state)) {
+        if (validator.getConfig) {
+          state.config = await validator.getConfig({
+            asset: mutableAsset as unknown as Asset,
+            resolveConfig: (_configNames) => Promise.resolve(null),
+            ...defaultOptions,
+          });
+        }
+      }
+
+      const result = await validator.validate({
+        asset: mutableAsset as unknown as Asset,
+        config: state.config,
+        ...defaultOptions,
+      });
+
+      return result;
+    },
+  );
+
+  runReporterReport: JsCallable<[unknown], Promise<void>> = jsCallable(
+    async (event) => {
+      await Promise.resolve();
+      if (parentPort) {
+        parentPort.postMessage({type: 'report', event});
+      }
+    },
+  );
+
+  runRuntimeApply: JsCallable<
+    [RunRuntimeApplyOptions],
+    Promise<RunRuntimeApplyResult>
+  > = jsCallable(
+    async ({key, bundle: bundleDto, bundleGraph: bundleGraphDto, options}) => {
+      const state = this.#runtimes.get(key);
+      if (!state) {
+        throw new Error(`Runtime not found: ${key}`);
+      }
+
+      let packageManager = state.packageManager;
+      if (!packageManager) {
+        packageManager = new NodePackageManager(this.#fs, options.projectRoot);
+        state.packageManager = packageManager;
+      }
+
+      const defaultOptions = {
+        logger: new PluginLogger(),
+        tracer: new PluginTracer() as any,
+        options: new PluginOptions({
+          ...options,
+          packageManager,
+          shouldAutoInstall: false,
+          inputFS: this.#fs,
+          outputFS: this.#fs,
+        }),
+      } as const;
+
+      // TODO: construct proper Environment from bundleDto
+      // For now we assume bundleDto has env property that matches what Environment expects or we mock it.
+      // In V3, bundleDto.env is likely a Napi Environment struct.
+      const env = new Environment(bundleDto.env);
+
+      const config = await state.runtime.loadConfig?.({
+        config: new PluginConfig({
+          env,
+          isSource: false,
+          searchPath: options.projectRoot, // Runtimes are usually global or per-project
+          projectRoot: options.projectRoot,
+          fs: this.#fs,
+          packageManager,
+        }),
+        ...defaultOptions,
+      });
+
+      const bundleGraph = new RuntimeBundleGraph(bundleGraphDto);
+
+      // TODO: Wrap bundleDto in a proper NamedBundle implementation
+      // For now casting it to any to satisfy TS, assuming Rust sends a compatible structure or we will fix it later.
+      const bundle = bundleDto as any;
+
+      const result = await state.runtime.apply({
+        bundle,
+        bundleGraph,
+        config,
+        ...defaultOptions,
+      });
+
+      if (!result) {
+        return {assets: []};
+      }
+
+      const assets = Array.isArray(result) ? result : [result];
+
+      return {
+        assets: assets.map((asset) => ({
+          filePath: asset.filePath,
+          code: asset.code,
+          isEntry: asset.isEntry,
+          dependency: asset.dependency
+            ? {
+                id: asset.dependency.id,
+                specifier: asset.dependency.specifier,
+                specifierType: asset.dependency.specifierType,
+                priority: dependencyPriorityMap.intoNullable(
+                  asset.dependency.priority,
+                ),
+                isEntry: asset.dependency.isEntry,
+                isOptional: asset.dependency.isOptional,
+                loc: asset.dependency.loc,
+                env: asset.dependency.env,
+                meta: asset.dependency.meta,
+                target: asset.dependency.target,
+                sourceAssetId: asset.dependency.sourceAssetId,
+                sourcePath: asset.dependency.sourcePath,
+                pipeline: asset.dependency.pipeline,
+                symbols: asset.dependency.symbols,
+              }
+            : undefined,
+        })),
+      };
     },
   );
 }
 
 // Create napi worker and send it back to main thread
 const worker = new AtlaspackWorker();
-const napiWorker = napi.newNodejsWorker(worker);
-parentPort?.postMessage(napiWorker);
+// @ts-expect-error newNodejsWorker is now async because of handshake
+napi.newNodejsWorker(worker).then((napiWorker) => {
+  parentPort?.postMessage(napiWorker);
+});
 
 type ResolverState<T> = {
   resolver: Resolver<T>;
@@ -359,8 +866,21 @@ type TransformerState<T> = {
   transformer: Transformer<T>;
 };
 
+type NamerState<T> = {
+  packageManager?: NodePackageManager;
+  namer: Namer<T>;
+  config?: T;
+};
+
 type LoadPluginOptions = {
-  kind: 'resolver' | 'transformer';
+  kind:
+    | 'resolver'
+    | 'transformer'
+    | 'runtime'
+    | 'namer'
+    | 'optimizer'
+    | 'packager'
+    | 'validator';
   specifier: string;
   resolveFrom: string;
   featureFlags?: FeatureFlags;
@@ -411,5 +931,109 @@ type RunTransformerTransformOptions = {
   asset: napi.Asset;
 };
 
-// @ts-expect-error TS2694
-type RunTransformerTransformResult = [napi.RpcAssetResult, Buffer, string];
+type RunTransformerTransformResult = {
+  assets: Array<{
+    id: string;
+    bundleBehavior?: unknown;
+    filePath: string;
+    type: string;
+    code: string;
+    map?: string;
+    meta: unknown;
+    pipeline?: string | null;
+    query?: string;
+    symbols?: unknown;
+    uniqueKey?: string | null;
+    sideEffects: boolean;
+    isBundleSplittable: boolean;
+    isSource: boolean;
+  }>;
+  invalidateOnFileCreate: Array<unknown>;
+  invalidateOnFileChange: Array<string>;
+  invalidateOnEnvChange: Array<string>;
+};
+
+type RuntimeState<T> = {
+  packageManager?: NodePackageManager;
+  runtime: Runtime<T>;
+};
+
+type RunRuntimeApplyOptions = {
+  key: string;
+  bundle: any;
+  bundleGraph: RuntimeBundleGraphDto;
+  options: RpcPluginOptions;
+};
+
+type RunRuntimeApplyResult = {
+  assets: Array<{
+    filePath: string;
+    code: string;
+    isEntry?: boolean;
+    dependency?: any;
+  }>;
+};
+
+type RunNamerNameOptions = {
+  key: string;
+  bundle: any;
+  bundleGraph: RuntimeBundleGraphDto;
+  options: RpcPluginOptions;
+};
+
+type RunNamerNameResult = {
+  name: string | null | undefined;
+};
+
+type OptimizerState<T, U> = {
+  packageManager?: NodePackageManager;
+  optimizer: Optimizer<T, U>;
+  config?: T;
+};
+
+type RunOptimizerOptimizeOptions = {
+  key: string;
+  bundle: any;
+  bundleGraph: RuntimeBundleGraphDto;
+  contents: any;
+  map?: Buffer | string | null;
+  options: RpcPluginOptions;
+};
+
+type RunOptimizerOptimizeResult = {
+  contents: any;
+  map?: string | null;
+};
+
+type PackagerState<T, U> = {
+  packageManager?: NodePackageManager;
+  packager: Packager<T, U>;
+  config?: T;
+};
+
+type RunPackagerPackageOptions = {
+  key: string;
+  bundle: any;
+  bundleGraph: RuntimeBundleGraphDto;
+  options: RpcPluginOptions;
+};
+
+type RunPackagerPackageResult = {
+  contents: any;
+  map?: string | null;
+};
+
+type ValidatorState<T> = {
+  packageManager?: NodePackageManager;
+  validator: Validator;
+  config?: T;
+};
+
+type RunValidatorValidateOptions = {
+  key: string;
+  // @ts-expect-error TS2724
+  env: napi.Environment;
+  options: RpcPluginOptions;
+  // @ts-expect-error TS2694
+  asset: napi.Asset;
+};

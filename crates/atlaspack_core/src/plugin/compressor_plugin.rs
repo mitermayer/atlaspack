@@ -1,7 +1,9 @@
 use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use std::fs::File;
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct CompressedFile {
   /// An optional file extension appended to the output file
   ///
@@ -10,10 +12,11 @@ pub struct CompressedFile {
   pub extension: Option<String>,
 
   /// The compressed file
-  pub file: File,
+  pub contents: Vec<u8>,
 }
 
 /// Compresses the input file stream
+///
 
 #[async_trait]
 pub trait CompressorPlugin: Debug + Send + Sync {

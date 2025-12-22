@@ -1,0 +1,20 @@
+This is a test text file for the inline transformer.
+
+The inline transformer should convert this content into a JavaScript
+module that exports the content as a string.
+
+This allows text files to be imported directly into JavaScript code
+and inlined as strings rather than being treated as separate assets.
+
+Special characters: !@#$%^&*()_+-=[]{}|;':",./<>?
+
+Numbers: 1234567890
+
+Unicode: 🚀 🎉 ✨
+
+Multi-line content:
+Line 1
+Line 2
+Line 3
+
+End of file.

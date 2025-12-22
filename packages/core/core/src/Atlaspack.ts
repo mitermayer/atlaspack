@@ -8,6 +8,7 @@ import type {
   AtlaspackTransformOptions,
   AtlaspackResolveOptions,
   AtlaspackResolveResult,
+  ReporterEvent,
 } from '@atlaspack/types';
 import path from 'path';
 import type {AtlaspackOptions} from './types';
@@ -126,10 +127,100 @@ export default class Atlaspack {
       return;
     }
 
-    const featureFlags = {
+    // Process ATLASPACK_ENGINE environment variable with proper precedence
+    let featureFlags = {
       ...DEFAULT_FEATURE_FLAGS,
       ...this.#initialOptions.featureFlags,
     } as const;
+
+    // ATLASPACK_ENGINE environment variable processing
+    // Precedence: CLI options > environment > defaults
+    if (process.env.ATLASPACK_ENGINE) {
+      const engine = process.env.ATLASPACK_ENGINE.toLowerCase();
+      let envRustEngineEnabled: boolean | undefined;
+      let envRustEngineDualRun: boolean | undefined;
+
+      switch (engine) {
+        case 'rust':
+          envRustEngineEnabled = true;
+          envRustEngineDualRun = false;
+          break;
+        case 'dual':
+          envRustEngineEnabled = true;
+          envRustEngineDualRun = true;
+          break;
+        case 'js':
+          envRustEngineEnabled = false;
+          envRustEngineDualRun = false;
+          break;
+        default:
+          // Warn about invalid engine value but continue with defaults
+          logger.warn({
+            origin: '@atlaspack/core',
+            message: `Invalid ATLASPACK_ENGINE value: "${engine}". Valid values are: js, rust, dual. Using default configuration.`,
+          });
+          break;
+      }
+
+      // Apply environment values only if not overridden by CLI
+      if (
+        envRustEngineEnabled !== undefined &&
+        this.#initialOptions.featureFlags?.rustEngineEnabled === undefined
+      ) {
+        featureFlags = {
+          ...featureFlags,
+          rustEngineEnabled: envRustEngineEnabled,
+        } as const;
+      }
+
+      if (
+        envRustEngineDualRun !== undefined &&
+        this.#initialOptions.featureFlags?.rustEngineDualRun === undefined
+      ) {
+        featureFlags = {
+          ...featureFlags,
+          rustEngineDualRun: envRustEngineDualRun,
+        } as const;
+      }
+    }
+
+    // Process Force JS Fallback
+    // Precedence: Env var > Feature Flag
+    let forceJsFallback =
+      process.env.ATLASPACK_ENGINE_FORCE_JS_FALLBACK === 'true';
+
+    if (!forceJsFallback && featureFlags.rustEngineForceJsFallback) {
+      forceJsFallback = true;
+    }
+
+    if (forceJsFallback) {
+      featureFlags = {
+        ...featureFlags,
+        rustEngineEnabled: false,
+        rustEngineDualRun: false,
+        atlaspackV3: false,
+      } as const;
+
+      if (
+        process.env.ATLASPACK_ENGINE &&
+        process.env.ATLASPACK_ENGINE !== 'js'
+      ) {
+        logger.warn({
+          origin: '@atlaspack/core',
+          message: `Rust engine disabled by fallback mechanism (ATLASPACK_ENGINE_FORCE_JS_FALLBACK or rustEngineForceJsFallback flag).`,
+        });
+      }
+    } else {
+      // Bridge rustEngineEnabled to atlaspackV3
+      // If rustEngineEnabled is true, enable atlaspackV3
+      if (featureFlags.rustEngineEnabled) {
+        featureFlags = {
+          ...featureFlags,
+          atlaspackV3: true,
+        } as const;
+      }
+    }
+
     setFeatureFlags(featureFlags);
 
     loadRustWorkerThreadDylibHack();
@@ -139,24 +230,32 @@ export default class Atlaspack {
 
     this.#disposable = new Disposable();
 
-    try {
-      initializeMonitoring?.();
+    initializeMonitoring?.({
+      onTrace: (event: string) => {
+        if (
+          tracer.enabled &&
+          (event.includes('"name":"build_asset_graph"') ||
+            event.includes('"name":"PipelineScheduler::execute"'))
+        ) {
+          try {
+            tracer.trace(JSON.parse(event));
+          } catch (e) {
+            // ignore
+          }
+        }
+      },
+    });
 
-      const onExit = () => {
-        closeMonitoring?.();
-      };
+    const onExit = () => {
+      closeMonitoring?.();
+    };
 
-      process.on('exit', onExit);
+    process.on('exit', onExit);
 
-      this.#disposable.add(() => {
-        process.off('exit', onExit);
-        onExit();
-      });
-    } catch (e: any) {
-      // Fallthrough
-      // eslint-disable-next-line no-console
-      console.warn(e);
-    }
+    this.#disposable.add(() => {
+      process.off('exit', onExit);
+      onExit();
+    });
 
     let resolvedOptions: AtlaspackOptions = await resolveOptions({
       ...this.#initialOptions,
@@ -166,14 +265,28 @@ export default class Atlaspack {
 
     let rustAtlaspack: AtlaspackV3;
     if (resolvedOptions.featureFlags.atlaspackV3) {
+      // Use resolved options as the source of truth for the Rust engine.
+      // This ensures entries, projectRoot, and related paths are consistent
+      // with the JS engine configuration.
       // eslint-disable-next-line no-unused-vars
-      let {entries, inputFS, outputFS, ...options} = this.#initialOptions;
+      let {
+        entries,
+        inputFS,
+        outputFS,
+        cache,
+        env,
+        defaultTargetOptions,
+        serveOptions,
+        featureFlags,
+        projectRoot,
+        ...options
+      } = resolvedOptions;
 
-      if (!(resolvedOptions.cache instanceof LMDBLiteCache)) {
+      if (!(cache instanceof LMDBLiteCache)) {
         throw new Error('Atlaspack v3 must be run with lmdb lite cache');
       }
 
-      const lmdb: Lmdb = resolvedOptions.cache.getNativeRef();
+      const lmdb: Lmdb = cache.getNativeRef();
 
       const version = require('../package.json').version;
       await lmdb.put('current_session_version', Buffer.from(version));
@@ -185,23 +298,41 @@ export default class Atlaspack {
         threads = 2;
       }
 
+      const entriesForRust = entries.map((entry) =>
+        fromProjectPath(projectRoot, entry),
+      );
+
       rustAtlaspack = await AtlaspackV3.create({
         ...options,
         // @ts-expect-error TS2353
         corePath: path.join(__dirname, '..'),
         threads,
-        entries: Array.isArray(entries)
-          ? entries
-          : entries == null
-            ? undefined
-            : [entries],
-        env: resolvedOptions.env,
-        fs: inputFS && new FileSystemV3(inputFS),
-        defaultTargetOptions: resolvedOptions.defaultTargetOptions,
-        serveOptions: resolvedOptions.serveOptions,
+        // Provide entries relative to the current working directory,
+        // matching the Rust engine's expectation and CLI behaviour.
+        entries: entriesForRust,
+        env,
+        // Only provide a custom filesystem to the Rust engine when the caller
+        // explicitly supplied one. Otherwise, let the Rust engine use its
+        // own OS-based filesystem to avoid mismatches in entry resolution.
+        fs:
+          this.#initialOptions.inputFS &&
+          new FileSystemV3(this.#initialOptions.inputFS),
+        defaultTargetOptions,
+        serveOptions,
         lmdb,
-        featureFlags: resolvedOptions.featureFlags,
+        featureFlags,
       });
+
+      rustAtlaspack.on('report', (event: ReporterEvent) => {
+        if (event.type === 'trace') {
+          if (resolvedOptions.shouldTrace) {
+            tracer.trace(event);
+          }
+        } else {
+          this.#reporterRunner.report(event);
+        }
+      });
+
       this.#disposable.add(() => {
         rustAtlaspack.end();
       });
@@ -212,31 +343,53 @@ export default class Atlaspack {
     let {config} = await loadAtlaspackConfig(resolvedOptions);
     this.#config = new AtlaspackConfig(config, resolvedOptions);
 
-    if (this.#initialOptions.workerFarm) {
+    let ownsWorkerFarm = false;
+
+    if (this.#initialOptions.workerFarm instanceof WorkerFarm) {
       if (this.#initialOptions.workerFarm.ending) {
         throw new Error('Supplied WorkerFarm is ending');
       }
+
       this.#farm = this.#initialOptions.workerFarm;
     } else {
+      // Treat a plain workerFarm value as farm options and create the farm ourselves.
+      let workerFarmOptions = (this.#initialOptions.workerFarm ??
+        {}) as Partial<FarmOptions>;
+
       this.#farm = createWorkerFarm({
         shouldPatchConsole: resolvedOptions.shouldPatchConsole,
         shouldTrace: resolvedOptions.shouldTrace,
+        ...workerFarmOptions,
       });
+      ownsWorkerFarm = true;
     }
 
     await resolvedOptions.cache.ensure();
 
-    let {dispose: disposeOptions, ref: optionsRef} =
-      await this.#farm.createSharedReference(resolvedOptions, false);
+    // Provide a minimal createSharedReference for farms that do not expose it (e.g. rust/local worker path).
+    if (typeof (this.#farm as any).createSharedReference !== 'function') {
+      (this.#farm as any).createSharedReference = (value: any) =>
+        Promise.resolve({
+          dispose: () => {},
+          ref: value,
+        });
+    }
+    if (typeof (this.#farm as any).callAllWorkers !== 'function') {
+      (this.#farm as any).callAllWorkers = () => Promise.resolve();
+    }
+
+    let {dispose: disposeOptions, ref: optionsRef} = await (
+      this.#farm as any
+    ).createSharedReference(resolvedOptions, false);
     this.#optionsRef = optionsRef;
 
-    if (this.#initialOptions.workerFarm) {
+    if (ownsWorkerFarm) {
+      // When Atlaspack created the worker farm, shut it down on dispose.
+      this.#disposable.add(() => this.#farm.end());
+    } else {
       // If we don't own the farm, dispose of only these references when
       // Atlaspack ends.
       this.#disposable.add(disposeOptions);
-    } else {
-      // Otherwise, when shutting down, end the entire farm we created.
-      this.#disposable.add(() => this.#farm.end());
     }
 
     this.#watchEvents = new ValueEmitter();
@@ -266,14 +419,24 @@ export default class Atlaspack {
 
   async run(): Promise<BuildSuccessEvent> {
     let startTime = Date.now();
+    // eslint-disable-next-line no-console
+    console.log('[Atlaspack.run] start');
     if (!this.#initialized) {
       await this._init();
     }
+    // eslint-disable-next-line no-console
+    console.log('[Atlaspack.run] after _init');
 
     let result = await this._build({startTime});
+    // eslint-disable-next-line no-console
+    console.log('[Atlaspack.run] after _build');
 
     await this.#requestTracker.writeToCache();
+    // eslint-disable-next-line no-console
+    console.log('[Atlaspack.run] after writeToCache');
     await this._end();
+    // eslint-disable-next-line no-console
+    console.log('[Atlaspack.run] after _end');
 
     if (result.type === 'buildFailure') {
       throw new BuildError(result.diagnostics);
@@ -538,12 +701,21 @@ export default class Atlaspack {
         throw e;
       }
 
+      // eslint-disable-next-line no-console
+      console.error('[Atlaspack._build] error object', e);
+
       let diagnostic = anyToDiagnostic(e);
       let event = {
         type: 'buildFailure',
         diagnostics: Array.isArray(diagnostic) ? diagnostic : [diagnostic],
         unstable_requestStats: this.#requestTracker.flushStats(),
       };
+
+      // eslint-disable-next-line no-console
+      console.error(
+        '[Atlaspack._build] buildFailure diagnostics',
+        JSON.stringify(event.diagnostics, null, 2),
+      );
 
       // @ts-expect-error TS2345
       await this.#reporterRunner.report(event);

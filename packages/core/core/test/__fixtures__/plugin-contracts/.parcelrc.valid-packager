@@ -1,0 +1,6 @@
+{
+  "extends": "@atlaspack/config-default",
+  "packagers": {
+    "*.js": ["./valid-packager.js", "..."]
+  }
+}

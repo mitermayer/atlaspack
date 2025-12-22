@@ -1,24 +1,29 @@
 use crate::types::Dependency;
 use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 use std::{fmt::Debug, path::PathBuf};
 
 pub mod composite_reporter_plugin;
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct ResolvingEvent {
   pub dependency: Arc<Dependency>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct AssetBuildEvent {
   pub file_path: PathBuf,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum BuildProgressEvent {
   Resolving(ResolvingEvent),
   Building(AssetBuildEvent),
 }
 
 // TODO Flesh these out
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum ReporterEvent {
   BuildStart,
   BuildProgress(BuildProgressEvent),

@@ -1,24 +1,46 @@
+use std::collections::HashMap;
 use std::fmt::Debug;
 use std::path::PathBuf;
 
 use crate::bundle_graph::BundleGraph;
-use crate::types::Bundle;
-use crate::types::Dependency;
+use crate::types::{
+  Bundle, Dependency, Environment, Priority, SourceLocation, SpecifierType, Symbol,
+};
 use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 
+#[derive(Debug, Serialize, Deserialize)]
 pub enum RuntimeAssetPriority {
   Sync,
   Parallel,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct RuntimeAssetDependency {
+  pub specifier: String,
+  pub specifier_type: SpecifierType,
+  pub priority: Priority,
+  pub is_esm: bool,
+  pub loc: Option<SourceLocation>,
+  pub env: Option<Environment>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct RuntimeAssetSymbolData {
+  pub symbols: HashMap<String, Symbol>,
+  pub dependencies: Vec<RuntimeAssetDependency>,
+}
+
 /// A "synthetic" asset that will be inserted into the bundle graph
+#[derive(Debug, Serialize, Deserialize)]
 pub struct RuntimeAsset {
   pub code: String,
   pub dependency: Option<Dependency>,
   pub file_path: PathBuf,
   pub is_entry: Option<bool>,
   pub priority: Option<RuntimeAssetPriority>,
-  // TODO env: Option<EnvironmentOptions>
+  pub env: Option<Environment>,
+  pub symbol_data: Option<RuntimeAssetSymbolData>,
 }
 
 /// Programmatically insert assets into bundles

@@ -1,0 +1,19 @@
+[package]
+name = "atlaspack_plugin_optimizer_css"
+version = "0.1.0"
+edition.workspace = true
+
+[lints]
+workspace = true
+
+[dependencies]
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+atlaspack_core = { path = "../atlaspack_core" }
+lightningcss = { workspace = true, features = ["browserslist", "sourcemap"] }
+parcel_sourcemap_ext = { workspace = true }
+serde = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+tokio = { workspace = true }

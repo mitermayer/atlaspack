@@ -74,7 +74,9 @@ export declare function getEnvironment(id: string): unknown;
 /** Add an environment to the global manager */
 export declare function addEnvironment(environment: unknown): void;
 export declare function getAvailableThreads(): number;
-export declare function initializeMonitoring(): void;
+export declare function initializeMonitoring(
+  options?: object | undefined | null,
+): void;
 export declare function closeMonitoring(): void;
 export declare function getNativeMemoryStats(): NativeMemoryStats | null;
 export declare function resetMemoryTracking(): void;

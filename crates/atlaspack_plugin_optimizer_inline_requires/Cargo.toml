@@ -8,6 +8,9 @@ edition = { workspace = true }
 workspace = true
 
 [dependencies]
+anyhow = { workspace = true }
+async-trait = { workspace = true }
+atlaspack_core = { path = "../atlaspack_core" }
 swc_core = { workspace = true, features = [
     "common",
     "common_sourcemap",

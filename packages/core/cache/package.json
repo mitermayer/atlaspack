@@ -19,6 +19,7 @@
   },
   "scripts": {
     "test": "mocha",
+    "test:compatibility": "node src/cache-cli.js validate",
     "build:lib": "gulp build --gulpfile ../../../gulpfile.js --cwd ."
   },
   "dependencies": {

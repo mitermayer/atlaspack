@@ -25,7 +25,12 @@ pub fn create_asset_id(env: Env, params: JsUnknown) -> napi::Result<String> {
     pipeline,
     query,
     unique_key,
-  } = env.from_js_value(params)?;
+  } = env.from_js_value(params).map_err(|err| {
+    napi::Error::new(
+      napi::Status::InvalidArg,
+      format!("Failed to deserialize AssetIdParams from JS: {err}"),
+    )
+  })?;
 
   let asset_id =
     atlaspack_core::types::create_asset_id(atlaspack_core::types::CreateAssetIdParams {

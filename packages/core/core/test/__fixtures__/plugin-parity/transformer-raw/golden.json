@@ -1,0 +1,5 @@
+{
+  "code": "This is a test text file for the raw transformer.\n\nIt contains multiple lines of text that should be passed through\nwithout any transformation or processing.\n\nThe raw transformer should handle this as a binary/text asset\nand include it in the bundle as-is.\n\nSpecial characters: !@#$%^&*()_+-=[]{}|;':\",./<>?\n\nNumbers: 1234567890\n\nUnicode: 🚀 🎉 ✨\n\nEnd of file.",
+  "dependencies": [],
+  "metadata": {}
+}

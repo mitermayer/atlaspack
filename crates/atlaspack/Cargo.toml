@@ -15,6 +15,13 @@ atlaspack_config = { path = "../atlaspack_config" }
 atlaspack_core = { path = "../atlaspack_core" }
 atlaspack_filesystem = { path = "../atlaspack_filesystem" }
 atlaspack_package_manager = { path = "../atlaspack_package_manager" }
+atlaspack_plugin_bundler_default = { path = "../atlaspack_plugin_bundler_default" }
+atlaspack_plugin_namer_default = { path = "../atlaspack_plugin_namer_default" }
+atlaspack_plugin_optimizer_inline_requires = { path = "../atlaspack_plugin_optimizer_inline_requires" }
+atlaspack_plugin_optimizer_css = { path = "../atlaspack_plugin_optimizer_css" }
+atlaspack_plugin_optimizer_image = { path = "../atlaspack_plugin_optimizer_image" }
+atlaspack_plugin_optimizer_swc = { path = "../atlaspack_plugin_optimizer_swc" }
+atlaspack_plugin_packager_js = { path = "../atlaspack_plugin_packager_js" }
 atlaspack_plugin_resolver = { path = "../atlaspack_plugin_resolver" }
 atlaspack_plugin_transformer_html = { path = "../atlaspack_plugin_transformer_html" }
 atlaspack_plugin_transformer_image = { path = "../atlaspack_plugin_transformer_image" }
@@ -32,17 +39,21 @@ atlaspack_sourcemap = { path = "../atlaspack_sourcemap" }
 atlaspack-resolver = { path = "../../packages/utils/node-resolver-rs" }
 lmdb-js-lite = { path = "../lmdb-js-lite" }
 
+fixedbitset = { workspace = true }
+futures = { workspace = true }
+glob-match = { workspace = true }
 anyhow = { workspace = true }
 async-trait = { workspace = true }
 dyn-hash = { workspace = true }
 indexmap = { workspace = true }
 num_cpus = { workspace = true }
+notify = { workspace = true }
 pathdiff = { workspace = true }
-petgraph = { workspace = true }
+petgraph = { workspace = true, features = ["serde-1"] }
 rand = { workspace = true }
 rayon = { workspace = true }
 regex = { workspace = true }
-serde = { workspace = true, features = ["derive"] }
+serde = { workspace = true, features = ["derive", "rc"] }
 serde-bool = { workspace = true }
 serde_json = { workspace = true }
 tracing = { workspace = true }
@@ -51,7 +62,10 @@ xxhash-rust = { workspace = true, features = ["xxh3"] }
 once_cell = { workspace = true }
 parking_lot = { workspace = true }
 tokio = { workspace = true, features = ["full"] }
+tokio-tungstenite = { workspace = true }
 
 [dev-dependencies]
 mockall = { workspace = true }
 pretty_assertions = { workspace = true }
+futures = "0.3"
+fixedbitset = { workspace = true }

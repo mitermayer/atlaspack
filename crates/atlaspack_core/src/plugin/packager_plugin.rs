@@ -1,20 +1,24 @@
+use crate::asset_graph::AssetGraph;
 use crate::bundle_graph::BundleGraph;
 use crate::types::Bundle;
 use crate::types::SourceMap;
 use async_trait::async_trait;
+use serde::{Deserialize, Serialize};
 use std::fmt::Debug;
 use std::fs::File;
 
 pub struct PackageContext<'a> {
   pub bundle: &'a Bundle,
   pub bundle_graph: &'a BundleGraph,
+  pub asset_graph: &'a AssetGraph,
   pub contents: &'a File, // TODO We may want this to be a String or File later
   pub map: Option<&'a SourceMap>,
   // TODO getSourceMapReference?
 }
 
+#[derive(Debug, Serialize, Deserialize)]
 pub struct PackagedBundle {
-  pub contents: File,
+  pub contents: Vec<u8>,
   // TODO ast, map, type
 }
 

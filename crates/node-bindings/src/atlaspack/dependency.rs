@@ -47,7 +47,12 @@ struct DependencyIdParams {
 
 #[napi]
 fn create_dependency_id(env: Env, params: JsUnknown) -> napi::Result<String> {
-  let params: DependencyIdParams = env.from_js_value(params)?;
+  let params: DependencyIdParams = env.from_js_value(params).map_err(|err| {
+    napi::Error::new(
+      napi::Status::InvalidArg,
+      format!("Failed to deserialize DependencyIdParams from JS: {err}"),
+    )
+  })?;
 
   let DependencyIdParams {
     source_asset_id,

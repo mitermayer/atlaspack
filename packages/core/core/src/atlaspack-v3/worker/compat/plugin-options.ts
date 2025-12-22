@@ -11,126 +11,133 @@ import type {
   BuildMode,
 } from '@atlaspack/types';
 import type {FeatureFlags} from '@atlaspack/feature-flags';
+import * as path from 'path';
+
+// Based on crates/atlaspack_plugin_rpc/src/nodejs/plugins/plugin_options.rs
+type RpcHmrOptions = {
+  port?: number | null;
+  host?: string | null;
+};
+
+type RpcPluginOptions = {
+  hmrOptions?: RpcHmrOptions | null;
+  projectRoot: string;
+  mode: BuildMode;
+  env?: EnvMap;
+};
+
+type WorkerOptions = RpcPluginOptions & {
+  packageManager: PackageManager;
+  shouldAutoInstall: boolean;
+  inputFS: FileSystem;
+  outputFS: FileSystem;
+};
 
 export class PluginOptions implements IPluginOptions {
-  #options: IPluginOptions;
+  #options: WorkerOptions | Partial<IPluginOptions>;
+
+  constructor(options: WorkerOptions | Partial<IPluginOptions>) {
+    this.#options = options;
+  }
 
   get env(): EnvMap {
-    if (!('env' in this.#options)) {
-      return process.env;
-      // throw new Error('PluginOptions.env');
+    if ('env' in this.#options && this.#options.env) {
+      return this.#options.env;
     }
-    return this.#options.env;
+    return process.env;
   }
 
   get projectRoot(): FilePath {
-    if (!('projectRoot' in this.#options)) {
-      throw new Error('PluginOptions.projectRoot');
-    }
-    return this.#options.projectRoot;
+    return this.#options.projectRoot!;
   }
 
   get packageManager(): PackageManager {
-    if (!('packageManager' in this.#options)) {
-      throw new Error('PluginOptions.packageManager');
-    }
-    return this.#options.packageManager;
+    return this.#options.packageManager!;
   }
 
   get mode(): BuildMode {
-    if (!('mode' in this.#options)) {
-      throw new Error('PluginOptions.mode');
-    }
-    return this.#options.mode;
+    return this.#options.mode || 'development';
   }
 
   get parcelVersion(): string {
-    if (!('parcelVersion' in this.#options)) {
-      return 'UNKNOWN VERSION';
-      // throw new Error('PluginOptions.parcelVersion');
-    }
-    return this.#options.parcelVersion;
+    return 'UNKNOWN VERSION';
   }
 
   get hmrOptions(): HMROptions | null | undefined {
-    if (!('hmrOptions' in this.#options)) {
-      throw new Error('PluginOptions.hmrOptions');
+    if (this.#options.hmrOptions) {
+      return {
+        port: this.#options.hmrOptions.port ?? undefined,
+        host: this.#options.hmrOptions.host ?? undefined,
+      };
     }
-    return this.#options.hmrOptions;
+    return null;
   }
 
   get serveOptions(): ServerOptions | false {
-    if (!('serveOptions' in this.#options)) {
-      throw new Error('PluginOptions.serveOptions');
+    // Not implemented in RpcPluginOptions yet, defaulting to false
+    if ('serveOptions' in this.#options) {
+      return this.#options.serveOptions as ServerOptions | false;
     }
-    return this.#options.serveOptions;
+    return false;
   }
 
   get shouldBuildLazily(): boolean {
-    if (!('shouldBuildLazily' in this.#options)) {
-      throw new Error('PluginOptions.shouldBuildLazily');
-    }
-    return this.#options.shouldBuildLazily;
+    return (
+      ('shouldBuildLazily' in this.#options &&
+        this.#options.shouldBuildLazily) ||
+      false
+    );
   }
 
   get shouldAutoInstall(): boolean {
-    if (!('shouldAutoInstall' in this.#options)) {
-      throw new Error('PluginOptions.shouldAutoInstall');
-    }
-    return this.#options.shouldAutoInstall;
+    return (
+      ('shouldAutoInstall' in this.#options &&
+        this.#options.shouldAutoInstall) ||
+      false
+    );
   }
 
   get logLevel(): LogLevel {
-    if (!('logLevel' in this.#options)) {
-      throw new Error('PluginOptions.logLevel');
+    if ('logLevel' in this.#options) {
+      return this.#options.logLevel as LogLevel;
     }
-    return this.#options.logLevel;
+    return 'info';
   }
 
   get cacheDir(): string {
-    if (!('cacheDir' in this.#options)) {
-      throw new Error('PluginOptions.cacheDir');
+    if ('cacheDir' in this.#options && this.#options.cacheDir) {
+      return this.#options.cacheDir;
     }
-    return this.#options.cacheDir;
+    return path.join(this.projectRoot, '.parcel-cache');
   }
 
   get inputFS(): FileSystem {
-    if (!('inputFS' in this.#options)) {
-      throw new Error('PluginOptions.inputFS');
-    }
-    return this.#options.inputFS;
+    return this.#options.inputFS!;
   }
 
   get outputFS(): FileSystem {
-    if (!('outputFS' in this.#options)) {
-      throw new Error('PluginOptions.outputFS');
-    }
-    return this.#options.outputFS;
+    return this.#options.outputFS!;
   }
 
   get instanceId(): string {
-    if (!('instanceId' in this.#options)) {
-      throw new Error('PluginOptions.instanceId');
+    if ('instanceId' in this.#options && this.#options.instanceId) {
+      return this.#options.instanceId;
     }
-    return this.#options.instanceId;
+    return 'instance-id'; // Default or throw?
   }
 
   get detailedReport(): DetailedReportOptions | null | undefined {
-    if (!('detailedReport' in this.#options)) {
-      throw new Error('PluginOptions.detailedReport');
+    if ('detailedReport' in this.#options) {
+      return this.#options.detailedReport;
     }
-    return this.#options.detailedReport;
+    return null;
   }
 
   get featureFlags(): FeatureFlags {
-    if (!('featureFlags' in this.#options)) {
-      throw new Error('PluginOptions.featureFlags');
+    if ('featureFlags' in this.#options && this.#options.featureFlags) {
+      return this.#options.featureFlags as FeatureFlags;
     }
-    return this.#options.featureFlags;
-  }
-
-  constructor(options: Partial<IPluginOptions>) {
-    // @ts-expect-error TS2322
-    this.#options = options;
+    // TODO: Need to handle feature flags
+    return {} as FeatureFlags;
   }
 }

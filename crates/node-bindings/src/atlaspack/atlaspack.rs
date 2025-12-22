@@ -1,4 +1,5 @@
-use core::str;
+use std::panic::{AssertUnwindSafe, catch_unwind};
+use std::str;
 use std::sync::Arc;
 use std::thread;
 
@@ -8,6 +9,7 @@ use atlaspack::AtlaspackError;
 use atlaspack::AtlaspackInitOptions;
 use atlaspack::WatchEvents;
 use atlaspack::rpc::nodejs::NodejsWorker;
+use atlaspack_core::types::AtlaspackOptions;
 use atlaspack_napi_helpers::JsTransferable;
 use atlaspack_napi_helpers::js_callable::JsCallable;
 use lmdb_js_lite::DatabaseHandle;
@@ -28,6 +30,21 @@ use super::file_system_napi::FileSystemNapi;
 use super::napi_result::NapiAtlaspackResult;
 use super::package_manager_napi::PackageManagerNapi;
 use super::serialize_asset_graph::serialize_asset_graph;
+use super::serialize_bundle_graph::serialize_bundle_graph;
+
+fn handle_panic(env: &Env, panic: Box<dyn std::any::Any + Send>) -> napi::Result<JsObject> {
+  let msg = if let Some(s) = panic.downcast_ref::<&str>() {
+    format!("Atlaspack panicked: {}", s)
+  } else if let Some(s) = panic.downcast_ref::<String>() {
+    format!("Atlaspack panicked: {}", s)
+  } else {
+    "Atlaspack panicked with unknown error".to_string()
+  };
+  tracing::error!("{}", msg);
+  let js_error = env.create_error(napi::Error::from_reason(msg))?;
+  let js_object = js_error.coerce_to_object()?;
+  NapiAtlaspackResult::error(env, js_object)
+}
 
 #[napi(object)]
 pub struct AtlaspackNapiOptions {
@@ -70,46 +87,61 @@ pub fn atlaspack_napi_create(
   let db_handle = lmdb.get_database().clone();
   atlaspack_napi_run_db_health_check(&db_handle)?;
 
-  // Get Atlaspack Options
-  let options = env.from_js_value(napi_options.options)?;
+  // Deserialize the options via serde_json first to avoid
+  // tight coupling between the JS shape and the N-API serde
+  // implementation. This also allows us to handle legacy
+  // entry formats (arrays or numeric-keyed maps) in a
+  // backwards-compatible way via AtlaspackOptions' custom
+  // deserializers.
+  let raw_options: serde_json::Value = env.from_js_value(napi_options.options)?;
+  let options: AtlaspackOptions = serde_json::from_value(raw_options).map_err(|err| {
+    napi::Error::new(
+      napi::Status::InvalidArg,
+      format!("Failed to deserialize AtlaspackOptions from JS: {err}"),
+    )
+  })?;
+
   let get_workers = JsCallable::new_method_bound("getWorkers", &napi_options.napi_worker_pool)?;
 
   thread::spawn({
     let db = db_handle.clone();
     move || {
-      let workers = get_workers
-        .call_blocking(
-          |_env| Ok(vec![]),
-          |_env, workers| {
-            let workers_arr = workers.coerce_to_object()?;
-            let mut workers = vec![];
-            for i in 0..workers_arr.get_array_length()? {
-              let worker = workers_arr.get_element::<JsUnknown>(i)?;
-              let worker = JsTransferable::<Arc<NodejsWorker>>::from_unknown(worker)?;
-              workers.push(worker.get()?.clone());
-            }
-            Ok(workers)
-          },
-        )
-        .unwrap();
+      let result = catch_unwind(AssertUnwindSafe(|| {
+        let workers = get_workers
+          .call_blocking(
+            |_env| Ok(vec![]),
+            |_env, workers| {
+              let workers_arr = workers.coerce_to_object()?;
+              let mut workers = vec![];
+              for i in 0..workers_arr.get_array_length()? {
+                let worker = workers_arr.get_element::<JsUnknown>(i)?;
+                let worker = JsTransferable::<Arc<NodejsWorker>>::from_unknown(worker)?;
+                workers.push(worker.get()?.clone());
+              }
+              Ok(workers)
+            },
+          )
+          .unwrap();
 
-      let rpc = Arc::new(NodejsRpcFactory::new(workers).unwrap());
-      let atlaspack = Atlaspack::new(AtlaspackInitOptions {
-        db,
-        fs,
-        options,
-        package_manager,
-        rpc,
-      });
+        let rpc = Arc::new(NodejsRpcFactory::new(workers).unwrap());
+        Atlaspack::new(AtlaspackInitOptions {
+          db,
+          fs,
+          options,
+          package_manager,
+          rpc,
+        })
+      }));
 
-      deferred.resolve(move |env| match atlaspack {
-        Ok(atlaspack) => {
+      deferred.resolve(move |env| match result {
+        Ok(Ok(atlaspack)) => {
           NapiAtlaspackResult::ok(&env, External::new(Arc::new(Mutex::new(atlaspack))))
         }
-        Err(error) => {
+        Ok(Err(error)) => {
           let js_object = env.to_js_value(&AtlaspackError::from(&error))?;
           NapiAtlaspackResult::error(&env, js_object)
         }
+        Err(panic) => handle_panic(&env, panic),
       })
     }
   });
@@ -133,16 +165,16 @@ pub fn atlaspack_napi_build_asset_graph(
   thread::spawn({
     let atlaspack_ref = atlaspack_napi.clone();
     move || {
-      let result = {
+      let result = catch_unwind(AssertUnwindSafe(|| {
         let atlaspack = atlaspack_ref.lock();
         atlaspack.build_asset_graph()
-      };
+      }));
 
       // "deferred.resolve" closure executes on the JavaScript thread.
       // Errors are returned as a resolved value because they need to be serialized and are
       // not supplied as JavaScript Error types. The JavaScript layer needs to handle conversions
       deferred.resolve(move |env| match result {
-        Ok((asset_graph, had_previous_graph)) => {
+        Ok(Ok((asset_graph, had_previous_graph))) => {
           let serialize_result =
             serialize_asset_graph(&env, &asset_graph.clone(), had_previous_graph)?;
           thread::spawn(move || {
@@ -155,15 +187,49 @@ pub fn atlaspack_napi_build_asset_graph(
 
           NapiAtlaspackResult::ok(&env, serialize_result)
         }
-        Err(error) => {
+        Ok(Err(error)) => {
           let js_object = env.to_js_value(&AtlaspackError::from(&error))?;
           NapiAtlaspackResult::error(&env, js_object)
         }
+        Err(panic) => handle_panic(&env, panic),
       })
     }
   });
 
   Ok(js_result)
+}
+
+#[tracing::instrument(level = "info", skip_all)]
+#[napi]
+pub fn atlaspack_napi_build_bundle_graph(
+  env: Env,
+  atlaspack_napi: AtlaspackNapi,
+) -> napi::Result<JsObject> {
+  let (deferred, promise) = env.create_deferred()?;
+
+  thread::spawn({
+    let atlaspack_ref = atlaspack_napi.clone();
+    move || {
+      let result = catch_unwind(AssertUnwindSafe(|| {
+        let atlaspack = atlaspack_ref.lock();
+        atlaspack.build_bundle_graph()
+      }));
+
+      deferred.resolve(move |env| match result {
+        Ok(Ok(bundle_graph)) => {
+          let serialize_result = serialize_bundle_graph(&env, &bundle_graph)?;
+          NapiAtlaspackResult::ok(&env, serialize_result)
+        }
+        Ok(Err(error)) => {
+          let js_object = env.to_js_value(&AtlaspackError::from(&error))?;
+          NapiAtlaspackResult::error(&env, js_object)
+        }
+        Err(panic) => handle_panic(&env, panic),
+      })
+    }
+  });
+
+  Ok(promise)
 }
 
 #[tracing::instrument(level = "debug", skip_all)]
@@ -174,20 +240,30 @@ pub fn atlaspack_napi_respond_to_fs_events(
   options: JsObject,
 ) -> napi::Result<JsObject> {
   let (deferred, promise) = env.create_deferred()?;
-  let options = env.from_js_value::<WatchEvents, _>(options)?;
+  let options = env
+    .from_js_value::<WatchEvents, _>(options)
+    .map_err(|err| {
+      napi::Error::new(
+        napi::Status::InvalidArg,
+        format!("Failed to deserialize WatchEvents from JS: {err}"),
+      )
+    })?;
 
   thread::spawn({
     let atlaspack = atlaspack_napi.clone();
     move || {
-      let atlaspack = atlaspack.lock();
-      let result = atlaspack.respond_to_fs_events(options);
+      let result = catch_unwind(AssertUnwindSafe(|| {
+        let atlaspack = atlaspack.lock();
+        atlaspack.respond_to_fs_events(options)
+      }));
 
       deferred.resolve(move |env| match result {
-        Ok(should_rebuild) => NapiAtlaspackResult::ok(&env, should_rebuild),
-        Err(error) => {
+        Ok(Ok(should_rebuild)) => NapiAtlaspackResult::ok(&env, should_rebuild),
+        Ok(Err(error)) => {
           let js_object = env.to_js_value(&AtlaspackError::from(&error))?;
           NapiAtlaspackResult::error(&env, js_object)
         }
+        Err(panic) => handle_panic(&env, panic),
       })
     }
   });

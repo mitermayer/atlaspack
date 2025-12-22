@@ -1,0 +1,11 @@
+{
+  "code": "@import \"L09ySq\";\n\n:root {\n  --primary-color: #007bff;\n  --secondary-color: #6c757d;\n  --font-family: \"Inter\", sans-serif;\n}\n\n.container {\n  font-family: var(--font-family);\n  flex-direction: column;\n  gap: 1rem;\n  display: flex;\n}\n\n.button {\n  background-color: var(--primary-color);\n  color: #fff;\n  cursor: pointer;\n  border: none;\n  border-radius: 4px;\n  padding: .5rem 1rem;\n  transition: background-color .2s;\n}\n\n.button:hover {\n  background-color: var(--secondary-color);\n}\n\n@media (width <= 768px) {\n  .container {\n    padding: .5rem;\n  }\n}\n",
+  "dependencies": [
+    {
+      "specifier": "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap",
+      "priority": "sync",
+      "isOptional": false
+    }
+  ],
+  "metadata": {}
+}
